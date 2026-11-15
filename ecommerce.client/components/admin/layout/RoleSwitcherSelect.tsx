@@ -12,7 +12,7 @@ export const ROLE_OPTIONS: RoleOption[] = [
   { key: 'admin', label: 'Super Admin', defaultPage: '/admin' },
   { key: 'manager', label: 'DepartMent Head', defaultPage: '/admin/inventory' },
   { key: 'support', label: 'HR', defaultPage: '/admin/customers' },
-  { key: 'customer', label: 'Staff', defaultPage: '/' },
+  { key: 'customer', label: 'Staff', defaultPage: '/admin' },
   { key: 'seller', label: 'Marketplace Seller', defaultPage: '/admin' },
 ];
 

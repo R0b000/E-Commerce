@@ -352,6 +352,7 @@ class RbacService {
       if (!role) {
         return ApiResponse.fail(`Role "${roleName}" not found`, [], 404);
       }
+      await redisService.delByPattern('ecommerce:menus:*');
       return ApiResponse.success(role, [`Updated permissions for ${role.label}`]);
     } catch (error) {
       return ApiResponse.fail(error.message, [error.message], 400);
@@ -432,6 +433,8 @@ class RbacService {
       if (!user) {
         return ApiResponse.fail('User not found', [], 404);
       }
+
+      await redisService.delByPattern('ecommerce:menus:*');
 
       return ApiResponse.success(user, [
         `Custom permissions updated for ${user.firstName} ${user.lastName}`,

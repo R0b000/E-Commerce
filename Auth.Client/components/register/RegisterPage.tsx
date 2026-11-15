@@ -12,7 +12,7 @@ export const RegisterPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate('/admin');
     }
   }, [isAuthenticated, navigate]);
 
@@ -21,11 +21,7 @@ export const RegisterPage = () => {
     setError(null);
     try {
       await register(data);
-      if (['admin', 'seller', 'manager', 'support'].includes(data.role || '')) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      navigate('/admin');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {

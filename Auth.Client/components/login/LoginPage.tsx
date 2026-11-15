@@ -11,11 +11,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (user?.role === 'admin' || user?.role === 'seller' || user?.role === 'manager' || user?.role === 'support') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      navigate('/admin');
     }
   }, [isAuthenticated, user, navigate]);
 

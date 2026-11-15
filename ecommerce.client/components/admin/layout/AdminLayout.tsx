@@ -479,50 +479,6 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
-  // If a regular customer accesses /admin directly, present customer portal redirect
-  if (isCustomer) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-['Poppins','Inter',sans-serif]">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-[92vw] sm:w-[500px] text-center border border-slate-200">
-          <Result
-            status="info"
-            title="Customer Shopper POV Active"
-            subTitle="You are currently viewing from a Customer perspective. The Admin & Seller management suite is scoped to staff. You can browse the public storefront or switch your testing role below."
-            extra={[
-              <div key="actions" className="space-y-3">
-                <Link to="/" className="block">
-                  <AppButton type="primary" block size="large" icon={<ShopOutlined />} style={{ backgroundColor: '#0284c7' }}>
-                    Open Customer Storefront
-                  </AppButton>
-                </Link>
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => handleRoleSwitch('seller')}
-                    className="px-3 py-1.5 rounded-lg bg-orange-50 text-[#f97316] text-xs font-bold border border-orange-200 hover:bg-orange-100 cursor-pointer"
-                  >
-                    Switch to Seller POV
-                  </button>
-                  <button
-                    onClick={() => handleRoleSwitch('admin')}
-                    className="px-3 py-1.5 rounded-lg bg-blue-50 text-[#0284c7] text-xs font-bold border border-blue-200 hover:bg-blue-100 cursor-pointer"
-                  >
-                    Switch to Admin POV
-                  </button>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 block w-full text-xs text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                >
-                  Sign Out
-                </button>
-              </div>,
-            ]}
-          />
-        </div>
-      </div>
-    );
-  }
-
   // Filter menus for search if needed
   const filteredMenus = dynamicMenus.filter((m) =>
     m.name.toLowerCase().includes(searchQuery.toLowerCase())

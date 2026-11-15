@@ -8,6 +8,12 @@ import {
   ArrowRightOutlined,
   CheckCircleOutlined,
   SyncOutlined,
+  ShopOutlined,
+  SafetyCertificateOutlined,
+  StarOutlined,
+  LockOutlined,
+  SmileOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { Spin, Tag } from 'antd';
 import {
@@ -20,19 +26,23 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
   Cell,
 } from 'recharts';
+import { useAuth } from 'auth-client/hooks/useAuth';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { DashboardMetrics } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import { StatusBadge } from 'shared-components';
 
 export const DashboardOverview: React.FC = () => {
+  const { user } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
+
+  const userRole = (user?.role || '').toLowerCase();
+  const isCustomer = userRole === 'customer' || userRole === 'user' || metrics?.summary?.role === 'customer';
 
   const fetchDashboardData = async (isManual = false) => {
     if (isManual) setRefreshing(true);
@@ -83,6 +93,9 @@ export const DashboardOverview: React.FC = () => {
     totalProducts: 0,
     totalCustomers: 0,
     lowStockCount: 0,
+    totalSpent: 0,
+    activeShipments: 0,
+    passkeyCount: 0,
   };
 
   const statusCounts = metrics?.orderStatusCounts || {
@@ -94,20 +107,21 @@ export const DashboardOverview: React.FC = () => {
   };
 
   // Recharts Data Formats
-  const salesChartData = metrics?.monthlySales && metrics.monthlySales.length > 0
-    ? metrics.monthlySales.map((item) => ({
-        month: item.month,
-        Revenue: item.revenue,
-        Orders: item.orders,
-      }))
-    : [
-        { month: '2026-06', Revenue: 1250, Orders: 4 },
-        { month: '2026-07', Revenue: 2100, Orders: 8 },
-        { month: '2026-08', Revenue: 3400, Orders: 12 },
-        { month: '2026-09', Revenue: 4200, Orders: 15 },
-        { month: '2026-10', Revenue: 5800, Orders: 22 },
-        { month: '2026-11', Revenue: summary.totalRevenue || 2653, Orders: summary.totalOrders || 6 },
-      ];
+  const salesChartData =
+    metrics?.monthlySales && metrics.monthlySales.length > 0
+      ? metrics.monthlySales.map((item) => ({
+          month: item.month,
+          Revenue: item.revenue,
+          Orders: item.orders,
+        }))
+      : [
+          { month: '2026-06', Revenue: 1250, Orders: 4 },
+          { month: '2026-07', Revenue: 2100, Orders: 8 },
+          { month: '2026-08', Revenue: 3400, Orders: 12 },
+          { month: '2026-09', Revenue: 4200, Orders: 15 },
+          { month: '2026-10', Revenue: 5800, Orders: 22 },
+          { month: '2026-11', Revenue: summary.totalRevenue || 2653, Orders: summary.totalOrders || 6 },
+        ];
 
   const statusChartData = [
     { name: 'Pending', count: statusCounts.pending, color: '#f59e0b' },
@@ -117,6 +131,278 @@ export const DashboardOverview: React.FC = () => {
     { name: 'Cancelled', count: statusCounts.cancelled, color: '#ef4444' },
   ];
 
+  // =========================================================================
+  // CUSTOMER / STAFF PORTAL DASHBOARD VIEW
+  // =========================================================================
+  if (isCustomer) {
+    return (
+      <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
+        {/* Customer Welcome Header Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-cyan-500 text-white flex items-center justify-center text-2xl font-bold shadow-md shadow-blue-500/20">
+              <SmileOutlined />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Welcome, {user?.firstName || 'Customer'}!
+                </h2>
+                <Tag color="cyan" className="font-semibold text-xs rounded-full px-2.5">
+                  Customer / Staff
+                </Tag>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Your personal account dashboard. Manage active orders, leave reviews, and secure your session with FIDO2 passkeys.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 self-start md:self-auto shrink-0">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f97316] text-white hover:bg-[#ea580c] font-semibold text-xs shadow-sm hover:shadow transition-all"
+            >
+              <ShopOutlined />
+              <span>Browse Storefront</span>
+            </Link>
+            <Link
+              to="/admin/security"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-[#0284c7] hover:bg-blue-100 font-semibold text-xs border border-blue-200 transition-all"
+            >
+              <SafetyCertificateOutlined />
+              <span>Security & Passkeys</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Customer KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {/* Card 1: Total Spent */}
+          <div className="bg-gradient-to-br from-[#0284c7] to-[#0369a1] text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between border-t-4 border-t-[#f97316]">
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold tracking-wide text-white/90">
+                <span>My Lifetime Purchases</span>
+                <DollarOutlined className="text-white text-base" />
+              </div>
+              <div className="text-3xl font-black mt-3 mb-2 tracking-tight">
+                ${(summary.totalSpent || summary.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+            <div className="text-xs font-medium text-white/80">
+              Total completed expenditure
+            </div>
+          </div>
+
+          {/* Card 2: Total Orders */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold tracking-wide text-slate-700">
+                <span>Total Orders</span>
+                <ShoppingOutlined className="text-[#0284c7] text-base" />
+              </div>
+              <div className="text-3xl font-black text-slate-900 mt-3 mb-2 tracking-tight">
+                {summary.totalOrders}
+              </div>
+            </div>
+            <div className="text-xs font-medium text-slate-500">
+              {statusCounts.delivered} order(s) delivered
+            </div>
+          </div>
+
+          {/* Card 3: Active Orders */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold tracking-wide text-slate-700">
+                <span>Active Shipments</span>
+                <SyncOutlined className="text-[#f97316] text-base" />
+              </div>
+              <div className="text-3xl font-black text-slate-900 mt-3 mb-2 tracking-tight">
+                {summary.activeShipments || (statusCounts.pending + statusCounts.processing + statusCounts.shipped)}
+              </div>
+            </div>
+            <div className="text-xs font-medium text-slate-500">
+              Orders currently in transit
+            </div>
+          </div>
+
+          {/* Card 4: FIDO2 Passkeys */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between text-xs font-semibold tracking-wide text-slate-700">
+                <span>Biometric Passkeys</span>
+                <SafetyCertificateOutlined className="text-emerald-600 text-base" />
+              </div>
+              <div className="text-3xl font-black text-slate-900 mt-3 mb-2 tracking-tight">
+                {summary.passkeyCount || 1} Device(s)
+              </div>
+            </div>
+            <div className="text-xs font-medium text-emerald-600 flex items-center gap-1 font-semibold">
+              <CheckCircleOutlined /> Passwordless enabled
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Main Split Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Recent Orders Table (8 Columns) */}
+          <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  My Recent Purchases
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Track shipment status, view order summaries, and request invoices.
+                </p>
+              </div>
+
+              <Link
+                to="/admin/orders"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-[#0284c7] hover:bg-blue-100 font-semibold text-xs border border-blue-100 transition-colors"
+              >
+                <span>View all ({summary.totalOrders})</span>
+                <ArrowRightOutlined className="text-[10px]" />
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">
+                    <th className="pb-3 font-semibold">Order #</th>
+                    <th className="pb-3 font-semibold">Items</th>
+                    <th className="pb-3 font-semibold">Total</th>
+                    <th className="pb-3 font-semibold">Status</th>
+                    <th className="pb-3 font-semibold text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {metrics?.recentOrders && metrics.recentOrders.length > 0 ? (
+                    metrics.recentOrders.map((order) => (
+                      <tr key={order._id || order.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3.5 font-mono font-semibold text-[#0284c7]">
+                          {order.orderNumber}
+                        </td>
+                        <td className="py-3.5 text-slate-600">
+                          {order.items?.length || 0} item(s)
+                        </td>
+                        <td className="py-3.5 font-bold text-slate-900">
+                          ${order.totalAmount?.toFixed(2)}
+                        </td>
+                        <td className="py-3.5">
+                          <StatusBadge status={order.orderStatus} />
+                        </td>
+                        <td className="py-3.5 text-right">
+                          <Link
+                            to="/admin/orders"
+                            className="text-xs font-semibold text-[#0284c7] hover:underline"
+                          >
+                            Track & Details ›
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400">
+                        You have not placed any orders yet.{' '}
+                        <Link to="/" className="text-[#0284c7] font-semibold hover:underline">
+                          Browse our store
+                        </Link>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Right: Quick Portals & Shortcuts (4 Columns) */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight mb-1">
+                Quick Shortcuts
+              </h3>
+              <p className="text-xs text-slate-500 mb-4">
+                Access your allowed pages & services:
+              </p>
+
+              <div className="space-y-2.5">
+                <Link
+                  to="/"
+                  className="flex items-center justify-between p-3 rounded-xl bg-orange-50/60 border border-orange-100 hover:bg-orange-100/60 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-orange-500 text-white flex items-center justify-center text-sm shadow-2xs">
+                      <ShopOutlined />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">Himalayan Storefront</div>
+                      <div className="text-[10px] text-slate-500">Shop handcrafted items & tea</div>
+                    </div>
+                  </div>
+                  <ArrowRightOutlined className="text-xs text-orange-500" />
+                </Link>
+
+                <Link
+                  to="/admin/orders"
+                  className="flex items-center justify-between p-3 rounded-xl bg-blue-50/60 border border-blue-100 hover:bg-blue-100/60 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#0284c7] text-white flex items-center justify-center text-sm shadow-2xs">
+                      <FileTextOutlined />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">My Orders & Invoices</div>
+                      <div className="text-[10px] text-slate-500">View fulfillment & history</div>
+                    </div>
+                  </div>
+                  <ArrowRightOutlined className="text-xs text-[#0284c7]" />
+                </Link>
+
+                <Link
+                  to="/admin/reviews"
+                  className="flex items-center justify-between p-3 rounded-xl bg-amber-50/60 border border-amber-100 hover:bg-amber-100/60 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center text-sm shadow-2xs">
+                      <StarOutlined />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">Product Reviews</div>
+                      <div className="text-[10px] text-slate-500">Rate verified products</div>
+                    </div>
+                  </div>
+                  <ArrowRightOutlined className="text-xs text-amber-500" />
+                </Link>
+
+                <Link
+                  to="/admin/security"
+                  className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/60 border border-emerald-100 hover:bg-emerald-100/60 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-sm shadow-2xs">
+                      <LockOutlined />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">Security & Biometrics</div>
+                      <div className="text-[10px] text-slate-500">FIDO2 passkeys & devices</div>
+                    </div>
+                  </div>
+                  <ArrowRightOutlined className="text-xs text-emerald-600" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // ADMIN / SELLER / MANAGER DASHBOARD VIEW
+  // =========================================================================
   return (
     <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
       {/* =========================================================================

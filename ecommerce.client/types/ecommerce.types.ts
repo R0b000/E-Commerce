@@ -86,7 +86,10 @@ export interface DashboardMetrics {
     totalProducts: number;
     totalCustomers: number;
     lowStockCount: number;
-    role?: 'admin' | 'seller';
+    totalSpent?: number;
+    activeShipments?: number;
+    passkeyCount?: number;
+    role?: 'admin' | 'seller' | 'customer' | 'support' | 'manager' | string;
   };
   orderStatusCounts: {
     pending: number;

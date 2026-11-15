@@ -6,8 +6,8 @@ const dashboardRouter = Router();
 const dashboardService = new DashboardService();
 
 // Role-Based Dashboard Metrics:
-// Admin gets platform-wide metrics; Seller gets only their own sales & product metrics
-dashboardRouter.get('/overview', authenticateToken, requireRole('admin', 'seller'), async (req, res) => {
+// Returns personalized metrics based on user role (admin, seller, customer, manager, support)
+dashboardRouter.get('/overview', authenticateToken, async (req, res) => {
   const result = await dashboardService.getMetrics(req.user);
   res.status(result.statusCode || 200).json(result);
 });

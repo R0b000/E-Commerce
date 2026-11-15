@@ -10,14 +10,71 @@ class DashboardService {
   async getMetrics(user = null) {
     try {
       const isSeller = user && user.role === 'seller';
+      const isCustomer = user && (user.role === 'customer' || user.role === 'user');
       const cacheKey = isSeller
         ? `ecommerce:dashboard:seller:${user.id}`
-        : 'ecommerce:dashboard:admin';
+        : isCustomer
+        ? `ecommerce:dashboard:customer:${user.id}`
+        : `ecommerce:dashboard:${user?.role || 'admin'}`;
 
       // High-speed Redis Cache Check
       const cached = await redisService.get(cacheKey);
       if (cached) {
         return ApiResponse.success(cached);
+      }
+
+      if (isCustomer) {
+        // --- CUSTOMER METRICS (Personal Orders, Total Spent, Delivery Status) ---
+        const userDoc = user?.id ? await User.findById(user.id).lean() : null;
+        const customerOrders = await Order.find({
+          $or: [
+            { customer: user?.id },
+            { user: user?.id },
+            { 'shippingAddress.email': user?.email },
+          ],
+        })
+          .sort({ createdAt: -1 })
+          .populate('items.product', 'name price images')
+          .lean();
+
+        let totalSpent = 0;
+        const orderStatusCounts = {
+          pending: 0,
+          processing: 0,
+          shipped: 0,
+          delivered: 0,
+          cancelled: 0,
+        };
+
+        customerOrders.forEach((o) => {
+          if (orderStatusCounts[o.orderStatus] !== undefined) {
+            orderStatusCounts[o.orderStatus]++;
+          }
+          if (o.orderStatus !== 'cancelled') {
+            totalSpent += Number(o.totalAmount || 0);
+          }
+        });
+
+        const activeShipments =
+          orderStatusCounts.pending + orderStatusCounts.processing + orderStatusCounts.shipped;
+
+        const customerData = {
+          summary: {
+            totalOrders: customerOrders.length,
+            totalRevenue: Math.round(totalSpent * 100) / 100,
+            totalSpent: Math.round(totalSpent * 100) / 100,
+            activeShipments,
+            passkeyCount: (userDoc?.fidoCredentials || []).length,
+            role: 'customer',
+          },
+          orderStatusCounts,
+          recentOrders: customerOrders.slice(0, 6).map((o) => ({ ...o, id: o._id })),
+          lowStockProducts: [],
+          monthlySales: [],
+        };
+
+        await redisService.set(cacheKey, customerData, 60);
+        return ApiResponse.success(customerData);
       }
 
       if (isSeller) {
