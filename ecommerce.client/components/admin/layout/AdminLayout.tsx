@@ -37,6 +37,7 @@ import { useToast } from '../../../context/ToastContext';
 import { AppButton } from 'shared-components/AppButton';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem } from '../../../types/ecommerce.types';
+import { RoleSwitcherSelect } from './RoleSwitcherSelect';
 
 // Helper to map icon names to Ant Design icons
 const renderMenuIcon = (iconName: string) => {
@@ -246,6 +247,13 @@ export const AdminLayout: React.FC = () => {
     ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase()
     : 'AD';
 
+  const handleRoleSelect = (role: Role, defaultPage: string) => {
+    switchRole(role);
+    fetchMenus(role);
+    navigate(defaultPage);
+    showToast(`Switched to ${role.toUpperCase()} perspective. Navigated to: ${defaultPage}`, 'info');
+  };
+
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
@@ -280,6 +288,19 @@ export const AdminLayout: React.FC = () => {
                 : 'Super Admin'}
             </span>
           </div>
+        </div>
+      ),
+    },
+    { type: 'divider' },
+    {
+      key: 'role-select',
+      label: (
+        <div className="py-1 cursor-default" onClick={(e) => e.stopPropagation()}>
+          <RoleSwitcherSelect
+            currentRole={userRole}
+            onRoleSelect={handleRoleSelect}
+            showLabel={true}
+          />
         </div>
       ),
     },
@@ -622,35 +643,17 @@ export const AdminLayout: React.FC = () => {
             {formattedDate}
           </span>
 
-          {/* Active Testing Role Switcher (Bijayatestui style) */}
-          <Popover
-            content={roleSwitcherPopoverContent}
-            trigger="click"
-            placement="bottomRight"
-            arrow
-          >
-            <button
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-all cursor-pointer shadow-2xs hover:border-[#0284c7]/50 active:scale-95"
-              title="Change active role and test allowed pages"
-            >
-              <span
-                className={`w-2 h-2 rounded-full animate-pulse ${
-                  isSeller
-                    ? 'bg-[#f97316]'
-                    : isSupport
-                    ? 'bg-emerald-500'
-                    : isManager
-                    ? 'bg-purple-500'
-                    : isCustomer
-                    ? 'bg-blue-500'
-                    : 'bg-[#0284c7]'
-                }`}
-              />
-              <span className="text-slate-400 font-normal">Active Role:</span>
-              <span className="font-bold uppercase text-slate-900 tracking-tight">{userRole}</span>
-              <span className="text-[9px] text-slate-400">▼</span>
-            </button>
-          </Popover>
+          {/* Current Role Switcher (Matching exact UI design) */}
+          <div className="hidden sm:flex flex-col text-left">
+            <span className="text-[10px] font-bold text-[#64748b] leading-tight mb-0.5 select-none">
+              Current role
+            </span>
+            <RoleSwitcherSelect
+              currentRole={userRole}
+              onRoleSelect={handleRoleSelect}
+              showLabel={false}
+            />
+          </div>
 
           {/* Real-time Socket.IO Notification Bell */}
           <Popover
