@@ -254,18 +254,25 @@ export const AdminLayout: React.FC = () => {
     showToast(`Switched to ${role.toUpperCase()} perspective. Navigated to: ${defaultPage}`, 'info');
   };
 
-  const userMenuItems: MenuProps['items'] = [
-    {
-      key: 'profile',
-      label: (
-        <div className="py-1">
-          <div className="font-semibold text-slate-800 text-xs">
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+
+  const accountMenuContent = (
+    <div className="w-[280px] p-1 font-['Poppins','Inter',sans-serif]">
+      {/* Account Profile Summary */}
+      <div className="p-2.5 pb-3 border-b border-slate-100 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0284c7] to-[#f97316] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+          {userInitials}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-slate-900 text-xs truncate">
             {user ? `${user.firstName} ${user.lastName}` : 'Super Admin'}
           </div>
-          <div className="text-[11px] text-slate-400 font-mono">{user?.email || 'admin@store.com'}</div>
+          <div className="text-[11px] text-slate-400 font-mono truncate">
+            {user?.email || 'admin@store.com'}
+          </div>
           <div className="mt-1">
             <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+              className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase ${
                 isSeller
                   ? 'bg-orange-100 text-orange-800 border border-orange-200'
                   : isSupport
@@ -289,57 +296,87 @@ export const AdminLayout: React.FC = () => {
             </span>
           </div>
         </div>
-      ),
-    },
-    { type: 'divider' },
-    {
-      key: 'role-select',
-      label: (
-        <div className="py-1 cursor-default" onClick={(e) => e.stopPropagation()}>
-          <RoleSwitcherSelect
-            currentRole={userRole}
-            onRoleSelect={handleRoleSelect}
-            showLabel={true}
-          />
-        </div>
-      ),
-    },
-    { type: 'divider' },
-    {
-      key: 'inventory',
-      label: <Link to="/admin/inventory">Stock & Inventory</Link>,
-      icon: <AppstoreOutlined />,
-    },
-    {
-      key: 'seller-profile',
-      label: <Link to="/admin/seller-profile">Seller & Vendor Profile</Link>,
-      icon: <ShopOutlined />,
-    },
-    {
-      key: 'security',
-      label: <Link to="/admin/security">Security & Passkeys</Link>,
-      icon: <LockOutlined />,
-    },
-    {
-      key: 'store',
-      label: <Link to="/">Customer Store</Link>,
-      icon: <ShopOutlined />,
-    },
-    {
-      key: 'fullscreen',
-      label: isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen',
-      icon: isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />,
-      onClick: toggleFullscreen,
-    },
-    { type: 'divider' },
-    {
-      key: 'logout',
-      danger: true,
-      label: 'Sign Out',
-      icon: <LogoutOutlined />,
-      onClick: handleLogout,
-    },
-  ];
+      </div>
+
+      {/* Role Switcher Section INSIDE Account Dropdown */}
+      <div className="p-2.5 border-b border-slate-100 bg-slate-50/70 rounded-xl my-2">
+        <span className="block text-[11px] font-bold text-[#64748b] leading-tight mb-1 select-none">
+          Current role
+        </span>
+        <RoleSwitcherSelect
+          currentRole={userRole}
+          onRoleSelect={(role, defaultPage) => {
+            handleRoleSelect(role, defaultPage);
+            setAccountMenuOpen(false);
+          }}
+          showLabel={false}
+        />
+      </div>
+
+      {/* Account Navigation Links */}
+      <div className="space-y-0.5 py-1 text-xs font-semibold text-slate-700">
+        <Link
+          to="/admin/inventory"
+          onClick={() => setAccountMenuOpen(false)}
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <AppstoreOutlined className="text-slate-400 text-sm" />
+          <span>Stock & Inventory</span>
+        </Link>
+        <Link
+          to="/admin/seller-profile"
+          onClick={() => setAccountMenuOpen(false)}
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <ShopOutlined className="text-slate-400 text-sm" />
+          <span>Seller & Vendor Profile</span>
+        </Link>
+        <Link
+          to="/admin/security"
+          onClick={() => setAccountMenuOpen(false)}
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <LockOutlined className="text-slate-400 text-sm" />
+          <span>Security & Passkeys</span>
+        </Link>
+        <Link
+          to="/"
+          onClick={() => setAccountMenuOpen(false)}
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <ShopOutlined className="text-slate-400 text-sm" />
+          <span>Customer Store</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => {
+            toggleFullscreen();
+            setAccountMenuOpen(false);
+          }}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors text-left cursor-pointer"
+        >
+          {isFullscreen ? (
+            <FullscreenExitOutlined className="text-slate-400 text-sm" />
+          ) : (
+            <FullscreenOutlined className="text-slate-400 text-sm" />
+          )}
+          <span>{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
+        </button>
+      </div>
+
+      {/* Sign Out */}
+      <div className="pt-1.5 mt-1 border-t border-slate-100">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors text-xs font-bold cursor-pointer text-left"
+        >
+          <LogoutOutlined className="text-sm" />
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+  );
 
   const availableRoles: Array<{
     key: Role;
@@ -599,18 +636,6 @@ export const AdminLayout: React.FC = () => {
             {formattedDate}
           </span>
 
-          {/* Current Role Switcher (Matching exact UI design) */}
-          <div className="hidden sm:flex flex-col text-left">
-            <span className="text-[10px] font-bold text-[#64748b] leading-tight mb-0.5 select-none">
-              Current role
-            </span>
-            <RoleSwitcherSelect
-              currentRole={userRole}
-              onRoleSelect={handleRoleSelect}
-              showLabel={false}
-            />
-          </div>
-
           {/* Real-time Socket.IO Notification Bell */}
           <Popover
             content={notificationContent}
@@ -627,12 +652,22 @@ export const AdminLayout: React.FC = () => {
             </button>
           </Popover>
 
-          {/* Circular User Avatar Dropdown Button */}
-          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-            <button className="w-8 h-8 rounded-full border border-slate-300 bg-gradient-to-tr from-[#0284c7] to-[#f97316] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center transition-opacity cursor-pointer shadow-2xs">
+          {/* Circular User Avatar Dropdown Button (Role Switcher inside Account Dropdown) */}
+          <Popover
+            content={accountMenuContent}
+            trigger="click"
+            open={accountMenuOpen}
+            onOpenChange={setAccountMenuOpen}
+            placement="bottomRight"
+            arrow
+          >
+            <button
+              type="button"
+              className="w-8 h-8 rounded-full border border-slate-300 bg-gradient-to-tr from-[#0284c7] to-[#f97316] hover:opacity-90 text-white font-bold text-xs flex items-center justify-center transition-opacity cursor-pointer shadow-2xs"
+            >
               {userInitials}
             </button>
-          </Dropdown>
+          </Popover>
         </div>
       </header>
 
