@@ -1,0 +1,463 @@
+const { Menu } = require('../models/database/Menu');
+const { Permission } = require('../models/database/Permission');
+const { Role } = require('../models/database/Role');
+const { User } = require('../../auth.server/models/database/User');
+const { Response: ApiResponse } = require('../../Shared/API/wrappers/Response');
+const { redisService } = require('./RedisService');
+
+class RbacService {
+  /**
+   * Returns dynamic navigation menus available to the logged in user
+   * - Admin sees all menus
+   * - Seller / Customer sees menus matching their role or granted via customPermissions
+   */
+  async getUserMenus(user = null, simulatedRole = null) {
+    try {
+      const userRole = (simulatedRole || user?.role || 'customer').toLowerCase();
+      const isAdmin = userRole === 'admin';
+      const cacheKey = `ecommerce:menus:${userRole}:${user?.id || 'anon'}`;
+
+      // Check high-speed Redis cache
+      const cached = await redisService.get(cacheKey);
+      if (cached) {
+        return ApiResponse.success(cached);
+      }
+
+      // Load user custom permissions if user exists
+      let userCustomPermissions = [];
+      if (user?.id) {
+        const u = await User.findById(user.id).select('customPermissions role').lean();
+        if (u) {
+          userCustomPermissions = u.customPermissions || [];
+        }
+      }
+
+      // Load role permissions
+      const roleDoc = await Role.findOne({ name: userRole }).lean();
+      const rolePermissions = roleDoc?.permissions || [];
+      const effectivePermissions = new Set([...rolePermissions, ...userCustomPermissions]);
+
+      // Fetch all active menus sorted by display order
+      let allMenus = await Menu.find({ isActive: true })
+        .sort({ order: 1, createdAt: 1 })
+        .lean();
+
+      if (!allMenus || allMenus.length === 0) {
+        const defaultMenus = [
+          { name: 'Dashboard', path: '/admin', icon: 'DashboardOutlined', order: 1, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
+          { name: 'Products', path: '/admin/products', icon: 'ShoppingOutlined', order: 2, roles: ['admin', 'seller', 'manager'], isSystem: true, isActive: true },
+          { name: 'Categories', path: '/admin/categories', icon: 'AppstoreOutlined', order: 3, roles: ['admin', 'manager'], isSystem: true, isActive: true },
+          { name: 'Orders', path: '/admin/orders', icon: 'FileTextOutlined', order: 4, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
+          { name: 'Customers & Sellers', path: '/admin/customers', icon: 'TeamOutlined', order: 5, roles: ['admin', 'support'], isSystem: true, isActive: true },
+          { name: 'Customer Reviews', path: '/admin/reviews', icon: 'StarOutlined', order: 6, roles: ['admin', 'support', 'seller'], isSystem: true, isActive: true },
+          { name: 'Audit Logs', path: '/admin/audit-logs', icon: 'HistoryOutlined', order: 7, roles: ['admin'], isSystem: true, isActive: true },
+          { name: 'Security Roles', path: '/admin/roles', icon: 'KeyOutlined', order: 8, roles: ['admin'], isSystem: true, isActive: true },
+          { name: 'Permissions', path: '/admin/permissions', icon: 'SafetyCertificateOutlined', order: 9, roles: ['admin'], isSystem: true, isActive: true },
+          { name: 'Menu Pages', path: '/admin/menus', icon: 'MenuOutlined', order: 10, roles: ['admin'], isSystem: true, isActive: true },
+        ];
+        await Menu.insertMany(defaultMenus);
+        allMenus = await Menu.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).lean();
+      } else {
+        const hasReviews = allMenus.some((m) => m.path === '/admin/reviews');
+        if (!hasReviews) {
+          const revMenu = await Menu.create({
+            name: 'Customer Reviews',
+            path: '/admin/reviews',
+            icon: 'StarOutlined',
+            order: 6,
+            roles: ['admin', 'support', 'seller'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(revMenu.toObject ? revMenu.toObject() : revMenu);
+        }
+        const hasAudit = allMenus.some((m) => m.path === '/admin/audit-logs');
+        if (!hasAudit) {
+          const auditMenu = await Menu.create({
+            name: 'Audit Logs',
+            path: '/admin/audit-logs',
+            icon: 'HistoryOutlined',
+            order: 7,
+            roles: ['admin'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(auditMenu.toObject ? auditMenu.toObject() : auditMenu);
+        }
+
+        const hasInventory = allMenus.some((m) => m.path === '/admin/inventory');
+        if (!hasInventory) {
+          const invMenu = await Menu.create({
+            name: 'Inventory & Stock',
+            path: '/admin/inventory',
+            icon: 'AppstoreOutlined',
+            order: 3,
+            roles: ['admin', 'seller', 'manager'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(invMenu.toObject ? invMenu.toObject() : invMenu);
+        }
+
+        const hasSellerProfile = allMenus.some((m) => m.path === '/admin/seller-profile');
+        if (!hasSellerProfile) {
+          const spMenu = await Menu.create({
+            name: 'Seller Profile',
+            path: '/admin/seller-profile',
+            icon: 'ShopOutlined',
+            order: 11,
+            roles: ['admin', 'seller'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(spMenu.toObject ? spMenu.toObject() : spMenu);
+        }
+
+        const hasSecurity = allMenus.some((m) => m.path === '/admin/security');
+        if (!hasSecurity) {
+          const secMenu = await Menu.create({
+            name: 'Security & Devices',
+            path: '/admin/security',
+            icon: 'LockOutlined',
+            order: 12,
+            roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(secMenu.toObject ? secMenu.toObject() : secMenu);
+        }
+      }
+
+      // Filter menus based on user role and permissions
+      const allowedMenus = allMenus.filter((menu) => {
+        if (isAdmin) return true;
+
+        // Check role list
+        const roleAllowed = Array.isArray(menu.roles) && menu.roles.includes(userRole);
+
+        // Check required permission
+        const permissionAllowed = menu.requiredPermission
+          ? effectivePermissions.has(menu.requiredPermission)
+          : false;
+
+        return roleAllowed || permissionAllowed;
+      });
+
+      // Construct nested tree structure (Parents and their SubItems)
+      const menuMap = new Map();
+      const roots = [];
+
+      allowedMenus.forEach((m) => {
+        menuMap.set(m._id.toString(), {
+          ...m,
+          id: m._id.toString(),
+          subItems: [],
+        });
+      });
+
+      allowedMenus.forEach((m) => {
+        const item = menuMap.get(m._id.toString());
+        if (m.parentId && menuMap.has(m.parentId.toString())) {
+          menuMap.get(m.parentId.toString()).subItems.push({
+            label: item.name,
+            path: item.path,
+            id: item.id,
+          });
+        } else {
+          roots.push(item);
+        }
+      });
+
+      const resultData = {
+        menus: roots,
+        userRole,
+        effectivePermissions: Array.from(effectivePermissions),
+      };
+
+      await redisService.set(cacheKey, resultData, 180);
+
+      return ApiResponse.success(resultData);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  /**
+   * Returns all menus for the Menu Management CRUD page
+   */
+  async getAllMenus() {
+    try {
+      const menus = await Menu.find()
+        .populate('parentId', 'name path')
+        .sort({ order: 1, createdAt: 1 })
+        .lean();
+
+      return ApiResponse.success(
+        menus.map((m) => ({ ...m, id: m._id.toString() }))
+      );
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  /**
+   * Creates a new dynamic menu / page entry
+   */
+  async createMenu(data) {
+    try {
+      if (!data.name || !data.path) {
+        return ApiResponse.fail('Name and Path are required', [], 400);
+      }
+
+      const menu = new Menu({
+        ...data,
+        path: data.path.startsWith('/') ? data.path : `/${data.path}`,
+        roles: data.roles || ['admin'],
+      });
+
+      await menu.save();
+      await redisService.delByPattern('ecommerce:menus:*');
+      return ApiResponse.success(menu, ['Menu created successfully']);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 400);
+    }
+  }
+
+  /**
+   * Updates a dynamic menu entry
+   */
+  async updateMenu(id, data) {
+    try {
+      const updated = await Menu.findByIdAndUpdate(
+        id,
+        { $set: data },
+        { new: true, runValidators: true }
+      );
+      if (!updated) {
+        return ApiResponse.fail('Menu not found', [], 404);
+      }
+      await redisService.delByPattern('ecommerce:menus:*');
+      return ApiResponse.success(updated, ['Menu updated successfully']);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 400);
+    }
+  }
+
+  /**
+   * Deletes a menu entry (prevents deleting core system menus)
+   */
+  async deleteMenu(id) {
+    try {
+      const menu = await Menu.findById(id);
+      if (!menu) {
+        return ApiResponse.fail('Menu not found', [], 404);
+      }
+      if (menu.isSystem) {
+        return ApiResponse.fail('System core menus cannot be deleted', [], 400);
+      }
+
+      await Menu.findByIdAndDelete(id);
+      await redisService.delByPattern('ecommerce:menus:*');
+      return ApiResponse.success(null, ['Menu deleted successfully']);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  /**
+   * Returns all roles with their permissions and active user counts
+   */
+  async getRoles() {
+    try {
+      let roles = await Role.find().lean();
+
+      const defaultRoles = [
+        {
+          name: 'admin',
+          label: 'Super Administrator',
+          description: 'Full system control, permissions, users, catalog and analytics access',
+          permissions: ['*'],
+          isSystem: true,
+        },
+        {
+          name: 'seller',
+          label: 'Store Seller / Vendor',
+          description: 'Manage own store products, inventory, order fulfillment and vendor metrics',
+          permissions: ['products:read', 'products:create', 'products:edit', 'products:delete', 'orders:read', 'orders:update_status', 'dashboard:view'],
+          isSystem: true,
+        },
+        {
+          name: 'customer',
+          label: 'Store Customer / Buyer',
+          description: 'Browse catalog, place orders, write reviews and track order history',
+          permissions: ['orders:view_own', 'products:view', 'profile:manage'],
+          isSystem: true,
+        },
+        {
+          name: 'support',
+          label: 'Customer Support Specialist',
+          description: 'Assist buyers, view customer orders, manage support tickets and resolve disputes',
+          permissions: ['orders:read', 'orders:update_status', 'customers:read', 'support:tickets', 'support:chat'],
+          isSystem: false,
+        },
+        {
+          name: 'manager',
+          label: 'Store & Inventory Manager',
+          description: 'Supervise product catalog, manage stock levels, review categories and fulfillment',
+          permissions: ['products:read', 'products:create', 'products:edit', 'categories:read', 'categories:manage', 'orders:read', 'orders:update_status', 'inventory:adjust'],
+          isSystem: false,
+        },
+      ];
+
+      for (const defRole of defaultRoles) {
+        const found = roles.find((r) => r.name === defRole.name);
+        if (!found) {
+          const created = await Role.create(defRole);
+          roles.push(created.toObject ? created.toObject() : created);
+        }
+      }
+
+      const users = await User.aggregate([
+        { $group: { _id: '$role', count: { $sum: 1 } } },
+      ]);
+
+      const countMap = {};
+      users.forEach((u) => {
+        const r = (u._id || '').toLowerCase();
+        countMap[r] = u.count;
+      });
+
+      const rolesWithCounts = roles.map((r) => ({
+        ...r,
+        id: r._id.toString(),
+        userCount: countMap[r.name] || 0,
+      }));
+
+      return ApiResponse.success(rolesWithCounts);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  /**
+   * Updates permissions assigned to a role
+   */
+  async updateRolePermissions(roleName, permissions) {
+    try {
+      const role = await Role.findOneAndUpdate(
+        { name: roleName.toLowerCase() },
+        { $set: { permissions } },
+        { new: true, upsert: true }
+      );
+      if (!role) {
+        return ApiResponse.fail(`Role "${roleName}" not found`, [], 404);
+      }
+      return ApiResponse.success(role, [`Updated permissions for ${role.label}`]);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 400);
+    }
+  }
+
+  /**
+   * Returns all available permissions grouped by category/module
+   */
+  async getPermissions() {
+    try {
+      let permissions = await Permission.find().sort({ module: 1, name: 1 }).lean();
+
+      if (!permissions || permissions.length === 0) {
+        const defaultPerms = [
+          { name: 'View Dashboard', code: 'dashboard:view', module: 'analytics', description: 'Access executive analytics overview' },
+          { name: 'View Products', code: 'products:read', module: 'catalog', description: 'Browse products catalog' },
+          { name: 'Create Products', code: 'products:create', module: 'catalog', description: 'Add new products to store' },
+          { name: 'Edit Products', code: 'products:edit', module: 'catalog', description: 'Update product prices and details' },
+          { name: 'Delete Products', code: 'products:delete', module: 'catalog', description: 'Remove products from catalog' },
+          { name: 'Manage Categories', code: 'categories:manage', module: 'catalog', description: 'Create and organize categories' },
+          { name: 'View Orders', code: 'orders:read', module: 'orders', description: 'Inspect orders list and details' },
+          { name: 'Update Order Status', code: 'orders:update_status', module: 'orders', description: 'Change fulfillment status of orders' },
+          { name: 'View Customers', code: 'customers:read', module: 'customers', description: 'View registered customers directory' },
+          { name: 'Manage Roles', code: 'roles:manage', module: 'security', description: 'Configure role permissions' },
+          { name: 'Manage Permissions', code: 'permissions:manage', module: 'security', description: 'Create and assign fine-grained permissions' },
+          { name: 'Manage Menus', code: 'menus:manage', module: 'navigation', description: 'Configure dynamic portal menus' },
+          { name: 'Support Tickets', code: 'support:tickets', module: 'support', description: 'Manage and resolve customer support tickets' },
+          { name: 'Live Support Chat', code: 'support:chat', module: 'support', description: 'Assist buyers in real-time customer support' },
+          { name: 'Adjust Inventory', code: 'inventory:adjust', module: 'inventory', description: 'Quick-adjust product stock quantities' },
+        ];
+        await Permission.insertMany(defaultPerms);
+        permissions = await Permission.find().sort({ module: 1, name: 1 }).lean();
+      }
+
+      return ApiResponse.success(
+        permissions.map((p) => ({ ...p, id: p._id.toString() }))
+      );
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  /**
+   * Creates a new custom permission
+   */
+  async createPermission(data) {
+    try {
+      const code = data.code.toLowerCase().trim().replace(/\s+/g, ':');
+      const existing = await Permission.findOne({ code });
+      if (existing) {
+        return ApiResponse.fail(`Permission code "${code}" already exists`, [], 400);
+      }
+
+      const perm = new Permission({
+        ...data,
+        code,
+      });
+
+      await perm.save();
+      return ApiResponse.success(perm, ['Permission created successfully']);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 400);
+    }
+  }
+
+  /**
+   * Grants/revokes special custom permissions for a specific user
+   */
+  async assignUserPermissions(userId, customPermissions) {
+    try {
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { $set: { customPermissions } },
+        { new: true }
+      ).select('firstName lastName email role customPermissions');
+
+      if (!user) {
+        return ApiResponse.fail('User not found', [], 404);
+      }
+
+      return ApiResponse.success(user, [
+        `Custom permissions updated for ${user.firstName} ${user.lastName}`,
+      ]);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 400);
+    }
+  }
+
+  /**
+   * Returns all users with their custom permissions for management
+   */
+  async getUsersWithPermissions() {
+    try {
+      const users = await User.find()
+        .select('firstName lastName email role customPermissions isActive createdAt')
+        .sort({ role: 1, firstName: 1 })
+        .lean();
+
+      return ApiResponse.success(
+        users.map((u) => ({ ...u, id: u._id.toString() }))
+      );
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+}
+
+module.exports = { RbacService };

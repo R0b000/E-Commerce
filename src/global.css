@@ -1,0 +1,164 @@
+/* =========================================================================
+   Modular Stylesheet Architecture
+   ========================================================================= */
+@import './styles/variables.css';
+@import './styles/button.css';
+@import './styles/table.css';
+@import './styles/modal.css';
+@import './styles/notification.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    color-scheme: light;
+    scroll-behavior: smooth;
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    color: var(--text-main);
+    font-weight: 700;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: #ffffff;
+  }
+}
+
+/* Modern custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* Sidebar & Navigation Styling (Orange & Blue Theme) */
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: #ffffff;
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.10);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.admin-sidebar-brand {
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 14px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* Nav Item (White Pill Card with soft shadow) */
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #ffffff;
+  color: var(--color-primary);
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px 0 rgba(70, 70, 70, 0.05);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.admin-nav-link:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.12);
+  color: var(--color-accent);
+  border-color: rgba(249, 115, 22, 0.4);
+  background: #ffffff;
+}
+
+/* Active Nav Item: Blue Gradient with Orange Accent Indicator */
+.admin-nav-link.active {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px 0 rgba(2, 132, 199, 0.3);
+  border-color: var(--color-primary);
+  border-left: 4px solid var(--color-accent);
+}
+
+.admin-nav-link.active .admin-nav-icon,
+.admin-nav-link.active .admin-nav-arrow {
+  color: #ffffff !important;
+}
+
+/* Nav Icons & Chevrons */
+.admin-nav-icon {
+  font-size: 18px;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.admin-nav-arrow {
+  margin-left: auto;
+  font-size: 15px;
+  color: var(--color-accent);
+  font-weight: bold;
+}

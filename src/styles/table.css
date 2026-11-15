@@ -1,0 +1,142 @@
+/* =========================================================================
+   Table Stylesheet (table.css)
+   Clean data presentation, typography, row striping & hover interactions
+   ========================================================================= */
+
+.app-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+.app-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: #334155;
+}
+
+/* Table Header */
+.app-table thead th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.app-table thead th:first-child {
+  border-top-left-radius: var(--radius-lg);
+}
+
+.app-table thead th:last-child {
+  border-top-right-radius: var(--radius-lg);
+}
+
+/* Table Body */
+.app-table tbody td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  transition: background-color var(--transition-fast);
+}
+
+.app-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Row Hover & Alternating */
+.app-table tbody tr:hover td {
+  background-color: #f8fafc;
+}
+
+.app-table-striped tbody tr:nth-child(even) td {
+  background-color: #fafbfd;
+}
+
+.app-table-striped tbody tr:nth-child(even):hover td {
+  background-color: #f1f5f9;
+}
+
+/* Table Cell Helpers */
+.app-table-cell-bold {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.app-table-cell-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+
+.app-table-cell-numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Status Pill inside table */
+.table-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.table-status-pill.success {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.table-status-pill.warning {
+  background-color: var(--color-accent-light);
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.table-status-pill.info {
+  background-color: var(--color-primary-light);
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* =========================================================================
+   Ant Design Table Overrides
+   ========================================================================= */
+.ant-table-wrapper .ant-table {
+  font-family: var(--font-sans) !important;
+  font-size: var(--text-xs) !important;
+  border-radius: var(--radius-lg);
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background: #f8fafc !important;
+  font-weight: 700 !important;
+  font-size: var(--text-2xs) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #64748b !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background-color: #f8fafc !important;
+}
