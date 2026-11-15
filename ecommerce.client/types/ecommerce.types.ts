@@ -155,6 +155,8 @@ export interface PermissionItem {
   module: string;
   description: string;
   isSystem?: boolean;
+  action?: 'view' | 'create' | 'edit' | 'delete' | 'export' | 'special' | string;
+  roles?: string[];
 }
 
 export interface RoleItem {

@@ -366,31 +366,32 @@ class RbacService {
     try {
       let permissions = await Permission.find().sort({ module: 1, name: 1 }).lean();
 
-      if (!permissions || permissions.length === 0) {
-        const defaultPerms = [
-          { name: 'View Dashboard', code: 'dashboard:view', module: 'analytics', description: 'Access executive analytics overview' },
-          { name: 'View Products', code: 'products:read', module: 'catalog', description: 'Browse products catalog' },
-          { name: 'Create Products', code: 'products:create', module: 'catalog', description: 'Add new products to store' },
-          { name: 'Edit Products', code: 'products:edit', module: 'catalog', description: 'Update product prices and details' },
-          { name: 'Delete Products', code: 'products:delete', module: 'catalog', description: 'Remove products from catalog' },
-          { name: 'Manage Categories', code: 'categories:manage', module: 'catalog', description: 'Create and organize categories' },
-          { name: 'View Orders', code: 'orders:read', module: 'orders', description: 'Inspect orders list and details' },
-          { name: 'Update Order Status', code: 'orders:update_status', module: 'orders', description: 'Change fulfillment status of orders' },
-          { name: 'View Customers', code: 'customers:read', module: 'customers', description: 'View registered customers directory' },
-          { name: 'Manage Roles', code: 'roles:manage', module: 'security', description: 'Configure role permissions' },
-          { name: 'Manage Permissions', code: 'permissions:manage', module: 'security', description: 'Create and assign fine-grained permissions' },
-          { name: 'Manage Menus', code: 'menus:manage', module: 'navigation', description: 'Configure dynamic portal menus' },
-          { name: 'Support Tickets', code: 'support:tickets', module: 'support', description: 'Manage and resolve customer support tickets' },
-          { name: 'Live Support Chat', code: 'support:chat', module: 'support', description: 'Assist buyers in real-time customer support' },
-          { name: 'Adjust Inventory', code: 'inventory:adjust', module: 'inventory', description: 'Quick-adjust product stock quantities' },
-        ];
-        await Permission.insertMany(defaultPerms);
-        permissions = await Permission.find().sort({ module: 1, name: 1 }).lean();
-      }
+      // Fetch all roles to map which roles have each permission
+      const roles = await Role.find().lean();
 
-      return ApiResponse.success(
-        permissions.map((p) => ({ ...p, id: p._id.toString() }))
-      );
+      const computeAction = (code, name) => {
+        if (code.startsWith('pages:')) return 'page_access';
+        if (code.includes(':create') || name.toLowerCase().includes('create') || name.toLowerCase().includes('add') || name.toLowerCase().includes('submit')) return 'create';
+        if (code.includes(':edit') || code.includes(':update') || code.includes(':adjust') || name.toLowerCase().includes('edit') || name.toLowerCase().includes('update') || name.toLowerCase().includes('modify')) return 'edit';
+        if (code.includes(':delete') || code.includes(':cancel') || name.toLowerCase().includes('delete') || name.toLowerCase().includes('deactivate') || name.toLowerCase().includes('revoke')) return 'delete';
+        if (code.includes(':export') || name.toLowerCase().includes('export') || code.includes(':invoice')) return 'export';
+        return 'special';
+      };
+
+      const enriched = permissions.map((p) => {
+        const associatedRoles = roles
+          .filter((r) => Array.isArray(r.permissions) && r.permissions.includes(p.code))
+          .map((r) => r.name);
+
+        return {
+          ...p,
+          id: p._id.toString(),
+          action: computeAction(p.code, p.name),
+          roles: associatedRoles,
+        };
+      });
+
+      return ApiResponse.success(enriched);
     } catch (error) {
       return ApiResponse.fail(error.message, [error.message], 500);
     }
