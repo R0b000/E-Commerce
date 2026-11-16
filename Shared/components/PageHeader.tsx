@@ -18,30 +18,30 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   icon,
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200/80 mb-6">
-      <div className="space-y-1">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 mb-4 font-['Poppins','Inter',sans-serif]">
+      <div className="space-y-0.5">
         {breadcrumbs && (
           <Breadcrumb
-            className="text-xs mb-1 text-slate-500"
+            className="text-[11px] mb-0.5 text-slate-400"
             items={breadcrumbs.map((b) => ({
-              title: b.path ? <Link to={b.path} className="text-slate-500 hover:text-[#0096C7]">{b.label}</Link> : b.label,
+              title: b.path ? <Link to={b.path} className="text-slate-400 hover:text-[#0096C7]">{b.label}</Link> : b.label,
             }))}
           />
         )}
-        <div className="flex items-center gap-2.5">
-          {icon && <span className="text-xl text-[#0096C7]">{icon}</span>}
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-base text-[#0096C7]">{icon}</span>}
+          <h1 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-tight leading-tight">
             {title}
           </h1>
         </div>
         {description && (
-          <p className="text-xs sm:text-sm text-slate-500 font-normal">
+          <p className="text-[11px] text-slate-500 font-normal leading-relaxed">
             {description}
           </p>
         )}
       </div>
 
-      {extra && <div className="flex items-center gap-3 shrink-0">{extra}</div>}
+      {extra && <div className="flex items-center gap-2.5 shrink-0">{extra}</div>}
     </div>
   );
 };

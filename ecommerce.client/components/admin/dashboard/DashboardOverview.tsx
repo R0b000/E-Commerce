@@ -138,21 +138,21 @@ export const DashboardOverview: React.FC = () => {
     return (
       <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
         {/* Customer Welcome Header Card */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#0284c7] to-cyan-500 text-white flex items-center justify-center text-2xl font-bold shadow-md shadow-blue-500/20">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0284c7] to-cyan-500 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-blue-500/20">
               <SmileOutlined />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                <h2 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-tight leading-tight">
                   Welcome, {user?.firstName || 'Customer'}!
                 </h2>
-                <Tag color="cyan" className="font-semibold text-xs rounded-full px-2.5">
+                <Tag color="cyan" className="font-semibold text-[10px] rounded-full px-2">
                   Customer / Staff
                 </Tag>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-[11px] text-slate-500 mt-0.5">
                 Your personal account dashboard. Manage active orders, leave reviews, and secure your session with FIDO2 passkeys.
               </p>
             </div>

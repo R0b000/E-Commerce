@@ -369,15 +369,15 @@ export default function SecurityManagement() {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2.5">
-            <span className="p-2 bg-gradient-to-br from-orange-500 to-[#0284c7] text-white rounded-xl shadow-xs text-lg">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 bg-gradient-to-br from-orange-500 to-[#0284c7] text-white rounded-lg shadow-xs text-sm">
               <LockOutlined />
             </span>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Security & Device Management</h1>
+            <h1 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-tight leading-tight">Security & Device Management</h1>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-[11px] text-slate-500 mt-0.5">
             Modeled from .NET passwordless architecture: biometric passkeys, hardware security keys, TOTP 2FA, and active session controls.
           </p>
         </div>
