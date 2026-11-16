@@ -18,6 +18,7 @@ import ReviewManagement from '../components/admin/reviews/ReviewManagement';
 import AuditLogManagement from '../components/admin/audit/AuditLogManagement';
 import InventoryManagement from '../components/admin/inventory/InventoryManagement';
 import SellerProfile from '../components/admin/profile/SellerProfile';
+import UserProfile from '../components/admin/profile/UserProfile';
 import SecurityManagement from '../components/admin/security/SecurityManagement';
 
 import { LoginPage } from '../../Auth.Client/components/login/LoginPage';
@@ -50,7 +51,7 @@ export const EcommerceRoutes: RouteConfig = {
         { path: 'menus', element: MenuManagement },
         { path: 'inventory', element: InventoryManagement },
         { path: 'seller-profile', element: SellerProfile },
-        { path: 'profile', element: SellerProfile },
+        { path: 'profile', element: UserProfile },
         { path: 'security', element: SecurityManagement },
       ],
     },

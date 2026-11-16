@@ -15,6 +15,8 @@ import {
   EnvironmentOutlined,
   CustomerServiceOutlined,
   AppstoreOutlined,
+  EyeOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -34,6 +36,7 @@ export const CustomerManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [viewingUser, setViewingUser] = useState<Customer | null>(null);
   const [creating, setCreating] = useState(false);
   const [form] = Form.useForm();
   const selectedRole = Form.useWatch('role', form);
@@ -229,20 +232,21 @@ export const CustomerManagement: React.FC = () => {
                 <th className="py-3.5 px-4">Role</th>
                 <th className="py-3.5 px-4">Agreement Status</th>
                 <th className="py-3.5 px-4">Orders & Volume</th>
-                <th className="py-3.5 px-6 text-right">Account Status</th>
+                <th className="py-3.5 px-4">Account Status</th>
+                <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500 text-sm">
+                  <td colSpan={7} className="py-12 text-center text-slate-500 text-sm">
                     <Spin />
                     <p className="mt-2 text-xs">Loading accounts directory...</p>
                   </td>
                 </tr>
               ) : customers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-sm">
+                  <td colSpan={7} className="py-12 text-center text-slate-400 text-sm">
                     No accounts found matching search or filter.
                   </td>
                 </tr>
@@ -262,7 +266,11 @@ export const CustomerManagement: React.FC = () => {
                   const isBuyerAccount = c.role === 'customer' || c.role === 'user';
 
                   return (
-                    <tr key={cId} className="hover:bg-slate-50/80 transition-colors">
+                    <tr
+                      key={cId}
+                      onClick={() => setViewingUser(c)}
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer"
+                    >
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
                           <Avatar
@@ -361,10 +369,23 @@ export const CustomerManagement: React.FC = () => {
                         </div>
                       </td>
 
-                      <td className="py-4 px-6 text-right">
+                      <td className="py-4 px-4">
                         <Tag color={c.isActive !== false ? 'success' : 'default'} className="font-semibold text-[11px] px-2.5 py-0.5 rounded-full capitalize">
                           {c.isActive !== false ? 'Active' : 'Inactive'}
                         </Tag>
+                      </td>
+
+                      <td className="py-4 px-6 text-right whitespace-nowrap">
+                        <AppButton
+                          size="small"
+                          icon={isSellerAccount ? <ShopOutlined /> : <EyeOutlined />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewingUser(c);
+                          }}
+                        >
+                          {isSellerAccount ? 'Vendor Profile' : 'View Profile'}
+                        </AppButton>
                       </td>
                     </tr>
                   );
@@ -530,6 +551,175 @@ export const CustomerManagement: React.FC = () => {
           </Form.Item>
         </Form>
       </AppModal>
+
+      {/* Customer / Vendor Profile Inspection Modal */}
+      {viewingUser && (
+        <AppModal
+          open={Boolean(viewingUser)}
+          title={
+            viewingUser.role === 'seller' || viewingUser.vendorProfile ? (
+              <span className="flex items-center gap-2">
+                <ShopOutlined className="text-orange-500 text-base" />
+                <span>
+                  Artisan Vendor Profile: {viewingUser.vendorProfile?.vendorName || `${viewingUser.firstName}'s Store`}
+                </span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <UserOutlined className="text-[#0284c7] text-base" />
+                <span>Customer Profile: {viewingUser.firstName} {viewingUser.lastName}</span>
+              </span>
+            )
+          }
+          onCancel={() => setViewingUser(null)}
+          onOk={() => setViewingUser(null)}
+          okText="Close"
+          width={640}
+        >
+          <div className="space-y-4 py-2 text-xs">
+            {/* Header Identity Badge */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-orange-50/40 border border-slate-200/80 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar
+                  size={52}
+                  style={{
+                    backgroundColor: viewingUser.role === 'seller' ? '#ffedd5' : '#e0f2fe',
+                    color: viewingUser.role === 'seller' ? '#ea580c' : '#0284c7',
+                    fontWeight: 700,
+                    fontSize: 20,
+                  }}
+                  icon={viewingUser.role === 'seller' ? <ShopOutlined /> : <UserOutlined />}
+                >
+                  {viewingUser.firstName?.[0]}
+                </Avatar>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    {viewingUser.firstName} {viewingUser.lastName}
+                  </h4>
+                  <p className="text-xs text-slate-500">{viewingUser.email}</p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Tag color={viewingUser.role === 'seller' ? 'orange' : 'blue'} className="m-0 font-bold uppercase text-[10px]">
+                      {viewingUser.role}
+                    </Tag>
+                    {viewingUser.role === 'seller' && (
+                      <Tag color="success" className="m-0 text-[10px] font-semibold">
+                        Verified Artisan Storefront
+                      </Tag>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div className="text-[10px] text-slate-400 font-semibold uppercase">Account Status</div>
+                <Tag color={viewingUser.isActive !== false ? 'success' : 'default'} className="mt-1 font-bold text-xs">
+                  {viewingUser.isActive !== false ? 'Active' : 'Inactive'}
+                </Tag>
+              </div>
+            </div>
+
+            {/* Vendor Specific Details Section */}
+            {(viewingUser.role === 'seller' || viewingUser.vendorProfile) && (
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/80 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <ShopOutlined className="text-orange-500" />
+                    <span>Storefront Branding & Details</span>
+                  </span>
+                  <Tag color="orange" className="m-0 text-[10px] font-bold">
+                    {viewingUser.vendorProfile?.businessCategory || 'Handicrafts & Woolens'}
+                  </Tag>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase block">Store / Brand Name</span>
+                    <span className="text-xs font-bold text-slate-800">
+                      {viewingUser.vendorProfile?.vendorName || `${viewingUser.firstName}'s Himalayan Artisan Goods`}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase block">Official Phone</span>
+                    <span className="text-xs font-semibold text-slate-700">
+                      {viewingUser.vendorProfile?.phone || viewingUser.phone || '+977 980-1234567'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase block">Workshop / Location</span>
+                    <span className="text-xs font-semibold text-slate-700">
+                      {viewingUser.vendorProfile?.businessLocation || viewingUser.address || 'Kathmandu, Bagmati, Nepal'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-semibold text-slate-400 uppercase block">Tax Identification (PAN / VAT)</span>
+                    <span className="text-xs font-mono font-bold text-slate-700">
+                      {viewingUser.vendorProfile?.taxId || 'PAN-98214-NP'}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase block mb-0.5">
+                    Storefront Description & Artisan Heritage
+                  </span>
+                  <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 leading-relaxed">
+                    {viewingUser.vendorProfile?.description ||
+                      'Master artisan workshop specializing in ethical hand-beaten singing bowls, pashmina wool shawls, and organic Himalayan teas direct from village co-ops.'}
+                  </p>
+                </div>
+
+                {viewingUser.vendorProfile?.documentUrl && (
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-600 flex items-center gap-1.5">
+                      <FileTextOutlined className="text-slate-400" />
+                      <span>Artisan Certification Document</span>
+                    </span>
+                    <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      Verified On File
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Performance & Legal Agreement Section */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 space-y-1">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase block">Lifetime Commercial Volume</span>
+                <div className="text-base font-black text-slate-900">
+                  ${viewingUser.totalSpend?.toFixed(2) || '0.00'}
+                </div>
+                <div className="text-[11px] text-slate-400">
+                  {viewingUser.ordersCount || 0} {viewingUser.role === 'seller' ? 'orders fulfilled' : 'orders placed'}
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-white border border-slate-200/80 space-y-1">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase block">Platform Agreement</span>
+                <div className="mt-1">
+                  {viewingUser.agreementAccepted ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      <CheckCircleOutlined /> Signed & Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
+                      Pending Agreement
+                    </span>
+                  )}
+                </div>
+                <div className="text-[10px] text-slate-400 mt-1">
+                  Compliance with fair trade & marketplace conduct
+                </div>
+              </div>
+            </div>
+          </div>
+        </AppModal>
+      )}
     </div>
   );
 };

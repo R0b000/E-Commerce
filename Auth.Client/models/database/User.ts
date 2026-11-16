@@ -5,6 +5,13 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  avatarUrl?: string;
+  bio?: string;
+  phone?: string;
+  address?: string;
+  agreementAccepted?: boolean;
+  agreementAcceptedAt?: string;
+  agreementVersion?: string;
   role: Role;
   isActive: boolean;
   vendorProfile?: VendorProfile | null;

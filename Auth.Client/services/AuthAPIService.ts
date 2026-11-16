@@ -160,6 +160,11 @@ class AuthAPIService {
     return response.data;
   }
 
+  async updateUserProfile(profileData: any): Promise<IResponse<UserProfileResponse>> {
+    const response = await axiosConfig.put<IResponse<UserProfileResponse>>(AuthAPIRoutes.PROFILE, profileData);
+    return response.data;
+  }
+
   async updateVendorProfile(profileData: any): Promise<IResponse<UserProfileResponse>> {
     const response = await axiosConfig.put<IResponse<UserProfileResponse>>('/auth/vendor-profile', profileData);
     return response.data;

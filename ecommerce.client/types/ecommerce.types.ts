@@ -113,6 +113,8 @@ export interface Customer {
   firstName: string;
   lastName: string;
   email: string;
+  phone?: string;
+  address?: string;
   role: string;
   isActive: boolean;
   ordersCount: number;
@@ -125,6 +127,8 @@ export interface Customer {
     taxId?: string;
     businessCategory?: string;
     description?: string;
+    documentUrl?: string;
+    isApproved?: boolean;
   };
   agreementAccepted?: boolean;
   agreementAcceptedAt?: string;

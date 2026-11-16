@@ -95,6 +95,10 @@ class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      avatarUrl: user.avatarUrl || '',
+      bio: user.bio || '',
+      phone: user.phone || '',
+      address: user.address || '',
       role: user.role,
       vendorProfile: user.vendorProfile || null,
       customPermissions: user.customPermissions || [],
@@ -105,6 +109,7 @@ class AuthService {
       alertOnNewDevice: user.alertOnNewDevice !== false,
       agreementAccepted: Boolean(user.agreementAccepted),
       agreementAcceptedAt: user.agreementAcceptedAt || null,
+      agreementVersion: user.agreementVersion || '1.0',
       lastLoginIp: user.lastLoginIp || null,
       lastPasswordChange: user.lastPasswordChange || null,
     };
@@ -567,22 +572,45 @@ class AuthService {
         return Response.fail('User not found', [], 404);
       }
 
-      const profileResponse = {
-        id: user._id.toString(),
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        isActive: user.isActive,
-        vendorProfile: user.vendorProfile || null,
-        customPermissions: user.customPermissions || [],
-        createdAt: user.createdAt,
-      };
-
+      const profileResponse = this.formatUserResponse(user);
       return Response.success(profileResponse, ['Profile retrieved successfully']);
     } catch (error) {
       console.error('[AuthService.getUserProfile] Error:', error);
       return Response.fail('Failed to get profile', [error.message], 500);
+    }
+  }
+
+  async updateUserProfile(userId, profileData) {
+    try {
+      const user = await User.findById(userId).exec();
+      if (!user) {
+        return Response.fail('User not found', [], 404);
+      }
+
+      const { firstName, lastName, avatarUrl, bio, phone, address, agreementAccepted } = profileData || {};
+
+      if (firstName !== undefined && firstName.trim()) user.firstName = firstName.trim();
+      if (lastName !== undefined && lastName.trim()) user.lastName = lastName.trim();
+      if (avatarUrl !== undefined) user.avatarUrl = avatarUrl;
+      if (bio !== undefined) user.bio = String(bio).trim();
+      if (phone !== undefined) user.phone = String(phone).trim();
+      if (address !== undefined) user.address = String(address).trim();
+      if (agreementAccepted !== undefined) {
+        user.agreementAccepted = Boolean(agreementAccepted);
+        if (Boolean(agreementAccepted) && !user.agreementAcceptedAt) {
+          user.agreementAcceptedAt = new Date();
+        }
+      }
+
+      await user.save();
+
+      return Response.success(
+        this.formatUserResponse(user),
+        ['User profile updated successfully']
+      );
+    } catch (error) {
+      console.error('[AuthService.updateUserProfile] Error:', error);
+      return Response.fail('Failed to update user profile', [error.message], 500);
     }
   }
 

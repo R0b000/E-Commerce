@@ -14,6 +14,13 @@ export interface UserProfileResponse {
   email: string;
   firstName: string;
   lastName: string;
+  avatarUrl?: string;
+  bio?: string;
+  phone?: string;
+  address?: string;
+  agreementAccepted?: boolean;
+  agreementAcceptedAt?: string;
+  agreementVersion?: string;
   role: string;
   isActive: boolean;
   createdAt: string;

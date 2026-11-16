@@ -60,6 +60,25 @@ const UserSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    avatarUrl: {
+      type: String,
+      default: '',
+    },
+    bio: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    address: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     role: {
       type: String,
       enum: ['admin', 'seller', 'customer', 'user', 'support', 'manager'],

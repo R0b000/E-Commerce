@@ -189,6 +189,19 @@ router.get('/profile', authMiddleware, async (req, res) => {
   }
 });
 
+router.put('/profile', authMiddleware, async (req, res) => {
+  try {
+    const response = await authService.updateUserProfile(req.user.id, req.body);
+    res.status(response.statusCode || 200).json(response);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      messages: ['Failed to update user profile'],
+      errors: [error.message],
+    });
+  }
+});
+
 router.put('/vendor-profile', authMiddleware, async (req, res) => {
   try {
     const response = await authService.updateVendorProfile(req.user.id, req.body);
