@@ -14,6 +14,7 @@ import {
   CopyOutlined,
   SyncOutlined,
   UsbOutlined,
+  ThunderboltFilled,
 } from '@ant-design/icons';
 import {
   Tabs,
@@ -433,8 +434,8 @@ export default function SecurityManagement() {
                   {/* Hero Callout */}
                   <div className="p-4 bg-gradient-to-r from-orange-50/70 via-white to-blue-50/70 border border-orange-100 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0 text-xl font-bold">
-                        ⚡
+                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0 text-lg">
+                        <ThunderboltFilled />
                       </div>
                       <div>
                         <h4 className="text-sm font-bold text-slate-900">Passwordless Biometric Sign-in</h4>

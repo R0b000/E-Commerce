@@ -12,6 +12,7 @@ import {
   FileTextOutlined,
   ShopOutlined,
   CheckCircleOutlined,
+  ThunderboltFilled,
 } from '@ant-design/icons';
 import { Badge, Avatar, Modal, Tag, Spin } from 'antd';
 import { useCart } from '../../context/CartContext';
@@ -54,8 +55,9 @@ export const StoreLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col antialiased">
       {/* Top Banner Notice */}
-      <div className="bg-[#0096C7] text-white text-xs font-semibold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-3">
-        <span>⚡ Himalaya Online Shop: Free Nationwide Delivery on orders over $150</span>
+      <div className="bg-[#0096C7] text-white text-xs font-semibold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2">
+        <ThunderboltFilled className="text-amber-300 text-xs" />
+        <span>Himalaya Online Shop: Free Nationwide Delivery on orders over $150</span>
       </div>
 
       {/* Main Navbar */}

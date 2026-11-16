@@ -440,7 +440,7 @@ export const OrderMapTracker: React.FC<OrderMapTrackerProps> = ({
                 {/* Floating telemetry label */}
                 <rect x="-65" y="-42" width="130" height="22" rx="11" fill="#0096c7" stroke="#ffffff" strokeWidth="1" />
                 <text x="0" y="-28" textAnchor="middle" fill="#ffffff" fontSize="8.5" fontWeight="bold">
-                  {status === 'delivered' ? '✓ Arrived at Doorstep' : 'Courier in Transit'}
+                  {status === 'delivered' ? 'Arrived at Doorstep' : 'Courier in Transit'}
                 </text>
               </g>
             </svg>

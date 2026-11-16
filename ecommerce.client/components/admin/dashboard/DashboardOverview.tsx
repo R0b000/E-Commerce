@@ -744,8 +744,8 @@ export const DashboardOverview: React.FC = () => {
               </p>
             </div>
 
-            <span className="w-8 h-8 rounded-full bg-orange-50 text-[#f97316] flex items-center justify-center text-sm font-bold shadow-2xs">
-              ✦
+            <span className="w-8 h-8 rounded-full bg-orange-50 text-[#f97316] flex items-center justify-center text-sm shadow-2xs">
+              <WarningOutlined />
             </span>
           </div>
 
