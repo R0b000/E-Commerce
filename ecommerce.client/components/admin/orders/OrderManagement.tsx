@@ -6,6 +6,7 @@ import {
   SyncOutlined,
   UserOutlined,
   EnvironmentOutlined,
+  CompassOutlined,
 } from '@ant-design/icons';
 import { Radio, Popconfirm, Spin, Tag } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -21,6 +22,7 @@ import {
   PageHeader,
   StatusBadge,
 } from 'shared-components';
+import { OrderMapTracker } from './OrderMapTracker';
 
 export const OrderManagement: React.FC = () => {
   const { user } = useAuth();
@@ -100,6 +102,54 @@ export const OrderManagement: React.FC = () => {
       }
     } catch (err: any) {
       showToast(err.response?.data?.messages?.[0] || 'Failed to update order', 'error');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleUpdateOrderStatusFromMap = async (
+    orderId: string,
+    orderStatus: string,
+    paymentStatusVal: string,
+    trackingNumberVal: string
+  ) => {
+    setUpdatingStatus(true);
+    try {
+      const res = await ecommerceService.updateOrderStatus(orderId, {
+        orderStatus,
+        paymentStatus: paymentStatusVal,
+        trackingNumber: trackingNumberVal,
+      });
+
+      if (res.success) {
+        showToast('Order fulfillment status updated', 'success');
+        setSelectedOrder((prev) =>
+          prev
+            ? {
+                ...prev,
+                orderStatus: orderStatus as any,
+                paymentStatus: paymentStatusVal as any,
+                trackingNumber: trackingNumberVal,
+              }
+            : null
+        );
+        setOrders((prev) =>
+          prev.map((o) =>
+            (o._id || o.id) === orderId
+              ? {
+                  ...o,
+                  orderStatus: orderStatus as any,
+                  paymentStatus: paymentStatusVal as any,
+                  trackingNumber: trackingNumberVal,
+                }
+              : o
+          )
+        );
+      } else {
+        showToast((res as any).messages?.[0] || 'Failed to update order status', 'error');
+      }
+    } catch {
+      showToast('Failed to update order status', 'error');
     } finally {
       setUpdatingStatus(false);
     }
@@ -206,9 +256,14 @@ export const OrderManagement: React.FC = () => {
                   });
 
                   return (
-                    <tr key={orderId} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-4 px-6 font-mono text-xs font-semibold text-[#0096C7]">
-                        {order.orderNumber}
+                    <tr
+                      key={orderId}
+                      onClick={() => openOrderDetail(order)}
+                      className="hover:bg-sky-50/80 transition-colors cursor-pointer group"
+                    >
+                      <td className="py-4 px-6 font-mono text-xs font-semibold text-[#0096C7] group-hover:underline flex items-center gap-1.5">
+                        <CompassOutlined className="text-slate-400 group-hover:text-[#0096c7]" />
+                        <span>{order.orderNumber}</span>
                       </td>
 
                       <td className="py-4 px-4 text-xs text-slate-500 whitespace-nowrap">
@@ -238,13 +293,15 @@ export const OrderManagement: React.FC = () => {
                       </td>
 
                       <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                           <AppButton
                             size="small"
-                            icon={<EyeOutlined />}
+                            type="primary"
+                            icon={<CompassOutlined />}
                             onClick={() => openOrderDetail(order)}
+                            style={{ backgroundColor: '#0096c7' }}
                           >
-                            Details
+                            Track & Map
                           </AppButton>
                           {!isSeller && (
                             <Popconfirm
@@ -273,138 +330,15 @@ export const OrderManagement: React.FC = () => {
         </div>
       </AppCard>
 
-      {/* Order Detail Modal */}
+      {/* Order Live Map & GPS Dispatch Tracker */}
       {selectedOrder && (
-        <AppModal
-          open={!!selectedOrder}
-          title={`Order #${selectedOrder.orderNumber}`}
-          onCancel={() => setSelectedOrder(null)}
-          footer={null}
-          width={680}
-        >
-          <div className="space-y-6 pt-2">
-            {/* Fulfillment controls inside clean box */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Update Dispatch Status
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <AppSelect
-                  label="Order Status"
-                  value={newStatus}
-                  onChange={(val) => setNewStatus(val as string)}
-                  options={[
-                    { label: 'Pending', value: 'pending' },
-                    { label: 'Processing', value: 'processing' },
-                    { label: 'In Transit', value: 'shipped' },
-                    { label: 'Delivered', value: 'delivered' },
-                    { label: 'Cancelled', value: 'cancelled' },
-                  ]}
-                />
-
-                <AppSelect
-                  label="Payment Status"
-                  value={newPaymentStatus}
-                  onChange={(val) => setNewPaymentStatus(val as string)}
-                  options={[
-                    { label: 'Pending', value: 'pending' },
-                    { label: 'Paid', value: 'paid' },
-                    { label: 'Refunded', value: 'refunded' },
-                  ]}
-                />
-
-                <AppInput
-                  label="Tracking Number"
-                  value={trackingNumber}
-                  onChange={(e) => setTrackingNumber(e.target.value)}
-                  placeholder="TRK-US-..."
-                />
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <AppButton
-                  type="primary"
-                  loading={updatingStatus}
-                  onClick={handleUpdateOrderStatus}
-                  style={{ backgroundColor: '#0096C7' }}
-                >
-                  Save Status
-                </AppButton>
-              </div>
-            </div>
-
-            {/* Customer & Shipping */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-white border border-slate-200">
-                <div className="flex items-center gap-1.5 font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  <UserOutlined className="text-[#0096C7]" />
-                  <span>Customer Contact</span>
-                </div>
-                <div className="font-bold text-slate-900 text-sm">{selectedOrder.customer?.name}</div>
-                <div className="text-slate-500">{selectedOrder.customer?.email}</div>
-                {selectedOrder.customer?.phone && <div className="text-slate-500 mt-0.5">{selectedOrder.customer?.phone}</div>}
-              </div>
-
-              <div className="p-4 rounded-xl bg-white border border-slate-200">
-                <div className="flex items-center gap-1.5 font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  <EnvironmentOutlined className="text-emerald-600" />
-                  <span>Destination Address</span>
-                </div>
-                <div className="text-slate-800">
-                  <div>{selectedOrder.shippingAddress?.street}</div>
-                  <div>
-                    {selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.state} {selectedOrder.shippingAddress?.zipCode}
-                  </div>
-                  <div>{selectedOrder.shippingAddress?.country}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Items */}
-            <div>
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
-                Purchased Items ({selectedOrder.items?.length || 0})
-              </div>
-              <div className="divide-y divide-slate-100 rounded-xl bg-white border border-slate-200 overflow-hidden">
-                {selectedOrder.items?.map((item, idx) => (
-                  <div key={idx} className="p-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="w-10 h-10 rounded-md object-cover border border-slate-200" />
-                      )}
-                      <div>
-                        <div className="text-xs font-semibold text-slate-800">{item.name}</div>
-                        <div className="text-[11px] text-slate-400">Qty: {item.quantity} × ${item.price?.toFixed(2)}</div>
-                      </div>
-                    </div>
-                    <div className="font-bold text-xs text-slate-900">${(item.quantity * item.price)?.toFixed(2)}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Financials */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
-              <div className="flex justify-between text-slate-600">
-                <span>Subtotal</span>
-                <span>${selectedOrder.subtotal?.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Sales Tax</span>
-                <span>${selectedOrder.taxAmount?.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-slate-600">
-                <span>Shipping</span>
-                <span>{selectedOrder.shippingAmount === 0 ? 'FREE' : `$${selectedOrder.shippingAmount?.toFixed(2)}`}</span>
-              </div>
-              <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-bold text-slate-900">
-                <span>Total Amount</span>
-                <span className="text-[#0096C7]">${selectedOrder.totalAmount?.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        </AppModal>
+        <OrderMapTracker
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onUpdateStatus={handleUpdateOrderStatusFromMap}
+          updating={updatingStatus}
+          isSeller={isSeller}
+        />
       )}
     </div>
   );

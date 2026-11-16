@@ -14,6 +14,7 @@ import {
   LockOutlined,
   SmileOutlined,
   FileTextOutlined,
+  CompassOutlined,
 } from '@ant-design/icons';
 import { Spin, Tag } from 'antd';
 import {
@@ -30,13 +31,15 @@ import {
 } from 'recharts';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
-import { DashboardMetrics } from '../../../types/ecommerce.types';
+import { DashboardMetrics, Order } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import { StatusBadge } from 'shared-components';
+import { OrderMapTracker } from '../orders/OrderMapTracker';
 
 export const DashboardOverview: React.FC = () => {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const { showToast } = useToast();
@@ -280,9 +283,14 @@ export const DashboardOverview: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {metrics?.recentOrders && metrics.recentOrders.length > 0 ? (
                     metrics.recentOrders.map((order) => (
-                      <tr key={order._id || order.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3.5 font-mono font-semibold text-[#0284c7]">
-                          {order.orderNumber}
+                      <tr
+                        key={order._id || order.id}
+                        onClick={() => setSelectedOrder(order as any)}
+                        className="hover:bg-sky-50/80 transition-colors cursor-pointer group"
+                      >
+                        <td className="py-3.5 font-mono font-semibold text-[#0284c7] group-hover:underline flex items-center gap-1.5">
+                          <CompassOutlined className="text-slate-400 group-hover:text-[#0284c7]" />
+                          <span>{order.orderNumber}</span>
                         </td>
                         <td className="py-3.5 text-slate-600">
                           {order.items?.length || 0} item(s)
@@ -294,12 +302,17 @@ export const DashboardOverview: React.FC = () => {
                           <StatusBadge status={order.orderStatus} />
                         </td>
                         <td className="py-3.5 text-right">
-                          <Link
-                            to="/admin/orders"
-                            className="text-xs font-semibold text-[#0284c7] hover:underline"
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOrder(order as any);
+                            }}
+                            className="text-xs font-semibold text-[#0284c7] hover:underline cursor-pointer inline-flex items-center gap-1"
                           >
-                            Track & Details ›
-                          </Link>
+                            <CompassOutlined />
+                            <span>Track Live Map ›</span>
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -396,6 +409,14 @@ export const DashboardOverview: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Live Order GPS Tracking Map Modal */}
+        {selectedOrder && (
+          <OrderMapTracker
+            order={selectedOrder}
+            onClose={() => setSelectedOrder(null)}
+          />
+        )}
       </div>
     );
   }
@@ -675,9 +696,14 @@ export const DashboardOverview: React.FC = () => {
               <tbody className="divide-y divide-slate-100">
                 {metrics?.recentOrders && metrics.recentOrders.length > 0 ? (
                   metrics.recentOrders.map((order) => (
-                    <tr key={order._id || order.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 font-mono font-semibold text-[#0284c7]">
-                        {order.orderNumber}
+                    <tr
+                      key={order._id || order.id}
+                      onClick={() => setSelectedOrder(order as any)}
+                      className="hover:bg-sky-50/80 transition-colors cursor-pointer group"
+                    >
+                      <td className="py-3.5 font-mono font-semibold text-[#0284c7] group-hover:underline flex items-center gap-1.5">
+                        <CompassOutlined className="text-slate-400 group-hover:text-[#0284c7]" />
+                        <span>{order.orderNumber}</span>
                       </td>
                       <td className="py-3.5">
                         <div className="font-semibold text-slate-800">{order.customer?.name}</div>
@@ -764,6 +790,14 @@ export const DashboardOverview: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Order GPS Tracking Map Modal */}
+      {selectedOrder && (
+        <OrderMapTracker
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
+      )}
     </div>
   );
 };
