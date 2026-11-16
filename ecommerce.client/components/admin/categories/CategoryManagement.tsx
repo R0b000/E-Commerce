@@ -10,6 +10,7 @@ import { Tag, Popconfirm, Spin } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
+import { usePermissions } from '../../../context/PermissionContext';
 import {
   AppCard,
   AppButton,
@@ -20,6 +21,11 @@ import {
 } from 'shared-components';
 
 export const CategoryManagement: React.FC = () => {
+  const { can } = usePermissions();
+  const canCreateCategory = can('create', 'categories');
+  const canEditCategory = can('edit', 'categories');
+  const canDeleteCategory = can('delete', 'categories');
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,6 +60,10 @@ export const CategoryManagement: React.FC = () => {
   }, []);
 
   const openAddModal = () => {
+    if (!canCreateCategory) {
+      showToast('Permission denied: You do not have permission to create categories', 'error');
+      return;
+    }
     setEditingCategory(null);
     setFormData({
       name: '',
@@ -65,6 +75,10 @@ export const CategoryManagement: React.FC = () => {
   };
 
   const openEditModal = (cat: Category) => {
+    if (!canEditCategory) {
+      showToast('Permission denied: You do not have permission to edit categories', 'error');
+      return;
+    }
     setEditingCategory(cat);
     setFormData({
       name: cat.name,
@@ -117,6 +131,10 @@ export const CategoryManagement: React.FC = () => {
   };
 
   const handleDeleteCategory = async (cat: Category) => {
+    if (!canDeleteCategory) {
+      showToast('Permission denied: You do not have permission to delete categories', 'error');
+      return;
+    }
     const catId = cat._id || cat.id;
     if (cat.productCount && cat.productCount > 0) {
       showToast(`Cannot delete category with ${cat.productCount} assigned products. Reassign or remove products first.`, 'error');
@@ -141,14 +159,16 @@ export const CategoryManagement: React.FC = () => {
         description="Classify products into distinct store categories and collections."
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Categories' }]}
         extra={
-          <AppButton
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={openAddModal}
-            style={{ backgroundColor: '#0096C7' }}
-          >
-            New Category
-          </AppButton>
+          canCreateCategory ? (
+            <AppButton
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={openAddModal}
+              style={{ backgroundColor: '#0096C7' }}
+            >
+              New Category
+            </AppButton>
+          ) : null
         }
       />
 
@@ -207,29 +227,36 @@ export const CategoryManagement: React.FC = () => {
                 </div>
 
                 <div className="p-3 px-5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-end gap-2">
-                  <AppButton
-                    size="small"
-                    icon={<EditOutlined />}
-                    onClick={() => openEditModal(cat)}
-                  >
-                    Edit
-                  </AppButton>
-                  <Popconfirm
-                    title="Delete Category"
-                    description={`Delete category "${cat.name}"?`}
-                    onConfirm={() => handleDeleteCategory(cat)}
-                    okText="Yes, Delete"
-                    cancelText="Cancel"
-                    okButtonProps={{ danger: true }}
-                  >
+                  {canEditCategory && (
                     <AppButton
                       size="small"
-                      danger
-                      icon={<DeleteOutlined />}
+                      icon={<EditOutlined />}
+                      onClick={() => openEditModal(cat)}
                     >
-                      Delete
+                      Edit
                     </AppButton>
-                  </Popconfirm>
+                  )}
+                  {canDeleteCategory && (
+                    <Popconfirm
+                      title="Delete Category"
+                      description={`Delete category "${cat.name}"?`}
+                      onConfirm={() => handleDeleteCategory(cat)}
+                      okText="Yes, Delete"
+                      cancelText="Cancel"
+                      okButtonProps={{ danger: true }}
+                    >
+                      <AppButton
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined />}
+                      >
+                        Delete
+                      </AppButton>
+                    </Popconfirm>
+                  )}
+                  {!canEditCategory && !canDeleteCategory && (
+                    <span className="text-[10px] text-slate-400 font-mono italic">Read-only</span>
+                  )}
                 </div>
               </AppCard>
             );

@@ -34,6 +34,7 @@ import { io, Socket } from 'socket.io-client';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { Role } from 'auth-client/config/appConfig';
 import { useToast } from '../../../context/ToastContext';
+import { usePermissions } from '../../../context/PermissionContext';
 import { AppButton, DashboardSkeleton } from 'shared-components';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem } from '../../../types/ecommerce.types';
@@ -137,6 +138,7 @@ export const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout, switchRole, originalRole } = useAuth();
   const { showToast } = useToast();
+  const { canAccessPage, refreshPermissions } = usePermissions();
 
   // Authentication Middleware Guard:
   // If no auth token in localStorage or context, immediately redirect to /login
@@ -266,6 +268,7 @@ export const AdminLayout: React.FC = () => {
   const handleRoleSelect = (role: Role, defaultPage: string) => {
     switchRole(role);
     fetchMenus(role);
+    refreshPermissions(role);
     navigate(defaultPage);
     showToast(`Switched to ${role.toUpperCase()} perspective. Navigated to: ${defaultPage}`, 'info');
   };
@@ -520,9 +523,20 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
-  // Filter and sort menus by display order
+  // Filter and sort menus by display order & permission
   const filteredMenus = [...dynamicMenus]
-    .filter((m) => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((m) => {
+      if (!m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      // Direct path check if no subItems
+      const hasSub = Array.isArray(m.subItems) && m.subItems.length > 0;
+      if (!hasSub && m.path && !canAccessPage(m.path)) return false;
+      if (hasSub) {
+        // If all subItems are inaccessible, hide the parent
+        const accessibleSubs = m.subItems!.filter((sub) => canAccessPage(sub.path));
+        if (accessibleSubs.length === 0) return false;
+      }
+      return true;
+    })
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   // Notification Popover Content (Live Socket Stream)
@@ -823,7 +837,7 @@ export const AdminLayout: React.FC = () => {
                   {/* Inline Collapsible Submenu Accordion */}
                   {hasSub && isOpen && (
                     <div className="mt-1 ml-3 pl-3 border-l-2 border-orange-200/80 space-y-1 py-1">
-                      {item.subItems!.map((sub) => {
+                      {item.subItems!.filter((sub) => canAccessPage(sub.path)).map((sub) => {
                         const subActive =
                           location.pathname === sub.path ||
                           (sub.path !== '/admin' && location.pathname.startsWith(sub.path));
@@ -870,7 +884,33 @@ export const AdminLayout: React.FC = () => {
          ========================================================================= */}
       <main className="flex-1 w-full">
         <div className="w-full px-[3.5vw] py-6">
-          <Outlet />
+          {canAccessPage(location.pathname) ? (
+            <Outlet />
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 text-center max-w-lg mx-auto my-12 shadow-xs">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mx-auto mb-4 text-2xl border border-amber-100">
+                <LockOutlined />
+              </div>
+              <h3 className="text-base sm:text-lg font-bold text-slate-800 mb-2">
+                Access Restricted: Insufficient Privileges
+              </h3>
+              <p className="text-xs text-slate-500 mb-6 leading-relaxed">
+                Your current role (<span className="font-semibold text-slate-700 uppercase">{userRole}</span>) does not have authorization to view this module (<code className="bg-slate-100 px-1.5 py-0.5 rounded text-[11px] text-slate-700">{location.pathname}</code>). Contact an administrator to grant access in Role Permissions.
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <AppButton
+                  type="primary"
+                  onClick={() => navigate('/admin')}
+                  style={{ backgroundColor: '#0096C7' }}
+                >
+                  Return to Dashboard
+                </AppButton>
+                <AppButton onClick={() => navigate('/')}>
+                  Storefront
+                </AppButton>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 

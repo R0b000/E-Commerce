@@ -13,6 +13,7 @@ import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Order } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from 'auth-client/hooks/useAuth';
+import { usePermissions } from '../../../context/PermissionContext';
 import {
   AppCard,
   AppButton,
@@ -28,6 +29,10 @@ import { OrderMapTracker } from './OrderMapTracker';
 export const OrderManagement: React.FC = () => {
   const { user } = useAuth();
   const isSeller = user?.role === 'seller';
+  const { can } = usePermissions();
+
+  const canEditOrders = can('edit', 'orders');
+  const canDeleteOrders = can('delete', 'orders');
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +84,10 @@ export const OrderManagement: React.FC = () => {
   };
 
   const handleUpdateOrderStatus = async () => {
+    if (!canEditOrders) {
+      showToast('Permission denied: You do not have permission to update orders', 'error');
+      return;
+    }
     if (!selectedOrder) return;
     setUpdatingStatus(true);
     const orderId = selectedOrder._id || selectedOrder.id;
@@ -157,6 +166,10 @@ export const OrderManagement: React.FC = () => {
   };
 
   const handleDeleteOrder = async (order: Order) => {
+    if (!canDeleteOrders) {
+      showToast('Permission denied: You do not have permission to delete orders', 'error');
+      return;
+    }
     const orderId = order._id || order.id;
     try {
       const res = await ecommerceService.deleteOrder(orderId!);
@@ -299,7 +312,7 @@ export const OrderManagement: React.FC = () => {
                           >
                             Track & Map
                           </AppButton>
-                          {!isSeller && (
+                          {canDeleteOrders && !isSeller && (
                             <Popconfirm
                               title="Delete Order"
                               description={`Delete order ${order.orderNumber}?`}

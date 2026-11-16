@@ -14,6 +14,7 @@ import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from 'auth-client/hooks/useAuth';
+import { usePermissions } from '../../../context/PermissionContext';
 import {
   AppCard,
   AppButton,
@@ -29,6 +30,12 @@ export const ProductManagement: React.FC = () => {
   const { user } = useAuth();
   const isSeller = user?.role === 'seller';
   const isAdmin = user?.role === 'admin';
+  const { can } = usePermissions();
+
+  const canCreate = can('create', 'products');
+  const canEdit = can('edit', 'products');
+  const canDelete = can('delete', 'products');
+  const canAdjustStock = can('edit', 'inventory') || can('edit', 'products');
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -105,6 +112,10 @@ export const ProductManagement: React.FC = () => {
   };
 
   const openAddModal = () => {
+    if (!canCreate) {
+      showToast('Permission denied: You do not have permission to add products', 'error');
+      return;
+    }
     setEditingProduct(null);
     setFormData({
       name: '',
@@ -123,6 +134,10 @@ export const ProductManagement: React.FC = () => {
   };
 
   const openEditModal = (product: Product) => {
+    if (!canEdit) {
+      showToast('Permission denied: You do not have permission to edit products', 'error');
+      return;
+    }
     setEditingProduct(product);
     const catId = typeof product.category === 'object' ? (product.category._id || product.category.id) : product.category;
     setFormData({
@@ -188,6 +203,10 @@ export const ProductManagement: React.FC = () => {
   };
 
   const handleDeleteProduct = async (id: string) => {
+    if (!canDelete) {
+      showToast('Permission denied: You do not have permission to delete products', 'error');
+      return;
+    }
     try {
       const res = await ecommerceService.deleteProduct(id);
       if (res.success) {
@@ -200,6 +219,10 @@ export const ProductManagement: React.FC = () => {
   };
 
   const handleStockAdjust = async (product: Product, delta: number) => {
+    if (!canAdjustStock) {
+      showToast('Permission denied: You do not have permission to adjust inventory', 'error');
+      return;
+    }
     const newStock = Math.max(0, product.stock + delta);
     const prodId = product._id || product.id;
     try {
@@ -227,14 +250,16 @@ export const ProductManagement: React.FC = () => {
         }
         breadcrumbs={[{ label: isSeller ? 'Seller' : 'Admin', path: '/admin' }, { label: 'Products' }]}
         extra={
-          <AppButton
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={openAddModal}
-            style={{ backgroundColor: '#0096C7' }}
-          >
-            Add New Product
-          </AppButton>
+          canCreate ? (
+            <AppButton
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={openAddModal}
+              style={{ backgroundColor: '#0096C7' }}
+            >
+              Add New Product
+            </AppButton>
+          ) : null
         }
       />
 
@@ -367,22 +392,24 @@ export const ProductManagement: React.FC = () => {
                           >
                             {p.stock} units
                           </Tag>
-                          <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => handleStockAdjust(p, -1)}
-                              className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs flex items-center justify-center font-bold"
-                              title="Decrease 1"
-                            >
-                              -
-                            </button>
-                            <button
-                              onClick={() => handleStockAdjust(p, +5)}
-                              className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs flex items-center justify-center font-bold"
-                              title="Add 5"
-                            >
-                              +
-                            </button>
-                          </div>
+                          {canAdjustStock && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleStockAdjust(p, -1)}
+                                className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs flex items-center justify-center font-bold cursor-pointer"
+                                title="Decrease 1"
+                              >
+                                -
+                              </button>
+                              <button
+                                onClick={() => handleStockAdjust(p, +5)}
+                                className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs flex items-center justify-center font-bold cursor-pointer"
+                                title="Add 5"
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </td>
 
@@ -392,27 +419,34 @@ export const ProductManagement: React.FC = () => {
 
                       <td className="py-4 px-6 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <AppButton
-                            size="small"
-                            icon={<EditOutlined />}
-                            onClick={() => openEditModal(p)}
-                            title="Edit Product"
-                          />
-                          <Popconfirm
-                            title="Delete Product"
-                            description={`Delete "${p.name}"?`}
-                            onConfirm={() => handleDeleteProduct(pId)}
-                            okText="Yes, Delete"
-                            cancelText="Cancel"
-                            okButtonProps={{ danger: true }}
-                          >
+                          {canEdit && (
                             <AppButton
                               size="small"
-                              danger
-                              icon={<DeleteOutlined />}
-                              title="Delete Product"
+                              icon={<EditOutlined />}
+                              onClick={() => openEditModal(p)}
+                              title="Edit Product"
                             />
-                          </Popconfirm>
+                          )}
+                          {canDelete && (
+                            <Popconfirm
+                              title="Delete Product"
+                              description={`Delete "${p.name}"?`}
+                              onConfirm={() => handleDeleteProduct(pId)}
+                              okText="Yes, Delete"
+                              cancelText="Cancel"
+                              okButtonProps={{ danger: true }}
+                            >
+                              <AppButton
+                                size="small"
+                                danger
+                                icon={<DeleteOutlined />}
+                                title="Delete Product"
+                              />
+                            </Popconfirm>
+                          )}
+                          {!canEdit && !canDelete && (
+                            <span className="text-[10px] text-slate-400 font-mono italic">Read-only</span>
+                          )}
                         </div>
                       </td>
                     </tr>

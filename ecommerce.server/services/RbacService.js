@@ -129,8 +129,10 @@ class RbacService {
       }
 
       // Filter menus based on user role and permissions
+      const hasConfiguredPermissions = roleDoc && Array.isArray(roleDoc.permissions);
+
       const allowedMenus = allMenus.filter((menu) => {
-        if (isAdmin) return true;
+        if (isAdmin && (!hasConfiguredPermissions || roleDoc.permissions.includes('*'))) return true;
         if (effectivePermissions.has('*')) return true;
 
         // Check required permission
@@ -144,14 +146,17 @@ class RbacService {
           : menu.name.toLowerCase().replace(/\s+/g, '_');
 
         for (const perm of effectivePermissions) {
-          if (perm.startsWith(`${codePrefix}:`) || perm === `pages:${codePrefix}`) {
+          if (perm.startsWith(`${codePrefix}:`) || perm === `pages:${codePrefix}` || perm === codePrefix) {
             return true;
           }
         }
 
-        // Check role list as fallback
-        const roleAllowed = Array.isArray(menu.roles) && menu.roles.includes(userRole);
-        return roleAllowed;
+        // Fallback to menu.roles ONLY if the role has no configured permissions defined in database
+        if (!hasConfiguredPermissions || roleDoc.permissions.length === 0) {
+          return Array.isArray(menu.roles) && menu.roles.includes(userRole);
+        }
+
+        return false;
       });
 
       // Construct nested tree structure (Parents and their SubItems)
