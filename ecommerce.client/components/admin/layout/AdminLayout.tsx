@@ -96,6 +96,7 @@ export const AdminLayout: React.FC = () => {
   const [dynamicMenus, setDynamicMenus] = useState<MenuItem[]>([]);
   const [loadingMenus, setLoadingMenus] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
@@ -215,6 +216,21 @@ export const AdminLayout: React.FC = () => {
     }
   }, [userRole, token]);
 
+  // Auto-expand parent menus when a subItem's route is active
+  useEffect(() => {
+    if (dynamicMenus.length > 0) {
+      setExpandedMenus((prev) => {
+        const next = { ...prev };
+        dynamicMenus.forEach((m) => {
+          if (m.subItems && m.subItems.some((s) => location.pathname === s.path || (s.path !== '/admin' && location.pathname.startsWith(s.path)))) {
+            next[m.name] = true;
+          }
+        });
+        return next;
+      });
+    }
+  }, [location.pathname, dynamicMenus]);
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
@@ -316,36 +332,12 @@ export const AdminLayout: React.FC = () => {
       {/* Account Navigation Links */}
       <div className="space-y-0.5 py-1 text-xs font-semibold text-slate-700">
         <Link
-          to="/admin/inventory"
+          to="/admin/profile"
           onClick={() => setAccountMenuOpen(false)}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 hover:text-[#0284c7] transition-colors"
         >
-          <AppstoreOutlined className="text-slate-400 text-sm" />
-          <span>Stock & Inventory</span>
-        </Link>
-        <Link
-          to="/admin/seller-profile"
-          onClick={() => setAccountMenuOpen(false)}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          <ShopOutlined className="text-slate-400 text-sm" />
-          <span>Seller & Vendor Profile</span>
-        </Link>
-        <Link
-          to="/admin/security"
-          onClick={() => setAccountMenuOpen(false)}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          <LockOutlined className="text-slate-400 text-sm" />
-          <span>Security & Passkeys</span>
-        </Link>
-        <Link
-          to="/"
-          onClick={() => setAccountMenuOpen(false)}
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          <ShopOutlined className="text-slate-400 text-sm" />
-          <span>Customer Store</span>
+          <UserOutlined className="text-slate-400 text-sm" />
+          <span>Profile</span>
         </Link>
         <button
           type="button"
@@ -516,10 +508,10 @@ export const AdminLayout: React.FC = () => {
     );
   }
 
-  // Filter menus for search if needed
-  const filteredMenus = dynamicMenus.filter((m) =>
-    m.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort menus by display order
+  const filteredMenus = [...dynamicMenus]
+    .filter((m) => m.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   // Notification Popover Content (Live Socket Stream)
   const notificationContent = (
@@ -677,14 +669,15 @@ export const AdminLayout: React.FC = () => {
       {/* Backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/35 z-40 backdrop-blur-[1px] transition-opacity"
+          className="fixed inset-0 bg-slate-900/40 z-[9990] backdrop-blur-[2px] transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Drawer Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 w-[260px] bg-white z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+        data-drawer="true"
+        className={`fixed top-0 bottom-0 left-0 w-[40vw] md:w-[30vw] lg:w-[20vw] min-w-[280px] bg-white z-[10000] shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -712,7 +705,10 @@ export const AdminLayout: React.FC = () => {
         </div>
 
         {/* Sidebar Nav Items */}
-        <nav className="flex-1 px-3 py-3 space-y-2 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
+        <nav
+          className="flex-1 px-4 py-3 space-y-2 overflow-y-auto no-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           {loadingMenus ? (
             <div className="py-12 text-center text-slate-400 text-xs">
               <Spin size="small" />
@@ -720,73 +716,125 @@ export const AdminLayout: React.FC = () => {
             </div>
           ) : (
             filteredMenus.map((item) => {
-              const active = isActive(item.path);
-              const hasSub = item.subItems && item.subItems.length > 0;
+              const hasSub = Array.isArray(item.subItems) && item.subItems.length > 0;
+              const isChildActive =
+                hasSub &&
+                item.subItems!.some(
+                  (sub) =>
+                    location.pathname === sub.path ||
+                    (sub.path !== '/admin' && location.pathname.startsWith(sub.path))
+                );
+              const active = isActive(item.path) || isChildActive;
+              const isOpen = expandedMenus[item.name] ?? isChildActive;
+
+              const handleItemClick = (e: React.MouseEvent) => {
+                if (hasSub) {
+                  e.preventDefault();
+                  setExpandedMenus((prev) => ({
+                    ...prev,
+                    [item.name]: !isOpen,
+                  }));
+                } else {
+                  setSidebarOpen(false);
+                }
+              };
 
               return (
-                <div key={item.path} className="relative group/menuitem">
-                  <Link
-                    to={item.path}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer shadow-2xs ${
-                      active
-                        ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm border-l-4 border-l-[#f97316]'
-                        : 'bg-white text-slate-700 border-slate-100/90 hover:border-orange-200 hover:text-[#f97316] hover:shadow-xs hover:scale-[1.01]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 truncate">
-                      <span className={`text-base ${active ? 'text-white' : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'}`}>
-                        {renderMenuIcon(item.icon)}
-                      </span>
-                      <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
-                        {item.name}
-                      </span>
-                    </div>
-
-                    <span className={`text-xs font-bold ${active ? 'text-[#f97316]' : 'text-slate-400'}`}>
-                      ›
-                    </span>
-                  </Link>
-
-                  {/* Floating Submenu Flyout */}
-                  {hasSub && (
-                    <div className="hidden group-hover/menuitem:flex flex-col absolute left-full top-0 ml-1.5 w-56 bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 z-60">
-                      <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
-                        {item.name}
-                      </div>
-                      {item.subItems!.map((sub) => (
-                        <Link
-                          key={sub.label}
-                          to={sub.path}
-                          onClick={() => setSidebarOpen(false)}
-                          className="px-3 py-2 rounded-md text-xs font-medium text-slate-700 hover:bg-orange-50 hover:text-[#f97316] transition-colors"
+                <div key={item.path || item.name} className="relative group/menuitem">
+                  {hasSub ? (
+                    <button
+                      type="button"
+                      onClick={handleItemClick}
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer shadow-2xs text-left ${
+                        active
+                          ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm border-l-4 border-l-[#f97316]'
+                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-orange-200 hover:text-[#f97316] hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span
+                          className={`text-base ${
+                            active
+                              ? 'text-white'
+                              : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
+                          }`}
                         >
-                          {sub.label}
-                        </Link>
-                      ))}
+                          {renderMenuIcon(item.icon)}
+                        </span>
+                        <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
+                          {item.name}
+                        </span>
+                      </div>
+
+                      {/* Icon '>' is ONLY visible if menu has submenu */}
+                      <span
+                        className={`text-xs font-bold transition-transform duration-200 ${
+                          isOpen
+                            ? 'rotate-90 text-[#f97316]'
+                            : active
+                            ? 'text-[#f97316]'
+                            : 'text-slate-400 group-hover/menuitem:text-[#f97316]'
+                        }`}
+                      >
+                        ›
+                      </span>
+                    </button>
+                  ) : (
+                    <Link
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer shadow-2xs ${
+                        active
+                          ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm border-l-4 border-l-[#f97316]'
+                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-orange-200 hover:text-[#f97316] hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span
+                          className={`text-base ${
+                            active
+                              ? 'text-white'
+                              : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
+                          }`}
+                        >
+                          {renderMenuIcon(item.icon)}
+                        </span>
+                        <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
+                          {item.name}
+                        </span>
+                      </div>
+                      {/* NO '>' icon when menu has no submenu */}
+                    </Link>
+                  )}
+
+                  {/* Inline Collapsible Submenu Accordion */}
+                  {hasSub && isOpen && (
+                    <div className="mt-1 ml-3 pl-3 border-l-2 border-orange-200/80 space-y-1 py-1">
+                      {item.subItems!.map((sub) => {
+                        const subActive =
+                          location.pathname === sub.path ||
+                          (sub.path !== '/admin' && location.pathname.startsWith(sub.path));
+                        return (
+                          <Link
+                            key={sub.path || sub.label}
+                            to={sub.path}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                              subActive
+                                ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
+                                : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
+                            }`}
+                          >
+                            <span className="truncate">{sub.label}</span>
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
               );
             })
           )}
-
-          {/* Customer Storefront Link */}
-          <div className="pt-2">
-            <Link
-              to="/"
-              onClick={() => setSidebarOpen(false)}
-              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white border border-slate-100/90 text-slate-700 hover:border-blue-200 hover:shadow-xs transition-all text-xs font-semibold shadow-2xs group"
-            >
-              <div className="flex items-center gap-2.5">
-                <span className="text-base text-[#0284c7]">
-                  <ShopOutlined />
-                </span>
-                <span className="text-slate-800">Customer Store</span>
-              </div>
-              <span className="text-xs font-bold text-slate-400 group-hover:text-[#0284c7]">›</span>
-            </Link>
-          </div>
         </nav>
 
         {/* Footer info in Drawer */}

@@ -6,5 +6,5 @@ export interface LoginFormProps {
   onSubmitGoogle?: () => void;
   isLoading?: boolean;
   error?: string | null;
-  onRegisterClick?: () => void;
+  onRegisterClick?: (role?: 'customer' | 'seller') => void;
 }

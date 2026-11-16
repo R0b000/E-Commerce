@@ -67,19 +67,115 @@
   background: var(--color-accent);
 }
 
+/* Scrollbar hiding utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* =========================================================================
+   Strict Z-Index Layering Hierarchy (User Defined):
+   1. Drawer (At the top)
+   2. Dropdown
+   3. Confirmation Modal
+   4. Modal
+   ========================================================================= */
+
+/* 1. Drawer Layer (Top-most) */
+.admin-sidebar,
+.ant-drawer,
+.drawer,
+.app-drawer,
+aside[data-drawer="true"],
+.drawer-container {
+  z-index: 10000 !important;
+}
+
+.ant-drawer-mask,
+.drawer-overlay,
+.drawer-backdrop {
+  z-index: 9990 !important;
+}
+
+/* 2. Dropdown Layer (Below Drawer, Above Confirmation Modal) */
+.ant-dropdown,
+.ant-select-dropdown,
+.ant-picker-dropdown,
+.ant-cascader-dropdown,
+.ant-tree-select-dropdown,
+.ant-popover,
+.ant-tooltip,
+.dropdown-menu,
+.app-dropdown {
+  z-index: 9000 !important;
+}
+
+/* 3. Confirmation Modal Layer (Below Dropdown, Above Modal) */
+.ant-modal-confirm,
+.ant-popconfirm,
+.ant-modal-wrap:has(.ant-modal-confirm),
+.ant-popover:has(.ant-popconfirm),
+.modal-confirm,
+.app-modal-confirm {
+  z-index: 8000 !important;
+}
+
+.ant-modal-mask:has(~ .ant-modal-wrap .ant-modal-confirm),
+.ant-modal-confirm .ant-modal-mask,
+.modal-confirm-overlay {
+  z-index: 7990 !important;
+}
+
+/* 4. Modal Layer (Base overlay) */
+.ant-modal-wrap,
+.ant-modal,
+.modal,
+.app-modal {
+  z-index: 7000 !important;
+}
+
+.ant-modal-mask,
+.modal-overlay,
+.modal-backdrop {
+  z-index: 6990 !important;
+}
+
+/* Toast Notifications (Stay at extreme top for critical alerts) */
+.toast-container,
+.ant-message,
+.ant-notification {
+  z-index: 99999 !important;
+}
+
 /* Sidebar & Navigation Styling (Orange & Blue Theme) */
 .admin-sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 260px;
+  width: 40vw;
   background: #ffffff;
   box-shadow: 2px 0 16px rgba(0, 0, 0, 0.10);
   z-index: 50;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .admin-sidebar {
+    width: 30vw;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-sidebar {
+    width: 20vw;
+  }
 }
 
 .admin-sidebar-brand {

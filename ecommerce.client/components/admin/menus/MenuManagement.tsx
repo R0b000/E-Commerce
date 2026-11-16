@@ -225,7 +225,6 @@ export const MenuManagement: React.FC = () => {
                 <th className="py-3.5 px-6">Order</th>
                 <th className="py-3.5 px-4">Menu Name & Icon</th>
                 <th className="py-3.5 px-4">Route Path</th>
-                <th className="py-3.5 px-4">Allowed Roles</th>
                 <th className="py-3.5 px-4">Required Permission</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
@@ -234,14 +233,14 @@ export const MenuManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-xs">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-500">
+                  <td colSpan={6} className="py-12 text-center text-slate-500">
                     <Spin />
                     <p className="mt-2 text-xs">Fetching dynamic navigation items...</p>
                   </td>
                 </tr>
               ) : menus.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={6} className="py-12 text-center text-slate-400">
                     No dynamic navigation menus found. Click "Add New Menu Page" to create one.
                   </td>
                 </tr>
@@ -282,20 +281,6 @@ export const MenuManagement: React.FC = () => {
 
                       <td className="py-3.5 px-4 font-mono text-slate-700 font-medium">
                         {m.path}
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <div className="flex flex-wrap gap-1">
-                          {m.roles?.map((r) => (
-                            <Tag
-                              key={r}
-                              className="m-0 text-[10px] font-bold uppercase rounded-full px-2"
-                              color={r === 'admin' ? 'blue' : r === 'seller' ? 'orange' : 'green'}
-                            >
-                              {r}
-                            </Tag>
-                          ))}
-                        </div>
                       </td>
 
                       <td className="py-3.5 px-4">
@@ -420,27 +405,6 @@ export const MenuManagement: React.FC = () => {
                   className="w-full"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block font-semibold text-slate-700 uppercase mb-1">
-                Allowed Roles (Access Control)
-              </label>
-              <Select
-                mode="multiple"
-                placeholder="Select roles allowed to see this page"
-                value={formRoles}
-                onChange={(vals) => setFormRoles(vals)}
-                className="w-full"
-                options={[
-                  { label: 'Admin (Full Access)', value: 'admin' },
-                  { label: 'Seller (Vendor Portal)', value: 'seller' },
-                  { label: 'Customer (Buyer Portal)', value: 'customer' },
-                ]}
-              />
-              <p className="text-[10px] text-slate-400 mt-1">
-                Users with any selected role will see this page in their navigation drawer.
-              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

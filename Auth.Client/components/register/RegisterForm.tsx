@@ -1,17 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { RegisterFormProps } from './RegisterForm.types';
 import type { Role, VendorProfile } from '../../config/appConfig';
+import {
+  UserOutlined,
+  ShopOutlined,
+  FileTextOutlined,
+  WarningOutlined,
+  CloseOutlined,
+  SafetyCertificateOutlined,
+  AuditOutlined,
+  PaperClipOutlined,
+} from '@ant-design/icons';
 
-export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: RegisterFormProps) => {
+export const RegisterForm = ({
+  onSubmit,
+  isLoading,
+  error,
+  initialRole,
+  onLoginClick,
+}: RegisterFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState<Role>('customer');
+  const [role, setRole] = useState<Role>(initialRole || 'customer');
   const [showPassword, setShowPassword] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(false);
   const [agreementError, setAgreementError] = useState<string | null>(null);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (initialRole) {
+      setRole(initialRole);
+    }
+  }, [initialRole]);
 
   // Seller Vendor Profile state
   const [vendorName, setVendorName] = useState('');
@@ -67,25 +89,26 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
   return (
     <>
       <form className="space-y-4 w-full" onSubmit={handleSubmit}>
-        {/* Role Selection */}
+        {/* Role Selection (Only Customer and Seller / Vendor) */}
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
             Select Registration Role
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => {
                 setRole('customer');
                 setAgreementAccepted(false);
               }}
-              className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 role === 'customer'
                   ? 'bg-blue-50 border-blue-500 text-blue-900 ring-2 ring-blue-500/20 shadow-sm'
                   : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
               }`}
             >
-              <span>🛍️ Customer</span>
+              <UserOutlined className="text-sm text-blue-600" />
+              <span>Customer</span>
             </button>
 
             <button
@@ -94,43 +117,14 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
                 setRole('seller');
                 setAgreementAccepted(false);
               }}
-              className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              className={`p-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 role === 'seller'
                   ? 'bg-orange-50 border-orange-500 text-orange-950 ring-2 ring-orange-500/20 shadow-sm font-bold'
                   : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
               }`}
             >
-              <span>🏪 Seller / Vendor</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setRole('support');
-                setAgreementAccepted(false);
-              }}
-              className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                role === 'support'
-                  ? 'bg-emerald-50 border-emerald-500 text-emerald-900 ring-2 ring-emerald-500/20 shadow-sm font-semibold'
-                  : 'bg-slate-50/70 border-slate-200 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <span>🎧 Support Agent</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setRole('manager');
-                setAgreementAccepted(false);
-              }}
-              className={`p-2 rounded-xl border text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                role === 'manager'
-                  ? 'bg-purple-50 border-purple-500 text-purple-950 ring-2 ring-purple-500/20 shadow-sm font-semibold'
-                  : 'bg-slate-50/70 border-slate-200 text-slate-600 hover:bg-slate-100'
-              }`}
-            >
-              <span>📦 Store Manager</span>
+              <ShopOutlined className="text-sm text-orange-600" />
+              <span>Seller / Vendor</span>
             </button>
           </div>
         </div>
@@ -227,7 +221,9 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
         {role === 'seller' && (
           <div className="p-4 bg-orange-50/60 border border-orange-200/80 rounded-2xl space-y-3.5 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-2 border-b border-orange-200/60 pb-2">
-              <span className="p-1.5 bg-orange-500 text-white rounded-lg text-xs">🏪</span>
+              <span className="p-1.5 bg-orange-500 text-white rounded-lg text-xs flex items-center justify-center">
+                <ShopOutlined />
+              </span>
               <div>
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
                   Vendor & Store Information
@@ -346,8 +342,8 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
                   </svg>
                   {documentFileName ? (
-                    <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                      ✓ Attached: {documentFileName}
+                    <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5">
+                      <PaperClipOutlined className="text-emerald-600" /> Attached: {documentFileName}
                     </span>
                   ) : (
                     <>
@@ -412,9 +408,9 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
             <button
               type="button"
               onClick={() => setIsAgreementModalOpen(true)}
-              className="text-slate-600 hover:text-slate-900 font-medium cursor-pointer"
+              className="text-slate-600 hover:text-slate-900 font-medium cursor-pointer inline-flex items-center gap-1"
             >
-              📄 Review Legal Terms
+              <FileTextOutlined /> Review Legal Terms
             </button>
           </div>
         </div>
@@ -422,7 +418,7 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
         {/* Agreement Error Message */}
         {agreementError && (
           <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs flex items-center gap-2">
-            <span>⚠️</span>
+            <WarningOutlined className="text-amber-600 text-sm shrink-0" />
             <span className="font-medium">{agreementError}</span>
           </div>
         )}
@@ -482,7 +478,9 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
             {/* Modal Header */}
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="p-2 bg-orange-100 text-orange-600 rounded-xl text-lg">⚖️</span>
+                <span className="p-2 bg-orange-100 text-orange-600 rounded-xl text-lg flex items-center justify-center">
+                  <SafetyCertificateOutlined />
+                </span>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">
                     {isSeller
@@ -496,7 +494,7 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
                 onClick={() => setIsAgreementModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 p-1 rounded-lg text-lg cursor-pointer"
               >
-                ✕
+                <CloseOutlined className="text-sm" />
               </button>
             </div>
 
@@ -504,8 +502,11 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
             <div className="p-6 overflow-y-auto space-y-4 text-xs text-slate-600 leading-relaxed font-sans">
               {isSeller ? (
                 <>
-                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-orange-950 font-medium">
-                    📌 <strong>Vendor Obligations:</strong> As an authorized merchant on the Himalaya Online Shop, you represent that all goods offered are authentic, legally sourced, and accurately described with verifiable origin.
+                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-orange-950 font-medium flex items-start gap-2">
+                    <AuditOutlined className="text-orange-600 mt-0.5 shrink-0" />
+                    <div>
+                      <strong>Vendor Obligations:</strong> As an authorized merchant on the Himalaya Online Shop, you represent that all goods offered are authentic, legally sourced, and accurately described with verifiable origin.
+                    </div>
                   </div>
 
                   <h4 className="font-bold text-slate-800 text-sm">1. Store Registration & Approval</h4>
@@ -530,8 +531,11 @@ export const RegisterForm = ({ onSubmit, isLoading, error, onLoginClick }: Regis
                 </>
               ) : (
                 <>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-950 font-medium">
-                    🛍️ <strong>Customer Guarantee:</strong> Himalaya Online Shop guarantees genuine Himalayan products, secure escrow payments, and comprehensive buyer protection across Nepal and worldwide delivery.
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-950 font-medium flex items-start gap-2">
+                    <SafetyCertificateOutlined className="text-blue-600 mt-0.5 shrink-0" />
+                    <div>
+                      <strong>Customer Guarantee:</strong> Himalaya Online Shop guarantees genuine Himalayan products, secure escrow payments, and comprehensive buyer protection across Nepal and worldwide delivery.
+                    </div>
                   </div>
 
                   <h4 className="font-bold text-slate-800 text-sm">1. User Accounts & Security</h4>

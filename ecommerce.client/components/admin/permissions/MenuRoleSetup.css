@@ -1,0 +1,315 @@
+.kiran-role-page {
+  z-index: 10;
+  min-height: 0;
+  padding: 0;
+  color: #495057;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.kiran-role-scroll {
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 0.55rem 1.5rem 0.85rem;
+  scrollbar-width: thin;
+}
+
+.kiran-role-scroll .breadcrumb-nav {
+  margin-bottom: 0.6rem;
+  padding-left: 0.5rem;
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0096c7;
+}
+
+.kiran-role-card {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+  border: 1px solid rgba(210, 205, 205, 0.4);
+  border-radius: 8px;
+  background: #fdfcfc;
+  box-shadow: none;
+}
+
+.kiran-role-filters {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 25% 25% 16.666667% 1fr;
+  flex: 0 0 auto;
+  min-height: 0;
+  align-items: end;
+  padding: 0.6rem 1.25rem 0.7rem;
+  margin-left: 0;
+}
+
+.kiran-role-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  margin: 1px 0;
+  align-items: flex-start;
+  color: #000;
+  font: 600 12px/18px "Poppins", sans-serif;
+}
+
+.kiran-role-field > span,
+.kiran-role-field > select {
+  width: 90%;
+}
+
+.kiran-role-field > span {
+  margin-bottom: 2px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.kiran-role-field > select {
+  box-sizing: border-box;
+  height: 27px;
+  min-height: 27px;
+  padding: 0.175rem 0.5rem;
+  color: #5f6771;
+  background: #fff;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  box-shadow: none;
+  font: 500 12px/18px "Poppins", sans-serif;
+  outline: none;
+}
+
+.kiran-role-field > select:focus {
+  border-color: #0096c7;
+  outline: 0;
+  box-shadow: 0 0 0 0.12rem rgba(0, 150, 199, 0.16);
+}
+
+.kiran-role-save {
+  justify-self: start;
+  align-self: end;
+  display: inline-flex;
+  min-width: 80px;
+  height: 27px;
+  min-height: 27px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5.25px 12px;
+  color: #fff;
+  background: #0096c7;
+  border: 1px solid #0096c7;
+  border-radius: 4px;
+  box-shadow: none;
+  cursor: pointer;
+  font: 500 12px/18px "Poppins", sans-serif;
+  transition: all 0.15s ease;
+}
+
+.kiran-role-save:hover:not(:disabled) {
+  color: #fff;
+  background: #0077b6;
+  border-color: #0077b6;
+}
+
+.kiran-role-save:disabled {
+  cursor: default;
+  opacity: 0.65;
+  color: #fff;
+  background: #0096c7;
+  border-color: #0096c7;
+}
+
+.kiran-role-grid {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 0 1.25rem 1rem;
+}
+
+.kiran-role-table-scroll {
+  position: relative;
+  min-width: 0;
+  height: 31.25rem;
+  max-height: 31.25rem;
+  overflow: auto;
+  border-radius: 0.2rem;
+  scrollbar-width: thin;
+}
+
+.kiran-role-table {
+  width: 99.8%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+  overflow: visible;
+  border: 1px solid rgba(108, 117, 125, 0.45);
+  border-radius: 0.25rem;
+  box-shadow: rgba(17, 17, 26, 0.18) 0 1px 0, rgba(17, 17, 26, 0.14) 0 0 8px;
+  margin: 0 0 0.875rem;
+  color: #495057;
+  background: #fdfcfc;
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+}
+
+.kiran-role-table th {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  height: 25px;
+  min-height: 25px;
+  padding: 0.21875rem 0.625rem 0.21875rem 0;
+  color: #fff;
+  background: #0096c7;
+  border-bottom: 1px solid #0096c7;
+  font-weight: 400;
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.kiran-role-table thead tr th:first-child,
+.kiran-role-table tbody tr td:first-child {
+  padding-left: 0.5rem;
+}
+
+.kiran-role-table thead tr th:nth-child(1),
+.kiran-role-table tbody tr td:nth-child(1) {
+  width: 33.333333%;
+}
+
+.kiran-role-table thead tr th:nth-child(2),
+.kiran-role-table tbody tr td:nth-child(2) {
+  width: 66.666667%;
+}
+
+.kiran-role-table td {
+  height: auto;
+  padding: 0.1875rem 0.625rem 0.1875rem 0;
+  border-bottom: 0;
+  font-size: 0.77rem;
+  line-height: 1.5;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.kiran-role-table tbody tr {
+  height: 1.84375rem;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.2);
+}
+
+.kiran-role-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.kiran-role-table tbody tr:hover td {
+  background: #e0f2fe;
+}
+
+.kiran-role-table td b {
+  font-weight: 700;
+  color: #212529;
+}
+
+.menu-child-name {
+  display: inline-block;
+  padding-left: 1.5rem;
+}
+
+.permission-checks {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.permission-checks label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin: 0 1rem 0 0;
+  color: #495057;
+  font: 400 0.77rem/1.5 "Poppins", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.permission-checks input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin: 0 0.15rem 0 0;
+  accent-color: #0096c7;
+  cursor: pointer;
+}
+
+.paginator {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 3.5px 12px;
+  margin: 7px 0;
+  color: #535964;
+  background: #e9ecef;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.77rem;
+  line-height: 1.5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 2px;
+}
+
+.paginator button {
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  color: #535964;
+  background: transparent;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.paginator button:hover:not(:disabled) {
+  color: #0096c7;
+  background: rgba(0, 150, 199, 0.12);
+}
+
+.paginator button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pagination-text {
+  font-weight: 400;
+}
+
+@media (max-width: 760px) {
+  .kiran-role-filters {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .kiran-role-field > span,
+  .kiran-role-field > select {
+    width: 100%;
+  }
+
+  .kiran-role-save {
+    align-self: flex-start;
+  }
+}

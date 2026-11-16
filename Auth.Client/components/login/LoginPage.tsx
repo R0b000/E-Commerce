@@ -48,7 +48,7 @@ export const LoginPage = () => {
     setIsPending(true);
     setError(null);
     try {
-      await fido2Login(email || 'admin@himalayashop.com');
+      await fido2Login(email);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Passkey login failed');
     } finally {
@@ -120,7 +120,9 @@ export const LoginPage = () => {
               onSubmitFido2={handleFido2Login}
               isLoading={isPending}
               error={error}
-              onRegisterClick={() => navigate('/register')}
+              onRegisterClick={(role?: 'customer' | 'seller') =>
+                navigate(role === 'seller' ? '/register?role=seller' : '/register?role=customer')
+              }
             />
           </div>
         </div>

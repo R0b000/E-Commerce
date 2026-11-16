@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { RegisterForm } from './RegisterForm';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RegisterData } from '../../config/appConfig';
 
 export const RegisterPage = () => {
@@ -9,6 +9,8 @@ export const RegisterPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialRole = searchParams.get('role') === 'seller' ? 'seller' : 'customer';
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -87,7 +89,13 @@ export const RegisterPage = () => {
               <p className="text-slate-500 text-sm">Register a new administrator profile to get started.</p>
             </div>
 
-            <RegisterForm onSubmit={handleSubmit} isLoading={isPending} error={error} onLoginClick={() => navigate('/login')} />
+            <RegisterForm
+              onSubmit={handleSubmit}
+              isLoading={isPending}
+              error={error}
+              initialRole={initialRole}
+              onLoginClick={() => navigate('/login')}
+            />
           </div>
         </div>
       </div>

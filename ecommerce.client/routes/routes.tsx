@@ -50,6 +50,7 @@ export const EcommerceRoutes: RouteConfig = {
         { path: 'menus', element: MenuManagement },
         { path: 'inventory', element: InventoryManagement },
         { path: 'seller-profile', element: SellerProfile },
+        { path: 'profile', element: SellerProfile },
         { path: 'security', element: SecurityManagement },
       ],
     },

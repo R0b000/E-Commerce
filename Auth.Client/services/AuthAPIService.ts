@@ -47,6 +47,22 @@ class AuthAPIService {
     return response.data;
   }
 
+  async fido2Login(email?: string, credentialId?: string): Promise<IResponse<LoginResponse>> {
+    const response = await axiosConfig.post<IResponse<LoginResponse>>(AuthAPIRoutes.FIDO2_LOGIN, {
+      email,
+      credentialId,
+    });
+    return response.data;
+  }
+
+  async fido2Register(email: string, credentialId?: string, deviceName?: string): Promise<IResponse<{ registered: boolean; count: number }>> {
+    const response = await axiosConfig.post<IResponse<{ registered: boolean; count: number }>>(
+      AuthAPIRoutes.FIDO2_REGISTER,
+      { email, credentialId, deviceName }
+    );
+    return response.data;
+  }
+
   async verifyFido2Login(data: Fido2LoginVerifyRequest): Promise<IResponse<LoginResponse>> {
     const response = await axiosConfig.post<IResponse<LoginResponse>>(
       AuthAPIRoutes.FIDO2_LOGIN_VERIFY,

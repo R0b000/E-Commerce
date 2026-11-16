@@ -13,6 +13,8 @@ import {
   CheckCircleOutlined,
   PhoneOutlined,
   EnvironmentOutlined,
+  CustomerServiceOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -193,22 +195,23 @@ export const CustomerManagement: React.FC = () => {
           {/* Role Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
             {[
-              { key: 'all', label: 'All Accounts' },
-              { key: 'customer', label: '🛍️ Customers' },
-              { key: 'seller', label: '🏪 Sellers / Vendors' },
-              { key: 'support', label: '🎧 Support' },
-              { key: 'manager', label: '📦 Managers' },
+              { key: 'all', label: 'All Accounts', icon: null },
+              { key: 'customer', label: 'Customers', icon: <ShoppingOutlined /> },
+              { key: 'seller', label: 'Sellers / Vendors', icon: <ShopOutlined /> },
+              { key: 'support', label: 'Support', icon: <CustomerServiceOutlined /> },
+              { key: 'manager', label: 'Managers', icon: <AppstoreOutlined /> },
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setSelectedRoleFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
                   selectedRoleFilter === tab.key
                     ? 'bg-slate-900 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                {tab.label}
+                {tab.icon}
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
@@ -395,16 +398,16 @@ export const CustomerManagement: React.FC = () => {
           >
             <Radio.Group buttonStyle="solid" className="w-full grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               <Radio.Button value="customer" className="text-center font-medium">
-                🛍️ Buyer
+                <ShoppingOutlined className="mr-1" /> Buyer
               </Radio.Button>
               <Radio.Button value="seller" className="text-center font-medium">
-                🏪 Seller
+                <ShopOutlined className="mr-1" /> Seller
               </Radio.Button>
               <Radio.Button value="support" className="text-center font-medium">
-                🎧 Support
+                <CustomerServiceOutlined className="mr-1" /> Support
               </Radio.Button>
               <Radio.Button value="manager" className="text-center font-medium">
-                📦 Manager
+                <AppstoreOutlined className="mr-1" /> Manager
               </Radio.Button>
             </Radio.Group>
           </Form.Item>

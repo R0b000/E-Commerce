@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  z-index: 1000;
+  z-index: 9990;
 }
 .drawer {
   position: fixed;
@@ -10,6 +10,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
+  z-index: 10000;
 }
 .drawer-right { top: 0; right: 0; height: 100%; }
 .drawer-left { top: 0; left: 0; height: 100%; }

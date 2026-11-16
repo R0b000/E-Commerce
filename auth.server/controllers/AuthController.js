@@ -128,6 +128,37 @@ router.get('/fido2/login-options', async (req, res) => {
   }
 });
 
+// Simple & Direct FIDO2 / Passkey Login API
+router.post('/fido2/login', async (req, res) => {
+  try {
+    const response = await authService.fido2Login(req.body);
+    if (response.success && response.data?.user?.id) {
+      await recordUserDevice(response.data.user.id, req);
+    }
+    res.status(response.statusCode || (response.success ? 200 : 401)).json(response);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      messages: ['Passkey authentication failed'],
+      errors: [error.message],
+    });
+  }
+});
+
+// Simple & Direct FIDO2 / Passkey Registration API
+router.post('/fido2/register', async (req, res) => {
+  try {
+    const response = await authService.fido2Register(req.body);
+    res.status(response.statusCode || (response.success ? 201 : 400)).json(response);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      messages: ['Failed to register passkey'],
+      errors: [error.message],
+    });
+  }
+});
+
 // FIDO2 / WebAuthn Passkey Login Verification
 router.post('/fido2/login-verify', async (req, res) => {
   try {
@@ -135,7 +166,7 @@ router.post('/fido2/login-verify', async (req, res) => {
     if (response.success && response.data?.user?.id) {
       await recordUserDevice(response.data.user.id, req);
     }
-    res.status(response.statusCode || (response.success ? 200 : 400)).json(response);
+    res.status(response.statusCode || (response.success ? 200 : 401)).json(response);
   } catch (error) {
     res.status(500).json({
       success: false,

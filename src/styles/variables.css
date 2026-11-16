@@ -40,6 +40,20 @@
   --control-height: 38px;
   --control-height-lg: 44px;
 
+  /* Strict Z-Index Hierarchy:
+     1. Drawer (Top-most)
+     2. Dropdown
+     3. Confirmation Modal
+     4. Modal
+  */
+  --z-drawer: 10000;
+  --z-drawer-mask: 9990;
+  --z-dropdown: 9000;
+  --z-confirm-modal: 8000;
+  --z-confirm-mask: 7990;
+  --z-modal: 7000;
+  --z-modal-mask: 6990;
+
   --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   --shadow-card: 0 2px 10px 0 rgba(0, 0, 0, 0.04);
   --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.08);

@@ -175,6 +175,14 @@ export class EcommerceAPIService {
     return res.data;
   }
 
+  async createRole(payload: { name: string; label: string; description?: string; permissions?: string[] }) {
+    const res = await axiosConfig.post<{ success: boolean; data: RoleItem; messages?: string[] }>(
+      '/ecommerce/rbac/roles',
+      payload
+    );
+    return res.data;
+  }
+
   async updateRolePermissions(roleName: string, permissions: string[]) {
     const res = await axiosConfig.put<{ success: boolean; data: RoleItem }>(`/ecommerce/rbac/roles/${roleName}`, {
       permissions,

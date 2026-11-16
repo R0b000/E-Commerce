@@ -97,16 +97,28 @@ async function recognizeDevice(req) {
       return { recognized: false, clientInfo: { ip, macOrDevice } };
     }
 
+    const hasRegisteredPasskey = Array.isArray(user.fidoCredentials) && user.fidoCredentials.length > 0;
+
+    // CRITICAL: Only recognize device for FIDO2 instant login IF the user has registered FIDO2 passkeys!
+    if (!hasRegisteredPasskey) {
+      return {
+        recognized: false,
+        clientInfo: { ip, macOrDevice },
+        user: null,
+      };
+    }
+
     return {
       recognized: true,
       clientInfo: { ip, macOrDevice },
       user: {
         id: user._id.toString(),
         email: user.email,
+        username: user.email.split('@')[0],
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        hasPasskey: Array.isArray(user.fidoCredentials) && user.fidoCredentials.length > 0,
+        hasPasskey: true,
       },
     };
   } catch (err) {

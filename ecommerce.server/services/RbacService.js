@@ -131,16 +131,27 @@ class RbacService {
       // Filter menus based on user role and permissions
       const allowedMenus = allMenus.filter((menu) => {
         if (isAdmin) return true;
-
-        // Check role list
-        const roleAllowed = Array.isArray(menu.roles) && menu.roles.includes(userRole);
+        if (effectivePermissions.has('*')) return true;
 
         // Check required permission
-        const permissionAllowed = menu.requiredPermission
-          ? effectivePermissions.has(menu.requiredPermission)
-          : false;
+        if (menu.requiredPermission && effectivePermissions.has(menu.requiredPermission)) {
+          return true;
+        }
 
-        return roleAllowed || permissionAllowed;
+        // Check permission prefix (e.g. products:read, orders:read, customers:read, etc.)
+        const codePrefix = menu.path
+          ? menu.path.replace(/^\/admin\/?/, '').replace(/^\//, '').replace(/-/g, '_')
+          : menu.name.toLowerCase().replace(/\s+/g, '_');
+
+        for (const perm of effectivePermissions) {
+          if (perm.startsWith(`${codePrefix}:`) || perm === `pages:${codePrefix}`) {
+            return true;
+          }
+        }
+
+        // Check role list as fallback
+        const roleAllowed = Array.isArray(menu.roles) && menu.roles.includes(userRole);
+        return roleAllowed;
       });
 
       // Construct nested tree structure (Parents and their SubItems)
@@ -162,14 +173,31 @@ class RbacService {
             label: item.name,
             path: item.path,
             id: item.id,
+            order: item.order || 0,
           });
         } else {
           roots.push(item);
         }
       });
 
+      // Filter out empty parent categories if user has no access to any of its children
+      const finalRoots = roots.filter((root) => {
+        if (['Account', 'Logs', 'Setting'].includes(root.name) && (!root.subItems || root.subItems.length === 0)) {
+          return false;
+        }
+        return true;
+      });
+
+      // Sort roots by display order
+      finalRoots.sort((a, b) => (a.order || 0) - (b.order || 0));
+      finalRoots.forEach((r) => {
+        if (Array.isArray(r.subItems)) {
+          r.subItems.sort((a, b) => (a.order || 0) - (b.order || 0));
+        }
+      });
+
       const resultData = {
-        menus: roots,
+        menus: finalRoots,
         userRole,
         effectivePermissions: Array.from(effectivePermissions),
       };
@@ -336,6 +364,36 @@ class RbacService {
       return ApiResponse.success(rolesWithCounts);
     } catch (error) {
       return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  /**
+   * Creates a new role
+   */
+  async createRole(data) {
+    try {
+      const name = (data.name || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+      if (!name || !data.label) {
+        return ApiResponse.fail('Role name and label are required', [], 400);
+      }
+      const existing = await Role.findOne({ name });
+      if (existing) {
+        return ApiResponse.fail(`Role "${name}" already exists`, [], 400);
+      }
+
+      const role = new Role({
+        name,
+        label: data.label.trim(),
+        description: data.description?.trim() || '',
+        permissions: data.permissions || [],
+        isSystem: false,
+      });
+
+      await role.save();
+      await redisService.delByPattern('ecommerce:menus:*');
+      return ApiResponse.success(role, ['Role created successfully']);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 400);
     }
   }
 

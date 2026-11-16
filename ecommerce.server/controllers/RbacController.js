@@ -42,6 +42,12 @@ rbacRouter.get('/roles', authenticateToken, requireRole('admin'), async (req, re
   res.status(result.statusCode || 200).json(result);
 });
 
+// Admin: Create new role
+rbacRouter.post('/roles', authenticateToken, requireRole('admin'), async (req, res) => {
+  const result = await rbacService.createRole(req.body);
+  res.status(result.statusCode || 201).json(result);
+});
+
 // Admin: Update role permissions
 rbacRouter.put('/roles/:roleName', authenticateToken, requireRole('admin'), async (req, res) => {
   const { permissions } = req.body;

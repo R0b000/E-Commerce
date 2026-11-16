@@ -3,13 +3,15 @@
    Top-10 Position & Smooth Transformation Entrance Animations
    ========================================================================= */
 
-/* Exact Top-10 Positioning on Viewport */
+/* Exact Top-10 Positioning on Viewport & Z-Index Layering */
 .app-modal,
 .ant-modal.app-modal-top10,
-.app-modal-top10 {
+.app-modal-top10,
+.ant-modal-wrap {
   top: 2.5rem !important; /* top-10 in Tailwind ratio */
   padding-bottom: 2.5rem;
   margin: 0 auto;
+  z-index: var(--z-modal, 7000) !important;
 }
 
 /* Modal Content Card & Backdrop */
@@ -19,6 +21,22 @@
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   transition: opacity 0.25s ease-in-out;
+  z-index: var(--z-modal-mask, 6990) !important;
+}
+
+/* Confirmation Modal Layer (Higher than Modal, Lower than Dropdown) */
+.ant-modal-confirm,
+.ant-popconfirm,
+.ant-modal-wrap.ant-modal-confirm,
+.modal-confirm,
+.app-modal-confirm {
+  z-index: var(--z-confirm-modal, 8000) !important;
+}
+
+.ant-modal-confirm .ant-modal-mask,
+.ant-modal-mask:has(~ .ant-modal-wrap.ant-modal-confirm),
+.modal-confirm-overlay {
+  z-index: var(--z-confirm-mask, 7990) !important;
 }
 
 .ant-modal .ant-modal-content,

@@ -7,6 +7,11 @@ import {
   LaptopOutlined,
   GlobalOutlined,
   ClockCircleOutlined,
+  LoginOutlined,
+  KeyOutlined,
+  AppstoreOutlined,
+  ShoppingCartOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import { Tag, Spin } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -86,23 +91,24 @@ export const AuditLogManagement: React.FC = () => {
 
           <div className="flex items-center gap-1.5 overflow-x-auto">
             {[
-              { key: 'all', label: 'All Actions' },
-              { key: 'USER_LOGIN', label: '🔑 Logins' },
-              { key: 'FIDO2_PASSKEY_AUTH', label: '⚡ FIDO2 Auth' },
-              { key: 'CREATE_PRODUCT', label: '📦 Products' },
-              { key: 'UPDATE_ORDER_STATUS', label: '🚚 Orders' },
-              { key: 'SUBMIT_REVIEW', label: '⭐ Reviews' },
+              { key: 'all', label: 'All Actions', icon: null },
+              { key: 'USER_LOGIN', label: 'Logins', icon: <LoginOutlined /> },
+              { key: 'FIDO2_PASSKEY_AUTH', label: 'FIDO2 Auth', icon: <KeyOutlined /> },
+              { key: 'CREATE_PRODUCT', label: 'Products', icon: <AppstoreOutlined /> },
+              { key: 'UPDATE_ORDER_STATUS', label: 'Orders', icon: <ShoppingCartOutlined /> },
+              { key: 'SUBMIT_REVIEW', label: 'Reviews', icon: <StarOutlined /> },
             ].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActionFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
                   actionFilter === tab.key
                     ? 'bg-slate-900 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                {tab.label}
+                {tab.icon}
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>

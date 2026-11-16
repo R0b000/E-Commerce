@@ -5,6 +5,7 @@ import {
   UserOutlined,
   EditOutlined,
   SyncOutlined,
+  PlusOutlined,
   KeyOutlined,
   CustomerServiceOutlined,
   AppstoreOutlined,
@@ -16,6 +17,7 @@ import {
   CloseOutlined,
 } from '@ant-design/icons';
 import { Tag, Spin, Checkbox, Row, Col, Divider, Tooltip } from 'antd';
+import { useAuth } from 'auth-client/hooks/useAuth';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { RoleItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -28,10 +30,20 @@ import {
 import { RoleManagementProps } from './RoleManagement.types';
 
 export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   const [roles, setRoles] = useState<RoleItem[]>([]);
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Add Role Modal State
+  const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleLabel, setNewRoleLabel] = useState('');
+  const [newRoleDescription, setNewRoleDescription] = useState('');
+  const [isCreatingRole, setIsCreatingRole] = useState(false);
 
   // Edit Permissions Modal State
   const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
@@ -117,6 +129,34 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
     }
   };
 
+  const handleCreateRole = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newRoleName.trim() || !newRoleLabel.trim()) {
+      showToast('Please enter both role name/code and display label', 'error');
+      return;
+    }
+    setIsCreatingRole(true);
+    try {
+      const res = await ecommerceService.createRole({
+        name: newRoleName.trim().toLowerCase(),
+        label: newRoleLabel.trim(),
+        description: newRoleDescription.trim(),
+        permissions: [],
+      });
+      if (res.success) {
+        showToast(`Role "${newRoleLabel}" created successfully`, 'success');
+        setIsAddRoleModalOpen(false);
+        loadData();
+      } else {
+        showToast('Failed to create role', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.response?.data?.messages?.[0] || 'Failed to create role', 'error');
+    } finally {
+      setIsCreatingRole(false);
+    }
+  };
+
   // Group permissions by module
   const permsByModule = useMemo(() => {
     return permissions.reduce<Record<string, PermissionItem[]>>((acc, perm) => {
@@ -198,6 +238,20 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
             <AppButton icon={<SyncOutlined />} onClick={loadData}>
               Refresh Roles
             </AppButton>
+            {isAdmin && (
+              <AppButton
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setNewRoleName('');
+                  setNewRoleLabel('');
+                  setNewRoleDescription('');
+                  setIsAddRoleModalOpen(true);
+                }}
+              >
+                Add Role
+              </AppButton>
+            )}
           </div>
         }
       />
@@ -284,21 +338,20 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                 <th className="py-3.5 px-4">System Code</th>
                 <th className="py-3.5 px-4">Description & Scope</th>
                 <th className="py-3.5 px-4 text-center">Assigned Users</th>
-                <th className="py-3.5 px-4">Permissions Granted</th>
                 <th className="py-3.5 px-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-400">
+                  <td colSpan={5} className="py-16 text-center text-slate-400">
                     <Spin size="default" />
                     <p className="mt-3 text-xs font-semibold text-slate-500">Loading security roles table...</p>
                   </td>
                 </tr>
               ) : filteredRoles.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
+                  <td colSpan={5} className="py-12 text-center text-slate-400 text-xs">
                     No security roles found matching "{searchQuery}".
                   </td>
                 </tr>
@@ -361,40 +414,6 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                           <UserOutlined className="text-slate-400 text-[11px]" />
                           <span>{role.userCount || 0}</span>
                         </div>
-                      </td>
-
-                      {/* Permissions Granted */}
-                      <td className="py-4 px-4">
-                        {isSuperuser ? (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 text-sky-700 font-bold text-xs border border-sky-200/80">
-                            <CheckCircleOutlined className="text-sky-600" />
-                            <span>Superuser (* - Full Access)</span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-wrap items-center gap-1.5 max-w-[320px]">
-                            <span className="px-2 py-0.5 rounded-md bg-blue-50 text-[#0284c7] font-bold text-[11px] border border-blue-100">
-                              {role.permissions?.length || 0} Granted
-                            </span>
-                            {role.permissions?.slice(0, 3).map((p) => (
-                              <span
-                                key={p}
-                                className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-mono rounded border border-slate-200/60"
-                              >
-                                {p}
-                              </span>
-                            ))}
-                            {(role.permissions?.length || 0) > 3 && (
-                              <Tooltip
-                                title={role.permissions?.slice(3).join(', ')}
-                                placement="top"
-                              >
-                                <span className="px-2 py-0.5 bg-slate-100 text-slate-400 text-[10px] font-semibold rounded cursor-pointer hover:bg-slate-200">
-                                  +{role.permissions!.length - 3} more
-                                </span>
-                              </Tooltip>
-                            )}
-                          </div>
-                        )}
                       </td>
 
                       {/* Actions */}
@@ -525,6 +544,63 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
           </div>
         </div>
       </AppModal>
+
+      {/* Add Role Modal */}
+      {isAddRoleModalOpen && (
+        <AppModal
+          open={isAddRoleModalOpen}
+          title="Add New Security Role"
+          onCancel={() => setIsAddRoleModalOpen(false)}
+          onOk={handleCreateRole}
+          okText="Create Role"
+          confirmLoading={isCreatingRole}
+          width={480}
+        >
+          <form onSubmit={handleCreateRole} className="space-y-4 py-2 text-xs">
+            <div>
+              <label className="block font-semibold text-slate-700 uppercase mb-1">
+                Role System Code *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. auditor, supervisor, agent"
+                value={newRoleName}
+                onChange={(e) => setNewRoleName(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-800 font-mono text-xs focus:outline-none focus:border-[#0284c7]"
+                required
+              />
+              <span className="text-[10px] text-slate-400 mt-0.5 block">Unique system key in lowercase, e.g. auditor</span>
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 uppercase mb-1">
+                Display Label *
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. System Auditor, Lead Supervisor"
+                value={newRoleLabel}
+                onChange={(e) => setNewRoleLabel(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-[#0284c7]"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold text-slate-700 uppercase mb-1">
+                Description & Scope
+              </label>
+              <textarea
+                placeholder="Describe the responsibilities and access scope of this role..."
+                rows={3}
+                value={newRoleDescription}
+                onChange={(e) => setNewRoleDescription(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-[#0284c7]"
+              />
+            </div>
+          </form>
+        </AppModal>
+      )}
     </div>
   );
 };

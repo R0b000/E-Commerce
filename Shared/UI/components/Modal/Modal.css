@@ -7,7 +7,7 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 2.5rem; /* top-10 */
-  z-index: 1000;
+  z-index: 6990;
 }
 
 .modal {
@@ -19,6 +19,7 @@
   animation: modalTop10SlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   max-height: calc(100vh - 5rem);
   overflow-y: auto;
+  z-index: 7000;
 }
 
 @keyframes modalTop10SlideIn {

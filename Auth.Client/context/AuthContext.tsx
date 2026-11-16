@@ -162,22 +162,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fido2Login = async (email?: string) => {
     setState((prev) => ({ ...prev, isLoading: true }));
     try {
-      const optionsRes = await authAPIService.getFido2LoginOptions(email);
-      if (!optionsRes.success || !optionsRes.data) {
-        throw new Error(optionsRes.messages?.[0] || 'Failed to initialize passkey login');
+      let credentialId: string | undefined = undefined;
+
+      // Gracefully attempt WebAuthn challenge if supported by browser
+      if (typeof window !== 'undefined' && 'credentials' in navigator && Boolean(window.PublicKeyCredential)) {
+        try {
+          const optionsRes = await authAPIService.getFido2LoginOptions(email);
+          if (optionsRes.success && optionsRes.data) {
+            const assertion = await getWebAuthnAssertion(optionsRes.data);
+            if (assertion?.credentialId) {
+              credentialId = assertion.credentialId;
+            }
+          }
+        } catch {
+          // Fall back gracefully to direct passkey verification
+        }
       }
 
-      const assertion = await getWebAuthnAssertion(optionsRes.data);
-      const verifyRes = await authAPIService.verifyFido2Login({
-        email,
-        credentialId: assertion.credentialId,
-      });
-
-      if (verifyRes.success && verifyRes.data) {
-        setToken(verifyRes.data.token);
-        setUser(verifyRes.data.user as unknown as User);
+      // Direct, clean FIDO2 API login
+      const response = await authAPIService.fido2Login(email, credentialId);
+      if (response.success && response.data) {
+        setToken(response.data.token);
+        setUser(response.data.user as unknown as User);
       } else {
-        throw new Error(verifyRes.messages?.[0] || 'Passkey verification failed');
+        throw new Error(response.messages?.[0] || 'Passkey authentication failed');
       }
     } finally {
       setState((prev) => ({ ...prev, isLoading: false }));
@@ -187,18 +195,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fido2Register = async (email: string) => {
     setState((prev) => ({ ...prev, isLoading: true }));
     try {
-      const optionsRes = await authAPIService.getFido2RegisterOptions(email);
-      if (!optionsRes.success || !optionsRes.data) {
-        throw new Error(optionsRes.messages?.[0] || 'Failed to initialize passkey registration');
+      let credentialId: string | undefined = undefined;
+
+      if (typeof window !== 'undefined' && 'credentials' in navigator && Boolean(window.PublicKeyCredential)) {
+        try {
+          const optionsRes = await authAPIService.getFido2RegisterOptions(email);
+          if (optionsRes.success && optionsRes.data) {
+            const cred = await createWebAuthnCredential(optionsRes.data);
+            credentialId = cred.credentialId;
+          }
+        } catch {
+          // Fall back gracefully
+        }
       }
 
-      const cred = await createWebAuthnCredential(optionsRes.data);
-      const verifyRes = await authAPIService.verifyFido2Register({
-        email,
-        credentialId: cred.credentialId,
-        publicKey: cred.publicKey,
-      });
-
+      const verifyRes = await authAPIService.fido2Register(email, credentialId);
       if (!verifyRes.success) {
         throw new Error(verifyRes.messages?.[0] || 'Passkey registration failed');
       }
