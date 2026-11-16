@@ -4,6 +4,8 @@
   padding: 0;
   color: #495057;
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .kiran-role-scroll {
@@ -17,8 +19,8 @@
   margin-bottom: 0.6rem;
   padding-left: 0.5rem;
   font-family: "Poppins", sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: #0096c7;
 }
 
@@ -51,7 +53,10 @@
   margin: 1px 0;
   align-items: flex-start;
   color: #000;
-  font: 600 12px/18px "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  font-family: "Poppins", sans-serif;
+  line-height: 18px;
 }
 
 .kiran-role-field > span,
@@ -61,7 +66,8 @@
 
 .kiran-role-field > span {
   margin-bottom: 2px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: #1f2937;
 }
 
@@ -75,7 +81,10 @@
   border: 1px solid #aaa;
   border-radius: 4px;
   box-shadow: none;
-  font: 500 12px/18px "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  font-family: "Poppins", sans-serif;
+  line-height: 18px;
   outline: none;
 }
 
@@ -102,7 +111,10 @@
   border-radius: 4px;
   box-shadow: none;
   cursor: pointer;
-  font: 500 12px/18px "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: "Poppins", sans-serif;
+  line-height: 18px;
   transition: all 0.15s ease;
 }
 
@@ -150,7 +162,8 @@
   color: #495057;
   background: #fdfcfc;
   font-family: "Poppins", sans-serif;
-  font-size: 1rem;
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .kiran-role-table th {
@@ -163,8 +176,8 @@
   color: #fff;
   background: #0096c7;
   border-bottom: 1px solid #0096c7;
-  font-weight: 400;
-  font-size: 0.8125rem;
+  font-weight: 500;
+  font-size: 13px;
   line-height: 1.125rem;
   text-align: left;
   white-space: nowrap;
@@ -189,7 +202,8 @@
   height: auto;
   padding: 0.1875rem 0.625rem 0.1875rem 0;
   border-bottom: 0;
-  font-size: 0.77rem;
+  font-size: 11px;
+  font-weight: 400;
   line-height: 1.5;
   vertical-align: middle;
   white-space: nowrap;
@@ -209,13 +223,16 @@
 }
 
 .kiran-role-table td b {
-  font-weight: 700;
+  font-weight: 500;
+  font-size: 11px;
   color: #212529;
 }
 
 .menu-child-name {
   display: inline-block;
   padding-left: 1.5rem;
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .permission-checks {
@@ -232,7 +249,10 @@
   gap: 0.2rem;
   margin: 0 1rem 0 0;
   color: #495057;
-  font: 400 0.77rem/1.5 "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+  font-family: "Poppins", sans-serif;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
@@ -256,7 +276,8 @@
   color: #535964;
   background: #e9ecef;
   font-family: "Poppins", sans-serif;
-  font-size: 0.77rem;
+  font-size: 11px;
+  font-weight: 400;
   line-height: 1.5;
   display: flex;
   justify-content: space-between;

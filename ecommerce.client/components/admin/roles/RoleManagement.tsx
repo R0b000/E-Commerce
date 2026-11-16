@@ -331,27 +331,27 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
 
         {/* Roles Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3.5 px-6">Role & Identity</th>
-                <th className="py-3.5 px-4">System Code</th>
-                <th className="py-3.5 px-4">Description & Scope</th>
-                <th className="py-3.5 px-4 text-center">Assigned Users</th>
-                <th className="py-3.5 px-6 text-right">Actions</th>
+              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[13px] font-medium text-slate-700 tracking-tight">
+                <th className="py-3 px-6 font-medium text-[13px]">Role & Identity</th>
+                <th className="py-3 px-4 font-medium text-[13px]">System Code</th>
+                <th className="py-3 px-4 font-medium text-[13px]">Description & Scope</th>
+                <th className="py-3 px-4 text-center font-medium text-[13px]">Assigned Users</th>
+                <th className="py-3 px-6 text-right font-medium text-[13px]">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 text-[11px] font-normal">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-16 text-center text-slate-400">
                     <Spin size="default" />
-                    <p className="mt-3 text-xs font-semibold text-slate-500">Loading security roles table...</p>
+                    <p className="mt-3 text-[11px] font-normal text-slate-500">Loading security roles table...</p>
                   </td>
                 </tr>
               ) : filteredRoles.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-400 text-xs">
+                  <td colSpan={5} className="py-12 text-center text-slate-400 text-[11px] font-normal">
                     No security roles found matching "{searchQuery}".
                   </td>
                 </tr>
@@ -364,21 +364,21 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                   return (
                     <tr
                       key={roleId}
-                      className="hover:bg-slate-50/70 transition-colors group cursor-default"
+                      className="hover:bg-slate-50/70 transition-colors group cursor-default text-[11px] font-normal"
                     >
                       {/* Role & Identity */}
-                      <td className="py-4 px-6 whitespace-nowrap">
+                      <td className="py-3 px-6 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg border ${visuals.bg} shrink-0`}
+                            className={`w-9 h-9 rounded-xl flex items-center justify-center text-base border ${visuals.bg} shrink-0`}
                           >
                             {visuals.icon}
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 text-xs sm:text-sm">
+                            <div className="font-medium text-slate-900 text-[11px]">
                               {role.label}
                             </div>
-                            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <div className="text-[10px] text-slate-400 font-normal flex items-center gap-1.5 mt-0.5">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                               <span>{visuals.scope}</span>
                             </div>
@@ -387,37 +387,37 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                       </td>
 
                       {/* System Code */}
-                      <td className="py-4 px-4 whitespace-nowrap">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1 items-start">
                           <Tag
-                            className="m-0 font-bold font-mono text-[11px] uppercase px-2 py-0.5 rounded-md"
+                            className="m-0 font-medium font-mono text-[10px] uppercase px-2 py-0.5 rounded-md"
                             color={visuals.color}
                           >
                             {role.name}
                           </Tag>
-                          <span className="text-[10px] text-slate-400 font-medium">
+                          <span className="text-[10px] text-slate-400 font-normal">
                             {role.isSystem ? 'System Core' : 'Configurable'}
                           </span>
                         </div>
                       </td>
 
                       {/* Description & Scope */}
-                      <td className="py-4 px-4 min-w-[200px] max-w-[280px]">
-                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      <td className="py-3 px-4 min-w-[200px] max-w-[280px]">
+                        <p className="text-[11px] font-normal text-slate-600 line-clamp-2 leading-relaxed">
                           {role.description}
                         </p>
                       </td>
 
                       {/* Assigned Users */}
-                      <td className="py-4 px-4 text-center whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100/80 border border-slate-200/60 text-slate-700 font-semibold text-xs">
-                          <UserOutlined className="text-slate-400 text-[11px]" />
+                      <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100/80 border border-slate-200/60 text-slate-700 font-normal text-[11px]">
+                          <UserOutlined className="text-slate-400 text-[10px]" />
                           <span>{role.userCount || 0}</span>
                         </div>
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <td className="py-3 px-6 text-right whitespace-nowrap">
                         {isSuperuser ? (
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 italic">
                             <LockOutlined /> Unrestricted
