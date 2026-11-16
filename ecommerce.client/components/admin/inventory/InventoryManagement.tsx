@@ -321,16 +321,16 @@ export const InventoryManagement: React.FC = () => {
         </div>
 
         {/* Inventory Stock Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+        <div className="app-table-scroll overflow-x-auto">
+          <table className="app-table w-full text-left">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[12px] font-medium text-slate-500 uppercase tracking-wider">
-                <th className="py-3.5 px-6">Product & SKU</th>
-                <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4">Stock Level & Status</th>
-                <th className="py-3.5 px-4">Unit Price</th>
-                <th className="py-3.5 px-4">Asset Value</th>
-                <th className="py-3.5 px-6 text-right">Quick Restock Actions</th>
+              <tr>
+                <th className="py-2.5 px-6 font-medium text-[12px]">Product & SKU</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Category</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Stock Level & Status</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Unit Price</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Asset Value</th>
+                <th className="py-2.5 px-6 text-right font-medium text-[12px]">Quick Restock Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -481,6 +481,16 @@ export const InventoryManagement: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Bottom Paginator matching /admin/permissions */}
+        <div className="paginator">
+          <span>{filteredProducts.length} Items</span>
+          <div className="flex items-center gap-1.5">
+            <span className="pagination-text px-1">
+              Page 1 of 1
+            </span>
+          </div>
         </div>
       </AppCard>
 

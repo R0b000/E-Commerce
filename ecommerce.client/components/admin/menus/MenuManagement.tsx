@@ -219,16 +219,16 @@ export const MenuManagement: React.FC = () => {
       />
 
       <AppCard bodyStyle={{ padding: 0 }}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className="app-table-scroll overflow-x-auto">
+          <table className="app-table w-full text-left">
             <thead>
-              <tr className="border-b border-slate-200 text-[12px] font-medium text-slate-500 uppercase tracking-wider bg-slate-50/70">
-                <th className="py-3.5 px-6">Order</th>
-                <th className="py-3.5 px-4">Menu Name & Icon</th>
-                <th className="py-3.5 px-4">Route Path</th>
-                <th className="py-3.5 px-4">Required Permission</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-6 text-right">Actions</th>
+              <tr>
+                <th className="py-2.5 px-6 font-medium text-[12px]">Order</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Menu Name & Icon</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Route Path</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Required Permission</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Status</th>
+                <th className="py-2.5 px-6 text-right font-medium text-[12px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
@@ -327,6 +327,16 @@ export const MenuManagement: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Bottom Paginator matching /admin/permissions */}
+        <div className="paginator">
+          <span>{menus.length} Items</span>
+          <div className="flex items-center gap-1.5">
+            <span className="pagination-text px-1">
+              Page 1 of 1
+            </span>
+          </div>
         </div>
       </AppCard>
 

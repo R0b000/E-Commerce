@@ -118,16 +118,16 @@ export const AuditLogManagement: React.FC = () => {
 
       {/* Audit Log Table */}
       <AppCard bodyStyle={{ padding: 0 }}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className="app-table-scroll overflow-x-auto">
+          <table className="app-table w-full text-left">
             <thead>
-              <tr className="border-b border-slate-200 text-[12px] font-medium text-slate-500 uppercase tracking-wider bg-slate-50/70">
-                <th className="py-3.5 px-6">Timestamp</th>
-                <th className="py-3.5 px-4">User & Role</th>
-                <th className="py-3.5 px-4">Action Performed</th>
-                <th className="py-3.5 px-4">Endpoint & Method</th>
-                <th className="py-3.5 px-4">Device & IP</th>
-                <th className="py-3.5 px-6 text-right">Status</th>
+              <tr>
+                <th className="py-2.5 px-6 font-medium text-[12px]">Timestamp</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">User & Role</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Action Performed</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Endpoint & Method</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Device & IP</th>
+                <th className="py-2.5 px-6 text-right font-medium text-[12px]">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-sans">
@@ -228,6 +228,16 @@ export const AuditLogManagement: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Bottom Paginator matching /admin/permissions */}
+        <div className="paginator">
+          <span>{filteredLogs.length} Items</span>
+          <div className="flex items-center gap-1.5">
+            <span className="pagination-text px-1">
+              Page 1 of 1
+            </span>
+          </div>
         </div>
       </AppCard>
     </div>

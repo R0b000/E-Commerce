@@ -331,15 +331,15 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
         </div>
 
         {/* Roles Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <div className="app-table-scroll overflow-x-auto">
+          <table className="app-table w-full text-left">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[12px] font-medium text-slate-700 tracking-tight">
-                <th className="py-3 px-6 font-medium text-[12px]">Role & Identity</th>
-                <th className="py-3 px-4 font-medium text-[12px]">System Code</th>
-                <th className="py-3 px-4 font-medium text-[12px]">Description & Scope</th>
-                <th className="py-3 px-4 text-center font-medium text-[12px]">Assigned Users</th>
-                <th className="py-3 px-6 text-right font-medium text-[12px]">Actions</th>
+              <tr>
+                <th className="py-2.5 px-6 font-medium text-[12px]">Role & Identity</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">System Code</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Description & Scope</th>
+                <th className="py-2.5 px-4 text-center font-medium text-[12px]">Assigned Users</th>
+                <th className="py-2.5 px-6 text-right font-medium text-[12px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-[11px] font-normal">
@@ -434,6 +434,16 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Bottom Paginator matching /admin/permissions */}
+        <div className="paginator">
+          <span>{filteredRoles.length} Items</span>
+          <div className="flex items-center gap-1.5">
+            <span className="pagination-text px-1">
+              Page 1 of 1
+            </span>
+          </div>
         </div>
       </AppCard>
 

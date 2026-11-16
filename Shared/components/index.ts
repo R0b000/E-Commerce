@@ -8,7 +8,7 @@ export { StatCard } from './StatCard';
 export type { StatCardProps } from './StatCard';
 
 export { AppTable } from './AppTable';
-export type { AppTableProps } from './AppTable';
+export type { AppTableProps, AppTableColumn, AppTablePaginationConfig } from './AppTable';
 
 export { AppModal } from './AppModal';
 export type { AppModalProps } from './AppModal';

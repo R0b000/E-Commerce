@@ -1,145 +1,162 @@
 /* =========================================================================
-   Table Stylesheet (table.css)
-   Clean data presentation, typography, row striping & hover interactions
+   Table Stylesheet (table.css) - Matched to /admin/permissions layout
+   Signature Cyan Header (#0096c7), White Text, Zebra Rows & Row Hover (#e0f2fe)
    ========================================================================= */
 
+.app-table-container,
 .app-table-wrapper {
   width: 100%;
   overflow-x: auto;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-light);
-  background-color: var(--bg-card);
-  box-shadow: var(--shadow-card);
-}
-
-.app-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  text-align: left;
-  font-family: var(--font-sans);
+  border-radius: 0.25rem;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 11px;
   font-weight: 400;
-  color: #334155;
 }
 
-/* Table Header */
-.app-table thead th {
-  background-color: #f8fafc;
-  color: #64748b;
-  font-size: 12px;
+.kiran-role-table-scroll,
+.app-table-scroll {
+  position: relative;
+  min-width: 0;
+  max-height: 31.25rem;
+  overflow: auto;
+  border-radius: 0.2rem;
+  scrollbar-width: thin;
+}
+
+/* Master Table Style matching /admin/permissions */
+.kiran-role-table,
+.app-table {
+  width: 99.8%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+  overflow: visible;
+  border: 1px solid rgba(108, 117, 125, 0.45);
+  border-radius: 0.25rem;
+  box-shadow: rgba(17, 17, 26, 0.18) 0 1px 0, rgba(17, 17, 26, 0.14) 0 0 8px;
+  margin: 0 0 0.875rem;
+  color: #495057;
+  background: #fdfcfc;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* Sticky Header with Signature Cyan #0096c7 */
+.kiran-role-table th,
+.app-table thead th,
+.app-table th {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  height: 27px;
+  min-height: 27px;
+  padding: 0.25rem 0.625rem 0.25rem 0.5rem;
+  color: #ffffff !important;
+  background-color: #0096c7 !important;
+  border-bottom: 1px solid #0096c7;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.875rem 1.25rem;
-  border-bottom: 1px solid var(--border-light);
+  font-size: 12px;
+  line-height: 1.125rem;
+  text-align: left;
   white-space: nowrap;
   user-select: none;
 }
 
-.app-table thead th:first-child {
-  border-top-left-radius: var(--radius-lg);
+.kiran-role-table thead tr th:first-child,
+.kiran-role-table tbody tr td:first-child,
+.app-table thead tr th:first-child,
+.app-table tbody tr td:first-child {
+  padding-left: 0.625rem;
 }
 
-.app-table thead th:last-child {
-  border-top-right-radius: var(--radius-lg);
-}
-
-/* Table Body */
-.app-table tbody td {
-  padding: 0.875rem 1.25rem;
+/* Table Body Cells */
+.kiran-role-table td,
+.app-table tbody td,
+.app-table td {
+  height: auto;
+  padding: 0.25rem 0.625rem 0.25rem 0.5rem;
+  border-bottom: 0;
   font-size: 11px;
   font-weight: 400;
-  border-bottom: 1px solid #f1f5f9;
+  line-height: 1.5;
   vertical-align: middle;
-  transition: background-color var(--transition-fast);
+  white-space: nowrap;
 }
 
-.app-table tbody tr:last-child td {
-  border-bottom: none;
+/* Table Rows with subtle border */
+.kiran-role-table tbody tr,
+.app-table tbody tr {
+  height: 1.95rem;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.15);
+  transition: background-color 0.12s ease;
 }
 
-/* Row Hover & Alternating */
+/* Alternating Zebra Striping */
+.kiran-role-table tbody tr:nth-child(even),
+.app-table tbody tr:nth-child(even) {
+  background: rgba(248, 250, 252, 0.7);
+}
+
+/* Hover Interaction: Light Blue Highlight (#e0f2fe) */
+.kiran-role-table tbody tr:hover td,
 .app-table tbody tr:hover td {
-  background-color: #f8fafc;
+  background-color: #e0f2fe !important;
 }
 
-.app-table-striped tbody tr:nth-child(even) td {
-  background-color: #fafbfd;
+.kiran-role-table td b,
+.app-table td b {
+  font-weight: 500;
+  font-size: 11px;
+  color: #212529;
 }
 
-.app-table-striped tbody tr:nth-child(even):hover td {
-  background-color: #f1f5f9;
+/* Bottom Paginator Bar matching /admin/permissions */
+.paginator {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 4px 12px;
+  margin: 7px 0;
+  color: #535964;
+  background: #e9ecef;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 2px;
+  border: 1px solid rgba(210, 205, 205, 0.4);
 }
 
-/* Table Cell Helpers */
-.app-table-cell-bold {
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.app-table-cell-mono {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  color: var(--text-muted);
-}
-
-.app-table-cell-numeric {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-/* Status Pill inside table */
-.table-status-pill {
+.paginator button {
+  width: 26px;
+  min-width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  color: #535964;
+  background: transparent;
+  border: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.2rem 0.65rem;
-  border-radius: var(--radius-full);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.12s ease;
 }
 
-.table-status-pill.success {
-  background-color: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
+.paginator button:hover:not(:disabled) {
+  color: #0096c7;
+  background: rgba(0, 150, 199, 0.12);
 }
 
-.table-status-pill.warning {
-  background-color: var(--color-accent-light);
-  color: #c2410c;
-  border: 1px solid #fed7aa;
+.paginator button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
-.table-status-pill.info {
-  background-color: var(--color-primary-light);
-  color: #0369a1;
-  border: 1px solid #bae6fd;
-}
-
-/* =========================================================================
-   Ant Design Table Overrides
-   ========================================================================= */
-.ant-table-wrapper .ant-table {
-  font-family: var(--font-sans) !important;
-  font-size: var(--text-xs) !important;
-  border-radius: var(--radius-lg);
-}
-
-.ant-table-wrapper .ant-table-thead > tr > th {
-  background: #f8fafc !important;
-  font-weight: 700 !important;
-  font-size: var(--text-2xs) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.05em !important;
-  color: #64748b !important;
-}
-
-.ant-table-wrapper .ant-table-tbody > tr:hover > td {
-  background-color: #f8fafc !important;
+.pagination-text {
+  font-weight: 400;
 }
