@@ -290,14 +290,14 @@ export const ProductManagement: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
-                <th className="py-3.5 px-6">Product</th>
-                <th className="py-3.5 px-4">SKU</th>
-                <th className="py-3.5 px-4">Department</th>
-                <th className="py-3.5 px-4">Price</th>
-                <th className="py-3.5 px-4">Stock Units</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-6 text-right">Actions</th>
+              <tr className="border-b border-slate-200 text-[12px] font-medium text-slate-600 uppercase tracking-wider bg-slate-50/70">
+                <th className="py-3 px-6 font-medium text-[12px]">Product</th>
+                <th className="py-3 px-4 font-medium text-[12px]">SKU</th>
+                <th className="py-3 px-4 font-medium text-[12px]">Department</th>
+                <th className="py-3 px-4 font-medium text-[12px]">Price</th>
+                <th className="py-3 px-4 font-medium text-[12px]">Stock Units</th>
+                <th className="py-3 px-4 font-medium text-[12px]">Status</th>
+                <th className="py-3 px-6 text-right font-medium text-[12px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

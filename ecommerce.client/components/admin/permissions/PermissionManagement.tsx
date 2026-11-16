@@ -4,6 +4,7 @@ import { Spin } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { RoleItem, MenuItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
+import { AppSelect } from 'shared-components';
 import './MenuRoleSetup.css';
 
 interface MatrixMenu {
@@ -374,41 +375,43 @@ export const PermissionManagement: React.FC = () => {
         <div className="kiran-role-card">
           {/* Top Filter Bar */}
           <div className="kiran-role-filters">
-            <label className="kiran-role-field">
+            <div className="kiran-role-field">
               <span>Roles</span>
-              <select
+              <AppSelect
                 value={selectedRoleId}
-                onChange={(e) => {
-                  setSelectedRoleId(e.target.value);
+                onChange={(val) => {
+                  setSelectedRoleId(val || '0');
                   setCurrentPage(1);
                 }}
-              >
-                <option value="0">Select</option>
-                {roles.map((r) => (
-                  <option key={r.id || r.name} value={r.name}>
-                    {r.label || r.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                className="w-[90%]"
+                options={[
+                  { label: 'Select', value: '0' },
+                  ...roles.map((r) => ({
+                    label: r.label || r.name,
+                    value: r.name,
+                  })),
+                ]}
+              />
+            </div>
 
-            <label className="kiran-role-field">
+            <div className="kiran-role-field">
               <span>Parent Menu</span>
-              <select
+              <AppSelect
                 value={selectedParentId}
-                onChange={(e) => {
-                  setSelectedParentId(e.target.value);
+                onChange={(val) => {
+                  setSelectedParentId(val || '');
                   setCurrentPage(1);
                 }}
-              >
-                <option value="">All</option>
-                {parentMenus.map((pm) => (
-                  <option key={pm.id} value={pm.id}>
-                    {pm.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+                className="w-[90%]"
+                options={[
+                  { label: 'All', value: '' },
+                  ...parentMenus.map((pm) => ({
+                    label: pm.name,
+                    value: pm.id,
+                  })),
+                ]}
+              />
+            </div>
 
             <button
               className="kiran-role-save"

@@ -333,12 +333,12 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[13px] font-medium text-slate-700 tracking-tight">
-                <th className="py-3 px-6 font-medium text-[13px]">Role & Identity</th>
-                <th className="py-3 px-4 font-medium text-[13px]">System Code</th>
-                <th className="py-3 px-4 font-medium text-[13px]">Description & Scope</th>
-                <th className="py-3 px-4 text-center font-medium text-[13px]">Assigned Users</th>
-                <th className="py-3 px-6 text-right font-medium text-[13px]">Actions</th>
+              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[12px] font-medium text-slate-700 tracking-tight">
+                <th className="py-3 px-6 font-medium text-[12px]">Role & Identity</th>
+                <th className="py-3 px-4 font-medium text-[12px]">System Code</th>
+                <th className="py-3 px-4 font-medium text-[12px]">Description & Scope</th>
+                <th className="py-3 px-4 text-center font-medium text-[12px]">Assigned Users</th>
+                <th className="py-3 px-6 text-right font-medium text-[12px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-[11px] font-normal">

@@ -221,7 +221,7 @@ export const MenuManagement: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
+              <tr className="border-b border-slate-200 text-[12px] font-medium text-slate-500 uppercase tracking-wider bg-slate-50/70">
                 <th className="py-3.5 px-6">Order</th>
                 <th className="py-3.5 px-4">Menu Name & Icon</th>
                 <th className="py-3.5 px-4">Route Path</th>

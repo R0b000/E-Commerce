@@ -21,6 +21,7 @@ import { useToast } from '../../../context/ToastContext';
 import {
   AppCard,
   AppButton,
+  AppSelect,
   AppModal,
   PageHeader,
 } from 'shared-components';
@@ -288,21 +289,21 @@ export const InventoryManagement: React.FC = () => {
             </div>
 
             {/* Category Dropdown */}
-            <select
+            <AppSelect
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 focus:outline-none focus:border-[#0284c7] cursor-pointer"
-            >
-              <option value="all">All Categories</option>
-              {categories.map((c) => {
-                const cId = (c._id || c.id) as string;
-                return (
-                  <option key={cId} value={cId}>
-                    {c.name}
-                  </option>
-                );
-              })}
-            </select>
+              onChange={(val) => setCategoryFilter(val as string)}
+              style={{ width: 180 }}
+              options={[
+                { label: 'All Categories', value: 'all' },
+                ...categories.map((c) => {
+                  const cId = (c._id || c.id) as string;
+                  return {
+                    label: c.name,
+                    value: cId,
+                  };
+                }),
+              ]}
+            />
 
             {/* Search Input */}
             <div className="relative w-full sm:w-56">
@@ -322,7 +323,7 @@ export const InventoryManagement: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[12px] font-medium text-slate-500 uppercase tracking-wider">
                 <th className="py-3.5 px-6">Product & SKU</th>
                 <th className="py-3.5 px-4">Category</th>
                 <th className="py-3.5 px-4">Stock Level & Status</th>
@@ -560,17 +561,18 @@ export const InventoryManagement: React.FC = () => {
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Adjustment Reason
             </label>
-            <select
+            <AppSelect
               value={adjustReason}
-              onChange={(e) => setAdjustReason(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white focus:outline-none focus:border-[#0284c7]"
-            >
-              <option value="Restock Supplier Shipment">Restock Supplier Shipment</option>
-              <option value="Customer Return Restock">Customer Return Restock</option>
-              <option value="Physical Cycle Count Audit">Physical Cycle Count Audit</option>
-              <option value="Damaged / Write-Off Deduction">Damaged / Write-Off Deduction</option>
-              <option value="Internal Transfer">Internal Transfer</option>
-            </select>
+              onChange={(val) => setAdjustReason(val as string)}
+              className="w-full"
+              options={[
+                { label: 'Restock Supplier Shipment', value: 'Restock Supplier Shipment' },
+                { label: 'Customer Return Restock', value: 'Customer Return Restock' },
+                { label: 'Physical Cycle Count Audit', value: 'Physical Cycle Count Audit' },
+                { label: 'Damaged / Write-Off Deduction', value: 'Damaged / Write-Off Deduction' },
+                { label: 'Internal Transfer', value: 'Internal Transfer' },
+              ]}
+            />
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">

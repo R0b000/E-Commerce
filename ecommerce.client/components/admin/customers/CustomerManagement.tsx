@@ -226,7 +226,7 @@ export const CustomerManagement: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/70">
+              <tr className="border-b border-slate-200 text-[12px] font-medium text-slate-500 uppercase tracking-wider bg-slate-50/70">
                 <th className="py-3.5 px-6">User / Merchant</th>
                 <th className="py-3.5 px-4">Contact & Location</th>
                 <th className="py-3.5 px-4">Role</th>

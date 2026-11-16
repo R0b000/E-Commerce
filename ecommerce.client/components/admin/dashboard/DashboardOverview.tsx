@@ -269,12 +269,12 @@ export const DashboardOverview: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">
-                    <th className="pb-3 font-semibold">Order #</th>
-                    <th className="pb-3 font-semibold">Items</th>
-                    <th className="pb-3 font-semibold">Total</th>
-                    <th className="pb-3 font-semibold">Status</th>
-                    <th className="pb-3 font-semibold text-right">Action</th>
+                  <tr className="border-b border-slate-100 text-[12px] font-medium text-slate-400 uppercase tracking-wider pb-2">
+                    <th className="pb-3 font-medium">Order #</th>
+                    <th className="pb-3 font-medium">Items</th>
+                    <th className="pb-3 font-medium">Total</th>
+                    <th className="pb-3 font-medium">Status</th>
+                    <th className="pb-3 font-medium text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -664,12 +664,12 @@ export const DashboardOverview: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider pb-2">
-                  <th className="pb-3 font-semibold">Order Number</th>
-                  <th className="pb-3 font-semibold">Customer</th>
-                  <th className="pb-3 font-semibold">Items</th>
-                  <th className="pb-3 font-semibold">Total Amount</th>
-                  <th className="pb-3 font-semibold">Status</th>
+                <tr className="border-b border-slate-100 text-[12px] font-medium text-slate-400 uppercase tracking-wider pb-2">
+                  <th className="pb-3 font-medium">Order Number</th>
+                  <th className="pb-3 font-medium">Customer</th>
+                  <th className="pb-3 font-medium">Items</th>
+                  <th className="pb-3 font-medium">Total Amount</th>
+                  <th className="pb-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
