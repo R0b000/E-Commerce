@@ -24,6 +24,7 @@ import {
   AppSelect,
   AppModal,
   PageHeader,
+  TableSkeleton,
 } from 'shared-components';
 
 export const InventoryManagement: React.FC = () => {
@@ -334,14 +335,7 @@ export const InventoryManagement: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center text-slate-400">
-                    <Spin size="default" />
-                    <p className="mt-3 text-xs font-semibold text-slate-500">
-                      Loading warehouse inventory...
-                    </p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={6} rows={6} hasAvatar={false} />
               ) : filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">

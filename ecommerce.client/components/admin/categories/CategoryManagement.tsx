@@ -16,6 +16,7 @@ import {
   AppInput,
   AppModal,
   PageHeader,
+  CardSkeleton,
 } from 'shared-components';
 
 export const CategoryManagement: React.FC = () => {
@@ -152,10 +153,7 @@ export const CategoryManagement: React.FC = () => {
       />
 
       {loading ? (
-        <div className="p-16 text-center text-slate-500">
-          <Spin />
-          <p className="mt-2 text-xs">Loading department taxonomy...</p>
-        </div>
+        <CardSkeleton count={6} columns={3} />
       ) : categories.length === 0 ? (
         <AppCard>
           <div className="p-12 text-center">

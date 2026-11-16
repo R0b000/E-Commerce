@@ -24,3 +24,16 @@ export type { StatusType } from './StatusBadge';
 
 export { PageHeader } from './PageHeader';
 export type { PageHeaderProps } from './PageHeader';
+
+export {
+  AppSkeleton,
+  TableSkeleton,
+  CardSkeleton,
+  DashboardSkeleton,
+  MatrixSkeleton,
+} from './AppSkeleton';
+export type {
+  AppSkeletonProps,
+  TableSkeletonProps,
+  CardSkeletonProps,
+} from './AppSkeleton';

@@ -33,7 +33,7 @@ import { useAuth } from 'auth-client/hooks/useAuth';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { DashboardMetrics, Order } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
-import { StatusBadge } from 'shared-components';
+import { StatusBadge, DashboardSkeleton } from 'shared-components';
 import { OrderMapTracker } from '../orders/OrderMapTracker';
 
 export const DashboardOverview: React.FC = () => {
@@ -82,12 +82,7 @@ export const DashboardOverview: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4 font-['Poppins','Inter',sans-serif]">
-        <Spin size="large" />
-        <p className="text-slate-500 text-sm font-medium">Loading live analytics...</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const summary = metrics?.summary || {

@@ -29,6 +29,7 @@ import {
   AppInput,
   AppModal,
   PageHeader,
+  TableSkeleton,
 } from 'shared-components';
 
 const AVAILABLE_ICONS = [
@@ -232,12 +233,7 @@ export const MenuManagement: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500">
-                    <Spin />
-                    <p className="mt-2 text-xs">Fetching dynamic navigation items...</p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={6} rows={5} hasAvatar={false} />
               ) : menus.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">

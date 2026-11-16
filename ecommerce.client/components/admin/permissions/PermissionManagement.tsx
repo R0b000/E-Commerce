@@ -4,7 +4,7 @@ import { Spin } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { RoleItem, MenuItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
-import { AppSelect } from 'shared-components';
+import { AppSelect, MatrixSkeleton } from 'shared-components';
 import './MenuRoleSetup.css';
 
 interface MatrixMenu {
@@ -425,9 +425,8 @@ export const PermissionManagement: React.FC = () => {
 
           {/* Matrix Grid */}
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-              <Spin size="large" />
-              <span className="mt-3 text-xs font-medium text-slate-600">Loading permissions…</span>
+            <div className="p-6">
+              <MatrixSkeleton />
             </div>
           ) : (
             <div className="kiran-role-grid">

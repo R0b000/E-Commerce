@@ -22,6 +22,7 @@ import {
   AppModal,
   PageHeader,
   StatusBadge,
+  TableSkeleton,
 } from 'shared-components';
 
 export const ProductManagement: React.FC = () => {
@@ -302,12 +303,7 @@ export const ProductManagement: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-500 text-sm">
-                    <Spin />
-                    <p className="mt-2 text-xs">Loading catalog inventory...</p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={7} rows={6} hasAvatar={true} />
               ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 text-sm">

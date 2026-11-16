@@ -20,6 +20,7 @@ import {
   AppButton,
   AppInput,
   PageHeader,
+  CardSkeleton,
 } from 'shared-components';
 
 export const ReviewManagement: React.FC = () => {
@@ -183,10 +184,7 @@ export const ReviewManagement: React.FC = () => {
 
       {/* Reviews List */}
       {loading ? (
-        <div className="py-20 text-center text-slate-500">
-          <Spin size="large" />
-          <p className="mt-3 text-sm">Loading customer reviews...</p>
-        </div>
+        <CardSkeleton count={4} columns={2} />
       ) : filteredReviews.length === 0 ? (
         <AppCard>
           <div className="py-12 text-center text-slate-400 text-sm">

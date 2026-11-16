@@ -26,6 +26,7 @@ import {
   AppButton,
   AppModal,
   PageHeader,
+  TableSkeleton,
 } from 'shared-components';
 import { RoleManagementProps } from './RoleManagement.types';
 
@@ -343,12 +344,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
             </thead>
             <tbody className="divide-y divide-slate-100 text-[11px] font-normal">
               {loading ? (
-                <tr>
-                  <td colSpan={5} className="py-16 text-center text-slate-400">
-                    <Spin size="default" />
-                    <p className="mt-3 text-[11px] font-normal text-slate-500">Loading security roles table...</p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={5} rows={5} hasAvatar={true} />
               ) : filteredRoles.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-slate-400 text-[11px] font-normal">

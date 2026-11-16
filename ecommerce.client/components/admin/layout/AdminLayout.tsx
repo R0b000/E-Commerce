@@ -34,7 +34,7 @@ import { io, Socket } from 'socket.io-client';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { Role } from 'auth-client/config/appConfig';
 import { useToast } from '../../../context/ToastContext';
-import { AppButton } from 'shared-components/AppButton';
+import { AppButton, DashboardSkeleton } from 'shared-components';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem } from '../../../types/ecommerce.types';
 import { RoleSwitcherSelect } from './RoleSwitcherSelect';
@@ -498,12 +498,24 @@ export const AdminLayout: React.FC = () => {
     </div>
   );
 
-  // Auth Middleware check: if not logged in, block rendering and show verification
+  // Auth Middleware check: if not logged in, block rendering and show verification skeleton
   if (!token) {
     return (
-      <div className="min-h-screen bg-[#f4f6f9] flex flex-col items-center justify-center space-y-3 font-['Poppins','Inter',sans-serif]">
-        <Spin size="large" />
-        <p className="text-xs font-semibold text-slate-500">Checking authentication token...</p>
+      <div className="min-h-screen bg-[#f4f6f9] flex flex-col font-['Poppins','Inter',sans-serif]">
+        <div className="h-14 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between">
+          <div className="w-32 h-6 bg-slate-200 animate-pulse rounded-lg" />
+          <div className="w-48 h-8 bg-slate-200 animate-pulse rounded-full" />
+        </div>
+        <div className="flex-1 flex">
+          <div className="w-64 bg-white border-r border-slate-200/80 p-4 space-y-3 hidden md:block">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-9 bg-slate-100 animate-pulse rounded-xl" />
+            ))}
+          </div>
+          <div className="flex-1 p-6">
+            <DashboardSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
@@ -710,9 +722,10 @@ export const AdminLayout: React.FC = () => {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {loadingMenus ? (
-            <div className="py-12 text-center text-slate-400 text-xs">
-              <Spin size="small" />
-              <p className="mt-2 text-[11px]">Loading navigation...</p>
+            <div className="p-3 space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-10 bg-slate-100 animate-pulse rounded-xl" />
+              ))}
             </div>
           ) : (
             filteredMenus.map((item) => {

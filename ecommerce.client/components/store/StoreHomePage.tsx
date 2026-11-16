@@ -15,7 +15,7 @@ import { ecommerceService } from '../../services/EcommerceAPIService';
 import { Product, Category, ReviewItem } from '../../types/ecommerce.types';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
-import { AppCard, AppButton, AppModal } from 'shared-components';
+import { AppCard, AppButton, AppModal, CardSkeleton } from 'shared-components';
 
 export const StoreHomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -195,10 +195,7 @@ export const StoreHomePage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="py-20 text-center text-slate-400 text-xs">
-            <Spin size="large" />
-            <p className="mt-3">Loading catalog treasures...</p>
-          </div>
+          <CardSkeleton count={8} columns={4} />
         ) : filteredProducts.length === 0 ? (
           <div className="py-20 text-center text-slate-400 text-sm bg-slate-50 rounded-2xl">
             No products found matching your search.

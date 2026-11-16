@@ -22,6 +22,7 @@ import {
   AppButton,
   AppInput,
   PageHeader,
+  TableSkeleton,
 } from 'shared-components';
 
 export const AuditLogManagement: React.FC = () => {
@@ -131,12 +132,7 @@ export const AuditLogManagement: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 font-sans">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-500 text-sm">
-                    <Spin />
-                    <p className="mt-2 text-xs">Loading audit events...</p>
-                  </td>
-                </tr>
+                <TableSkeleton columns={6} rows={6} hasAvatar={false} />
               ) : filteredLogs.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400 text-sm">
