@@ -855,22 +855,6 @@ export const AdminLayout: React.FC = () => {
       {/* =========================================================================
           Main Content Canvas (Fluid Window Ratio Sizing)
          ========================================================================= */}
-      {sessionStorage.getItem('testRoleOverride') && (
-        <div className="bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border-b border-orange-200 px-6 py-2 flex items-center justify-between text-xs z-20">
-          <div className="flex items-center gap-2 text-slate-800">
-            <span className="w-2 h-2 rounded-full bg-[#f97316] animate-pulse" />
-            <span>
-              Currently testing in <strong>{userRole.toUpperCase()}</strong> POV — navigation and privileges are dynamically scoped.
-            </span>
-          </div>
-          <button
-            onClick={() => switchRole('admin')}
-            className="font-bold text-[#0284c7] hover:underline cursor-pointer text-xs"
-          >
-            ↺ Restore Super Admin
-          </button>
-        </div>
-      )}
       <main className="flex-1 w-full">
         <div className="w-full px-[3.5vw] py-6">
           <Outlet />
