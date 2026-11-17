@@ -36,9 +36,9 @@
   --radius-full: 9999px;
 
   /* Standard Form Control & Component Heights */
-  --control-height-sm: 32px;
-  --control-height: 38px;
-  --control-height-lg: 44px;
+  --control-height-sm: 28px;
+  --control-height: 32px;
+  --control-height-lg: 40px;
 
   /* Strict Z-Index Hierarchy:
      1. Drawer (Top-most)

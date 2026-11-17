@@ -226,7 +226,10 @@ select:not(.select-sm):not(.select-lg) {
   display: inline-flex !important;
   align-items: center !important;
   box-sizing: border-box !important;
-  padding: 0 12px !important;
+  padding: 0 10px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
   width: 100% !important;
 }
 

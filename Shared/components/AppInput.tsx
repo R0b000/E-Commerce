@@ -24,7 +24,7 @@ export const AppInput: React.FC<AppInputProps> = ({
       <AntInput
         status={error ? 'error' : undefined}
         onChange={onChange}
-        className={`w-full rounded-lg px-3 border-slate-300 focus:border-[#0096C7] ${className}`}
+        className={`w-full h-[32px] rounded-md px-2.5 border-slate-300 focus:border-[#0096C7] ${className}`}
         {...props}
       />
       {error && <p className="text-xs text-rose-500 font-medium">{error}</p>}
