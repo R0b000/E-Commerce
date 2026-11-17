@@ -148,7 +148,7 @@ export const ReviewManagement: React.FC = () => {
       {/* Filter and Search Bar */}
       <AppCard>
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="w-full sm:w-[250px] max-w-[250px] shrink-0">
+          <div className="w-full sm:w-[350px] max-w-[350px] shrink-0">
             <AppInput
               prefix={<SearchOutlined className="text-slate-400" />}
               value={searchQuery}

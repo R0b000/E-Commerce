@@ -290,7 +290,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
       <AppCard className="overflow-hidden border border-slate-200/80 rounded-2xl shadow-xs p-0">
         {/* Table Top Filter Bar with Action on the Right */}
         <div className="p-3 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
-          <div className="w-full sm:w-[250px] max-w-[250px] shrink-0">
+          <div className="w-full sm:w-[350px] max-w-[350px] shrink-0">
             <AppInput
               prefix={<SearchOutlined className="text-slate-400" />}
               placeholder="Search roles..."
