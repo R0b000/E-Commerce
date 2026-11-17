@@ -302,7 +302,7 @@ export const InventoryManagement: React.FC = () => {
             />
 
             {/* Search Input */}
-            <div className="w-full sm:w-[180px] max-w-[180px] shrink-0">
+            <div className="w-full sm:w-[250px] max-w-[250px] shrink-0">
               <AppInput
                 prefix={<SearchOutlined className="text-slate-400" />}
                 placeholder="Search inventory..."

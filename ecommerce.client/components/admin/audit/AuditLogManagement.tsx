@@ -76,7 +76,7 @@ export const AuditLogManagement: React.FC = () => {
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="w-full sm:w-[180px] max-w-[180px] shrink-0">
+          <div className="w-full sm:w-[250px] max-w-[250px] shrink-0">
             <AppInput
               prefix={<SearchOutlined className="text-slate-400" />}
               value={searchQuery}

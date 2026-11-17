@@ -255,7 +255,7 @@ export const ProductManagement: React.FC = () => {
       {/* Filter and Search Bar with Action on the Right */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
         <div className="flex flex-wrap items-center gap-3">
-          <form onSubmit={handleSearchSubmit} className="w-full sm:w-[180px] max-w-[180px] shrink-0">
+          <form onSubmit={handleSearchSubmit} className="w-full sm:w-[250px] max-w-[250px] shrink-0">
             <AppInput
               prefix={<SearchOutlined className="text-slate-400" />}
               value={searchQuery}
