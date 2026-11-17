@@ -17,27 +17,26 @@
 .app-table-scroll {
   position: relative;
   min-width: 0;
-  max-height: 31.25rem;
-  overflow: auto;
-  border-radius: 0.2rem;
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 0;
   scrollbar-width: thin;
 }
 
 /* Master Table Style matching /admin/permissions */
 .kiran-role-table,
 .app-table {
-  width: 99.8%;
+  width: 100% !important;
   min-width: 0;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
   overflow: visible;
-  border: 1px solid rgba(108, 117, 125, 0.45);
-  border-radius: 0.25rem;
-  box-shadow: rgba(17, 17, 26, 0.18) 0 1px 0, rgba(17, 17, 26, 0.14) 0 0 8px;
-  margin: 0 0 0.875rem;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
   color: #495057;
-  background: #fdfcfc;
-  font-family: "Poppins", sans-serif;
+  background: #ffffff;
+  font-family: var(--font-sans, "Nunito Sans", "Poppins", sans-serif);
   font-size: 11px;
   font-weight: 400;
 }
@@ -111,52 +110,146 @@
   color: #212529;
 }
 
-/* Bottom Paginator Bar matching /admin/permissions */
+/* =========================================================================
+   Material Design Table Paginator (Matching User Reference)
+   Right-aligned: "Rows per page: 10 ▾", "1-10 of 100", "<", ">"
+   ========================================================================= */
 .paginator {
-  flex: 0 0 auto;
-  min-height: 0;
-  padding: 4px 12px;
-  margin: 7px 0;
-  color: #535964;
-  background: #e9ecef;
-  font-family: "Poppins", sans-serif;
-  font-size: 11px;
-  font-weight: 400;
-  line-height: 1.5;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-radius: 2px;
-  border: 1px solid rgba(210, 205, 205, 0.4);
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 20px !important;
+  padding: 10px 16px !important;
+  margin: 0 !important;
+  border-top: 1px solid #f1f5f9 !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  background: transparent !important;
+  color: #64748b !important;
+  font-family: var(--font-sans, "Nunito Sans", system-ui, sans-serif) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
-.paginator button {
-  width: 26px;
-  min-width: 26px;
-  height: 26px;
-  min-height: 26px;
-  padding: 0;
-  color: #535964;
-  background: transparent;
-  border: 0;
+.paginator-rows-per-page {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.paginator-select {
+  background: transparent;
+  border: 0;
+  outline: none !important;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1e293b;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.12s ease;
+  padding: 2px 4px;
 }
 
-.paginator button:hover:not(:disabled) {
-  color: #0096c7;
-  background: rgba(0, 150, 199, 0.12);
+.paginator-range {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
 }
 
-.paginator button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+.paginator button,
+.paginator-btn {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  color: #09090b !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: all 0.15s ease !important;
+  outline: none !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.paginator button:hover:not(:disabled),
+.paginator-btn:hover:not(:disabled) {
+  background: #e2e8f0 !important;
+  color: #000000 !important;
+}
+
+.paginator button:disabled,
+.paginator-btn:disabled {
+  opacity: 0.8 !important;
+  color: #1e293b !important;
+  cursor: not-allowed !important;
+  background: transparent !important;
 }
 
 .pagination-text {
-  font-weight: 400;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  color: #334155 !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+
+/* Ant Design Table Pagination Harmonization */
+.ant-pagination {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 5px !important;
+  margin: 14px 0 0 !important;
+  font-family: var(--font-sans, "Nunito Sans", "Poppins", sans-serif) !important;
+}
+
+.ant-pagination-item {
+  border-radius: 7px !important;
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  line-height: 26px !important;
+  transition: all 0.15s ease !important;
+}
+
+.ant-pagination-item:hover {
+  border-color: #0284c7 !important;
+  color: #0284c7 !important;
+  background: #f0f9ff !important;
+}
+
+.ant-pagination-item-active {
+  background: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.ant-pagination-item-active a {
+  color: #ffffff !important;
+}
+
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+  border-radius: 7px !important;
+  border-color: #e2e8f0 !important;
+  background: #ffffff !important;
+  min-width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }

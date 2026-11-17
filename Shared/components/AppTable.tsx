@@ -45,7 +45,7 @@ export function AppTable<T extends object = any>({
   pagination,
   className = '',
   wrapperClassName = '',
-  maxHeight = '31.25rem',
+  maxHeight,
   children,
 }: AppTableProps<T>) {
   const records = dataSource || data || [];
@@ -88,7 +88,7 @@ export function AppTable<T extends object = any>({
   };
 
   return (
-    <div className={`app-table-container w-full font-['Poppins','Inter',sans-serif] ${wrapperClassName}`}>
+    <div className={`app-table-container w-full font-['Nunito_Sans','Poppins',sans-serif] ${wrapperClassName}`}>
       {/* Scrollable Table View matching /admin/permissions layout */}
       <div
         className="kiran-role-table-scroll app-table-scroll"
@@ -167,29 +167,55 @@ export function AppTable<T extends object = any>({
         </table>
       </div>
 
-      {/* Bottom Paginator matching /admin/permissions exactly */}
+      {/* Bottom Paginator (Material Design Table Pagination matching user reference) */}
       {isPaginationEnabled && (
         <div className="paginator">
-          <span>{totalItems} Items</span>
-          <div className="flex items-center gap-1.5">
+          <div className="paginator-rows-per-page">
+            <span>Rows per page:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                const newSize = Number(e.target.value);
+                if (pagination && pagination.onChange) {
+                  pagination.onChange(1, newSize);
+                }
+              }}
+              className="paginator-select"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          <span className="paginator-range">
+            {records.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, totalItems)} of {totalItems}
+          </span>
+
+          <div className="flex items-center gap-1">
             <button
               type="button"
               disabled={currentPage <= 1}
               onClick={handlePrevPage}
-              title="Previous Page"
+              title="Previous page"
+              className="paginator-btn"
             >
-              <LeftOutlined style={{ fontSize: 11 }} />
+              <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.8} d="M15 19l-7-7 7-7" />
+              </svg>
             </button>
-            <span className="pagination-text px-1">
-              Page {currentPage} of {totalPages}
-            </span>
             <button
               type="button"
               disabled={currentPage >= totalPages}
               onClick={handleNextPage}
-              title="Next Page"
+              title="Next page"
+              className="paginator-btn"
             >
-              <RightOutlined style={{ fontSize: 11 }} />
+              <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.8} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           </div>
         </div>

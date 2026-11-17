@@ -178,7 +178,7 @@ router.post('/fido2/login-verify', async (req, res) => {
 
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
-    const response = await authService.getUserProfile(req.user.id);
+    const response = await authService.getUserProfile(req.user.id, req.user);
     res.status(response.statusCode || (response.success ? 200 : 404)).json(response);
   } catch (error) {
     res.status(500).json({

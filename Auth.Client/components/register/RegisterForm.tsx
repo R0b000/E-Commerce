@@ -142,7 +142,7 @@ export const RegisterForm = ({
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               disabled={isLoading}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm disabled:opacity-60"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm disabled:opacity-60"
               required
             />
           </div>
@@ -158,7 +158,7 @@ export const RegisterForm = ({
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               disabled={isLoading}
-              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm disabled:opacity-60"
+              className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm disabled:opacity-60"
               required
             />
           </div>
@@ -176,7 +176,7 @@ export const RegisterForm = ({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
-            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm disabled:opacity-60"
+            className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm disabled:opacity-60"
             required
           />
         </div>
@@ -194,7 +194,7 @@ export const RegisterForm = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
-              className="w-full px-3.5 pr-10 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm disabled:opacity-60"
+              className="w-full px-3.5 pr-10 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm disabled:opacity-60"
               required
             />
             <button
@@ -245,7 +245,7 @@ export const RegisterForm = ({
                   value={vendorName}
                   onChange={(e) => setVendorName(e.target.value)}
                   required={role === 'seller'}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:outline-none focus:border-slate-400"
                 />
               </div>
 
@@ -259,7 +259,7 @@ export const RegisterForm = ({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required={role === 'seller'}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:outline-none focus:border-slate-400"
                 />
               </div>
             </div>
@@ -275,7 +275,7 @@ export const RegisterForm = ({
                   value={businessLocation}
                   onChange={(e) => setBusinessLocation(e.target.value)}
                   required={role === 'seller'}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:outline-none focus:border-slate-400"
                 />
               </div>
 
@@ -289,7 +289,7 @@ export const RegisterForm = ({
                   value={taxId}
                   onChange={(e) => setTaxId(e.target.value)}
                   required={role === 'seller'}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:outline-none focus:border-slate-400"
                 />
               </div>
             </div>
@@ -301,7 +301,7 @@ export const RegisterForm = ({
               <select
                 value={businessCategory}
                 onChange={(e) => setBusinessCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:outline-none focus:border-slate-400"
               >
                 <option value="Handicrafts & Woolens">Handicrafts & Woolens</option>
                 <option value="Organic Teas & Herbs">Organic Teas & Herbs</option>
@@ -321,7 +321,7 @@ export const RegisterForm = ({
                 placeholder="Tell buyers about your craftsmanship, origin and heritage..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-slate-900 text-xs focus:outline-none focus:border-slate-400 resize-none"
               />
             </div>
 
@@ -372,7 +372,7 @@ export const RegisterForm = ({
                 setAgreementAccepted(e.target.checked);
                 if (e.target.checked) setAgreementError(null);
               }}
-              className="mt-1 h-4 w-4 rounded border-slate-300 text-orange-600 focus:ring-orange-500 cursor-pointer shrink-0"
+              className="mt-1 h-4 w-4 rounded border-slate-300 text-orange-600 focus:outline-none cursor-pointer shrink-0"
             />
             <label htmlFor="agreement-checkbox" className="text-xs text-slate-700 select-none cursor-pointer leading-relaxed">
               {isSeller ? (
@@ -437,7 +437,7 @@ export const RegisterForm = ({
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-slate-900/10 hover:shadow-lg mt-2"
+          className="w-full bg-slate-900 text-white font-semibold py-3 px-4 rounded-xl hover:bg-slate-800 focus:outline-none disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-slate-900/10 hover:shadow-lg mt-2"
         >
           {isLoading ? (
             <>

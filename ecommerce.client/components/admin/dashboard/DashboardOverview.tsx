@@ -134,11 +134,11 @@ export const DashboardOverview: React.FC = () => {
   // =========================================================================
   if (isCustomer) {
     return (
-      <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
+      <div className="space-y-6 w-full font-['Nunito_Sans','Poppins',sans-serif]">
         {/* Customer Welcome Header Card */}
         <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0284c7] to-cyan-500 text-white flex items-center justify-center text-lg font-bold shadow-md shadow-blue-500/20">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0284c7] border border-blue-100 flex items-center justify-center text-base font-bold shrink-0">
               <SmileOutlined />
             </div>
             <div>
@@ -420,7 +420,7 @@ export const DashboardOverview: React.FC = () => {
   // ADMIN / SELLER / MANAGER DASHBOARD VIEW
   // =========================================================================
   return (
-    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
+    <div className="space-y-6 w-full font-['Nunito_Sans','Poppins',sans-serif]">
       {/* =========================================================================
           Row 1: 4 KPI Cards (Orange & Blue Brand Theme)
          ========================================================================= */}

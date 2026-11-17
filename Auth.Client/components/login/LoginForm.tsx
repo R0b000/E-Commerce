@@ -259,7 +259,7 @@ export const LoginForm = ({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm disabled:opacity-60"
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm disabled:opacity-60"
                 required
               />
             </div>
@@ -311,7 +311,7 @@ export const LoginForm = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm disabled:opacity-60"
+                className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-xl bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-400 transition-all text-sm disabled:opacity-60"
                 required
               />
               <button
@@ -350,7 +350,7 @@ export const LoginForm = ({
                 maxLength={6}
                 value={totpCode}
                 onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
-                className="w-full px-4 py-2 border border-sky-300 rounded-xl bg-white text-slate-900 text-center font-mono tracking-widest text-lg font-bold focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500"
+                className="w-full px-4 py-2 border border-sky-300 rounded-xl bg-white text-slate-900 text-center font-mono tracking-widest text-lg font-bold focus:outline-none focus:border-sky-500"
                 autoFocus
                 required
               />
@@ -366,7 +366,7 @@ export const LoginForm = ({
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
               disabled={isLoading}
-              className="h-4.5 w-4.5 rounded border-slate-300 text-orange-600 focus:ring-orange-500 focus:ring-offset-0 transition-colors disabled:opacity-60 cursor-pointer"
+              className="h-4.5 w-4.5 rounded border-slate-300 text-orange-600 focus:outline-none transition-colors disabled:opacity-60 cursor-pointer"
             />
             <label htmlFor="remember-me" className="ml-2.5 block text-xs text-slate-600 select-none cursor-pointer">
               Remember this device for instant passkey login
@@ -377,7 +377,7 @@ export const LoginForm = ({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-slate-900/10 hover:shadow-lg"
+            className="w-full bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl hover:bg-slate-800 focus:outline-none disabled:opacity-50 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-slate-900/10 hover:shadow-lg"
           >
             {isLoading ? (
               <>

@@ -17,6 +17,7 @@ import { useAuth } from 'auth-client/hooks/useAuth';
 import { usePermissions } from '../../../context/PermissionContext';
 import {
   AppCard,
+  AppTable,
   AppButton,
   AppInput,
   AppSelect,
@@ -249,38 +250,25 @@ export const ProductManagement: React.FC = () => {
             : 'Maintain your entire catalog, warehouse stock quantities, and retail pricing.'
         }
         breadcrumbs={[{ label: isSeller ? 'Seller' : 'Admin', path: '/admin' }, { label: 'Products' }]}
-        extra={
-          canCreate ? (
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={openAddModal}
-              style={{ backgroundColor: '#0096C7' }}
-            >
-              Add New Product
-            </AppButton>
-          ) : null
-        }
       />
 
-      {/* Filter and Search Bar inside Reusable AppCard */}
-      <AppCard>
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <form onSubmit={handleSearchSubmit} className="relative flex-1 w-full">
+      {/* Filter and Search Bar with Action on the Right */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
+        <div className="flex flex-wrap items-center gap-3">
+          <form onSubmit={handleSearchSubmit} className="w-full sm:w-[180px] max-w-[180px] shrink-0">
             <AppInput
               prefix={<SearchOutlined className="text-slate-400" />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products by title, SKU, or specs..."
+              placeholder="Search products..."
               allowClear
             />
           </form>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="w-full sm:w-[170px] shrink-0">
             <AppSelect
               value={selectedCategory}
               onChange={(val) => setSelectedCategory(val as string)}
-              style={{ width: 180 }}
               options={[
                 { label: 'All Departments', value: 'all' },
                 ...categories.map((c) => ({
@@ -289,11 +277,12 @@ export const ProductManagement: React.FC = () => {
                 })),
               ]}
             />
+          </div>
 
+          <div className="w-full sm:w-[130px] shrink-0">
             <AppSelect
               value={statusFilter}
               onChange={(val) => setStatusFilter(val as string)}
-              style={{ width: 140 }}
               options={[
                 { label: 'All Statuses', value: 'all' },
                 { label: 'Active', value: 'active' },
@@ -301,21 +290,26 @@ export const ProductManagement: React.FC = () => {
                 { label: 'Archived', value: 'archived' },
               ]}
             />
-
-            <AppButton
-              icon={<SyncOutlined />}
-              onClick={loadData}
-              title="Refresh"
-            />
           </div>
         </div>
-      </AppCard>
+
+        {canCreate && (
+          <AppButton
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={openAddModal}
+            className="shrink-0"
+            style={{ backgroundColor: '#0096C7' }}
+          >
+            Add New Product
+          </AppButton>
+        )}
+      </div>
 
       {/* Products Table Card */}
       <AppCard bodyStyle={{ padding: 0 }}>
-        <div className="app-table-scroll overflow-x-auto">
-          <table className="app-table w-full text-left">
-            <thead>
+        <AppTable>
+          <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Product</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">SKU</th>
@@ -454,18 +448,7 @@ export const ProductManagement: React.FC = () => {
                 })
               )}
             </tbody>
-          </table>
-        </div>
-
-        {/* Bottom Paginator matching /admin/permissions */}
-        <div className="paginator">
-          <span>{products.length} Items</span>
-          <div className="flex items-center gap-1.5">
-            <span className="pagination-text px-1">
-              Page 1 of 1
-            </span>
-          </div>
-        </div>
+        </AppTable>
       </AppCard>
 
       {/* Add / Edit Product Modal using Reusable AppModal */}

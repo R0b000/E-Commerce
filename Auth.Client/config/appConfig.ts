@@ -18,6 +18,9 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  expiresAt: Date | null;
+  expiresIn: number | null;
+  formattedExpiry: string | null;
 }
 
 export interface LoginCredentials {

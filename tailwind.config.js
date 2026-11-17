@@ -5,12 +5,12 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "./Auth.Client/**/*.{js,ts,jsx,tsx}",
     "./ecommerce.client/**/*.{js,ts,jsx,tsx}",
-    "./Shared/UI/**/*.{js,ts,jsx,tsx}",
+    "./Shared/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['"Nunito Sans"', 'Poppins', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
     },
   },

@@ -97,7 +97,7 @@ export const CheckoutPage: React.FC = () => {
   // Order Success Screen
   if (orderComplete) {
     return (
-      <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 font-['Poppins','Inter',sans-serif]">
+      <div className="max-w-3xl mx-auto py-12 px-4 sm:px-6 font-['Nunito_Sans','Poppins',sans-serif]">
         <div className="bg-white rounded-3xl border border-slate-200/80 p-8 sm:p-12 shadow-sm text-center">
           <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-xs border border-emerald-100">
             <CheckCircleOutlined />
@@ -157,7 +157,7 @@ export const CheckoutPage: React.FC = () => {
   // Empty Cart State
   if (cart.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto py-20 px-4 text-center font-['Poppins','Inter',sans-serif]">
+      <div className="max-w-2xl mx-auto py-20 px-4 text-center font-['Nunito_Sans','Poppins',sans-serif]">
         <div className="bg-white rounded-3xl border border-slate-200/80 p-12 shadow-sm">
           <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400 text-2xl mx-auto mb-4">
             <ShoppingOutlined />
@@ -177,7 +177,7 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-6 font-['Poppins','Inter',sans-serif]">
+    <div className="w-full max-w-7xl mx-auto py-6 font-['Nunito_Sans','Poppins',sans-serif]">
       {/* Back Link & Breadcrumb Header */}
       <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-200">
         <div>

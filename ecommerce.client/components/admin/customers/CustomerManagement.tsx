@@ -24,6 +24,7 @@ import { Customer } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
   AppCard,
+  AppTable,
   AppButton,
   AppInput,
   AppModal,
@@ -126,24 +127,6 @@ export const CustomerManagement: React.FC = () => {
         title="User & Customer Directory"
         description="Comprehensive directory of registered customers, authorized sellers/vendors, and staff accounts."
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Customers & Sellers' }]}
-        extra={
-          <div className="flex items-center gap-2.5">
-            <AppButton icon={<SyncOutlined />} onClick={loadCustomers}>
-              Refresh
-            </AppButton>
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                form.setFieldsValue({ role: 'customer', agreementAccepted: true });
-                setIsModalOpen(true);
-              }}
-              style={{ backgroundColor: '#0284c7' }}
-            >
-              Add User / Seller
-            </AppButton>
-          </div>
-        }
       />
 
       {/* Customer Overview Metric Strip */}
@@ -183,15 +166,15 @@ export const CustomerManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <AppCard>
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <form onSubmit={handleSearch} className="w-full md:w-[40vw]">
+      {/* Filter, Search Bar, and Action on Right */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
+        <div className="flex flex-wrap items-center gap-3">
+          <form onSubmit={handleSearch} className="w-full sm:w-[180px] max-w-[180px] shrink-0">
             <AppInput
               prefix={<SearchOutlined className="text-slate-400" />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, email, or store vendor name..."
+              placeholder="Search users..."
               allowClear
             />
           </form>
@@ -220,13 +203,25 @@ export const CustomerManagement: React.FC = () => {
             ))}
           </div>
         </div>
-      </AppCard>
+
+        <AppButton
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            form.setFieldsValue({ role: 'customer', agreementAccepted: true });
+            setIsModalOpen(true);
+          }}
+          className="shrink-0"
+          style={{ backgroundColor: '#0284c7' }}
+        >
+          Add User / Seller
+        </AppButton>
+      </div>
 
       {/* Directory Table */}
       <AppCard bodyStyle={{ padding: 0 }}>
-        <div className="app-table-scroll overflow-x-auto">
-          <table className="app-table w-full text-left">
-            <thead>
+        <AppTable>
+          <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">User / Merchant</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Contact & Location</th>
@@ -388,18 +383,7 @@ export const CustomerManagement: React.FC = () => {
                 })
               )}
             </tbody>
-          </table>
-        </div>
-
-        {/* Bottom Paginator matching /admin/permissions */}
-        <div className="paginator">
-          <span>{customers.length} Items</span>
-          <div className="flex items-center gap-1.5">
-            <span className="pagination-text px-1">
-              Page 1 of 1
-            </span>
-          </div>
-        </div>
+        </AppTable>
       </AppCard>
 
       {/* Add New Customer / Seller Modal (Top-10 Positioned with smooth animation) */}

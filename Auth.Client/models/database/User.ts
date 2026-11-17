@@ -23,6 +23,9 @@ export interface User {
   alertOnNewDevice?: boolean;
   lastLoginIp?: string | null;
   lastPasswordChange?: string | null;
+  tokenExpiresAt?: string | null;
+  expiresAt?: string | null;
+  expiresIn?: number | null;
   createdAt?: string;
   updatedAt?: string;
 }

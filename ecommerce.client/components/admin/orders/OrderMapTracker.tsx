@@ -173,7 +173,7 @@ export const OrderMapTracker: React.FC<OrderMapTrackerProps> = ({
   const theme = getMapTheme();
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-6 animate-in fade-in duration-200 font-['Poppins','Inter',sans-serif]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-6 animate-in fade-in duration-200 font-['Nunito_Sans','Poppins',sans-serif]">
       <div className="relative w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col border border-slate-200">
         {/* Header Bar */}
         <div className="px-5 py-3.5 bg-slate-900 text-white flex items-center justify-between shrink-0">

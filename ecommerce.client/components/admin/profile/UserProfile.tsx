@@ -23,6 +23,7 @@ import {
   IdcardOutlined,
   ExclamationCircleOutlined,
   CheckOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import { Tag, Spin } from 'antd';
 import { Link } from 'react-router-dom';
@@ -33,7 +34,7 @@ import { useToast } from '../../../context/ToastContext';
 type ActiveTab = 'overview' | 'personal' | 'security' | 'contact' | 'legal';
 
 export const UserProfile: React.FC = () => {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, formattedExpiry } = useAuth();
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -225,7 +226,7 @@ export const UserProfile: React.FC = () => {
   const fbHover = isDarkMode ? 'hover:bg-[#3a3b3c]' : 'hover:bg-slate-100';
 
   return (
-    <div className={`w-full rounded-2xl overflow-hidden border ${fbBorder} ${fbBg} shadow-xl font-['Poppins','Inter',sans-serif] transition-colors duration-200`}>
+    <div className={`w-full rounded-2xl overflow-hidden border ${fbBorder} ${fbBg} shadow-xl font-['Nunito_Sans','Poppins',sans-serif] transition-colors duration-200`}>
       <div className="flex flex-col md:flex-row min-h-[720px]">
         {/* =========================================================================
             LEFT SIDEBAR: Settings & privacy (Identical to Facebook Layout)
@@ -315,6 +316,17 @@ export const UserProfile: React.FC = () => {
                     Password, security, personal details, cross-profile experiences, verification
                   </p>
                 </div>
+              </div>
+
+              {/* Authorized Person Session Expiry */}
+              <div className={`mt-2.5 pt-2 border-t ${fbBorder} flex items-center justify-between text-[10px]`}>
+                <span className={`flex items-center gap-1 ${fbTextSecondary}`}>
+                  <ClockCircleOutlined className="text-amber-400" />
+                  <span>Authorized Expiry:</span>
+                </span>
+                <span className="font-medium text-emerald-400 font-mono">
+                  {formattedExpiry || (user?.tokenExpiresAt ? new Date(user.tokenExpiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '24h active')}
+                </span>
               </div>
             </div>
 
@@ -747,6 +759,17 @@ export const UserProfile: React.FC = () => {
                 </p>
               </div>
 
+              {/* Active Authorization Info */}
+              <div className={`p-3 rounded-xl ${fbSubPanel} border ${fbBorder} flex items-center justify-between text-xs`}>
+                <span className={fbTextSecondary}>
+                  Current authenticated session expires at:{' '}
+                  <strong className={`${fbTextPrimary} font-mono`}>
+                    {formattedExpiry || (user?.tokenExpiresAt ? new Date(user.tokenExpiresAt).toLocaleString() : '24h from login')}
+                  </strong>
+                </span>
+                <Tag color="success" className="font-semibold text-[10px] m-0">ACTIVE</Tag>
+              </div>
+
               <form onSubmit={handleChangePassword} className={`p-5 rounded-2xl ${fbPanel} border ${fbBorder} space-y-4`}>
                 <div>
                   <label className={`block text-[11px] font-semibold ${fbTextSecondary} mb-1.5`}>
@@ -997,7 +1020,7 @@ export const UserProfile: React.FC = () => {
                       checked={agreementAccepted}
                       onChange={(e) => handleToggleAgreement(e.target.checked)}
                       disabled={savingAgreement}
-                      className="w-4 h-4 rounded text-[#0096c7] focus:ring-[#0096c7] accent-[#0096c7] cursor-pointer"
+                      className="w-4 h-4 rounded text-[#0096c7] focus:outline-none accent-[#0096c7] cursor-pointer"
                     />
                     <span className={`text-xs font-semibold ${fbTextPrimary}`}>
                       I have read, acknowledge, and agree to the Platform Terms & Conduct

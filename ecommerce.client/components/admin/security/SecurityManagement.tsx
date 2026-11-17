@@ -14,7 +14,7 @@ import {
   CopyOutlined,
   SyncOutlined,
   UsbOutlined,
-  ThunderboltFilled,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import {
   Tabs,
@@ -26,7 +26,7 @@ import {
   Input,
   Badge,
 } from 'antd';
-import { AppButton } from 'shared-components';
+import { AppButton, PageHeader } from 'shared-components';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { authAPIService } from 'auth-client/services/AuthAPIService';
 import { createWebAuthnCredential } from 'auth-client/services/fido2Helper';
@@ -47,6 +47,7 @@ interface SessionItem {
   userAgent: string;
   macOrDevice: string;
   lastActive: string;
+  expiresAt?: string;
   isCurrent: boolean;
 }
 
@@ -58,7 +59,7 @@ interface AuthenticatorSetupData {
 }
 
 export default function SecurityManagement() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, formattedExpiry } = useAuth();
   const { showToast } = useToast();
 
   const showSuccess = (msg: string) => showToast(msg, 'success');
@@ -368,50 +369,22 @@ export default function SecurityManagement() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white border border-slate-200/80 rounded-xl p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-gradient-to-br from-orange-500 to-[#0284c7] text-white rounded-lg shadow-xs text-sm">
-              <LockOutlined />
+    <div className="space-y-4 font-['Nunito_Sans','Poppins',sans-serif]">
+      {/* Professional Page Header */}
+      <PageHeader
+        title="Security & Device Management"
+        description="Configure biometric passkeys, two-factor authentication, and monitor active user sessions."
+        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Security' }]}
+        extra={
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200">
+            <ClockCircleOutlined className="text-slate-400 text-xs" />
+            <span className="text-[11px] text-slate-500 font-medium">Session Expiry:</span>
+            <span className="text-xs font-mono font-semibold text-slate-800">
+              {formattedExpiry || '24h Active'}
             </span>
-            <h1 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-tight leading-tight">Security & Device Management</h1>
           </div>
-          <p className="text-[11px] text-slate-500 mt-0.5">
-            Modeled from .NET passwordless architecture: biometric passkeys, hardware security keys, TOTP 2FA, and active session controls.
-          </p>
-        </div>
-
-        {/* Quick Badges */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-xl flex items-center gap-2">
-            <KeyOutlined className="text-orange-600 text-sm" />
-            <div className="text-left">
-              <div className="text-[10px] text-slate-400 font-medium">Passkeys</div>
-              <div className="text-xs font-bold text-slate-800">{passkeys.length} Registered</div>
-            </div>
-          </div>
-
-          <div className="px-3 py-1.5 bg-sky-50 border border-sky-200 rounded-xl flex items-center gap-2">
-            <SafetyCertificateOutlined className="text-sky-600 text-sm" />
-            <div className="text-left">
-              <div className="text-[10px] text-slate-400 font-medium">2FA Authenticator</div>
-              <div className={`text-xs font-bold ${twoFactorEnabled ? 'text-emerald-700' : 'text-slate-500'}`}>
-                {twoFactorEnabled ? 'Active' : 'Disabled'}
-              </div>
-            </div>
-          </div>
-
-          <div className="px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl flex items-center gap-2">
-            <DesktopOutlined className="text-slate-600 text-sm" />
-            <div className="text-left">
-              <div className="text-[10px] text-slate-400 font-medium">Active Devices</div>
-              <div className="text-xs font-bold text-slate-800">{sessions.length} Online</div>
-            </div>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Tabs Container */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
@@ -426,23 +399,18 @@ export default function SecurityManagement() {
                 <span className="flex items-center gap-2 text-sm font-semibold">
                   <KeyOutlined />
                   <span>Biometric Passkeys & FIDO2</span>
-                  <Badge count={passkeys.length} style={{ backgroundColor: '#f97316' }} />
+                  <Badge count={passkeys.length} style={{ backgroundColor: '#0284c7' }} />
                 </span>
               ),
               children: (
                 <div className="py-4 space-y-6">
-                  {/* Hero Callout */}
-                  <div className="p-4 bg-gradient-to-r from-orange-50/70 via-white to-blue-50/70 border border-orange-100 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-600 flex items-center justify-center shrink-0 text-lg">
-                        <ThunderboltFilled />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-900">Passwordless Biometric Sign-in</h4>
-                        <p className="text-xs text-slate-500 mt-0.5 max-w-xl">
-                          Sign in securely with Windows Hello, Touch ID, Face ID, or a FIDO2 hardware security key (YubiKey). Your private key never leaves your physical device.
-                        </p>
-                      </div>
+                  {/* Passkeys Header & Action */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Passwordless Biometric Authentication</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 max-w-xl">
+                        Sign in securely with Windows Hello, Touch ID, Face ID, or hardware security keys (FIDO2 / WebAuthn).
+                      </p>
                     </div>
                     <AppButton
                       type="primary"
@@ -451,32 +419,34 @@ export default function SecurityManagement() {
                         setNewPasskeyName('');
                         setIsRegisterPasskeyModalOpen(true);
                       }}
-                      style={{ backgroundColor: '#f97316' }}
+                      style={{ backgroundColor: '#0284c7' }}
                     >
-                      Add New Passkey
+                      Add Passkey
                     </AppButton>
                   </div>
 
                   {/* Registered Passkeys List */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                      <h3 className="text-sm font-semibold text-slate-800 flex items-center gap-2">
                         <span>Registered Security Credentials</span>
-                        <Tag color="orange">{passkeys.length}</Tag>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                          {passkeys.length}
+                        </span>
                       </h3>
                       <button
                         type="button"
                         onClick={loadPasskeys}
-                        className="text-xs text-slate-500 hover:text-orange-600 flex items-center gap-1 cursor-pointer transition-colors"
+                        className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"
                       >
                         <SyncOutlined /> Refresh
                       </button>
                     </div>
 
                     {passkeys.length === 0 ? (
-                      <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                        <KeyOutlined className="text-4xl text-slate-300 mb-2" />
-                        <h4 className="text-sm font-bold text-slate-700">No passkeys registered yet</h4>
+                      <div className="p-8 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                        <KeyOutlined className="text-3xl text-slate-300 mb-2" />
+                        <h4 className="text-sm font-semibold text-slate-700">No passkeys registered yet</h4>
                         <p className="text-xs text-slate-400 max-w-md mx-auto mt-1 mb-4">
                           Protect your account by adding a biometric authenticator or hardware security key.
                         </p>
@@ -487,34 +457,36 @@ export default function SecurityManagement() {
                             setNewPasskeyName('');
                             setIsRegisterPasskeyModalOpen(true);
                           }}
-                          style={{ backgroundColor: '#f97316' }}
+                          style={{ backgroundColor: '#0284c7' }}
                         >
                           Register First Passkey
                         </AppButton>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         {passkeys.map((pk) => (
                           <div
                             key={pk.credentialId}
-                            className="p-4 border border-slate-200 rounded-2xl bg-white hover:border-orange-300 hover:shadow-sm transition-all flex flex-col justify-between"
+                            className="p-3.5 border border-slate-200/90 rounded-xl bg-white hover:border-slate-300 hover:shadow-xs transition-all flex flex-col justify-between"
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex items-center gap-2.5">
-                                <span className="p-2 bg-orange-100 text-orange-600 rounded-xl text-base">
+                                <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200/60 flex items-center justify-center text-slate-600 text-sm shrink-0">
                                   <KeyOutlined />
-                                </span>
+                                </div>
                                 <div>
-                                  <div className="font-bold text-sm text-slate-900">{pk.deviceName}</div>
-                                  <div className="text-[10px] font-mono text-slate-400 truncate max-w-[160px]">
+                                  <div className="font-semibold text-sm text-slate-900">{pk.deviceName}</div>
+                                  <div className="text-[10px] font-mono text-slate-400 truncate max-w-[150px]">
                                     ID: {pk.credentialId.substring(0, 16)}...
                                   </div>
                                 </div>
                               </div>
-                              <Tag color="green">Active</Tag>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                              </span>
                             </div>
 
-                            <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
                               <div className="flex justify-between">
                                 <span className="text-slate-400">Created:</span>
                                 <span>{new Date(pk.createdAt).toLocaleDateString()}</span>
@@ -525,11 +497,11 @@ export default function SecurityManagement() {
                               </div>
                             </div>
 
-                            <div className="mt-4 flex items-center justify-end">
+                            <div className="mt-3 flex items-center justify-end">
                               <button
                                 type="button"
                                 onClick={() => handleDeletePasskey(pk.credentialId, pk.deviceName)}
-                                className="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                                className="text-xs text-slate-400 hover:text-red-600 font-medium flex items-center gap-1 cursor-pointer transition-colors"
                               >
                                 <DeleteOutlined /> Remove
                               </button>
@@ -581,31 +553,23 @@ export default function SecurityManagement() {
                   </div>
 
                   {/* Sessions List */}
-                  <div className="space-y-3">
+                  <div className="space-y-2.5">
                     {sessions.map((sess) => (
                       <div
                         key={sess.id}
-                        className={`p-4 border rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all ${
-                          sess.isCurrent
-                            ? 'border-emerald-200 bg-emerald-50/30 shadow-2xs'
-                            : 'border-slate-200 bg-white hover:border-slate-300'
-                        }`}
+                        className="p-3.5 border border-slate-200/90 rounded-xl bg-white hover:border-slate-300 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-2xs"
                       >
-                        <div className="flex items-start gap-3">
-                          <span
-                            className={`p-2.5 rounded-xl text-lg ${
-                              sess.isCurrent ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200/60 flex items-center justify-center text-slate-600 text-base shrink-0">
                             {sess.userAgent.toLowerCase().includes('mobile') ? (
                               <MobileOutlined />
                             ) : (
                               <DesktopOutlined />
                             )}
-                          </span>
-                          <div>
+                          </div>
+                          <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-sm text-slate-900">
+                              <span className="font-semibold text-sm text-slate-900 truncate">
                                 {sess.userAgent.includes('Chrome')
                                   ? 'Google Chrome'
                                   : sess.userAgent.includes('Firefox')
@@ -614,20 +578,30 @@ export default function SecurityManagement() {
                                   ? 'Apple Safari'
                                   : 'Web Browser'}
                               </span>
-                              {sess.isCurrent && (
-                                <Tag color="success" className="font-semibold text-[10px]">
-                                  Current Device
-                                </Tag>
+                              {sess.isCurrent ? (
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                  Current Session
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200/60">
+                                  Active
+                                </span>
                               )}
                             </div>
                             <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
                               <span className="flex items-center gap-1">
-                                <GlobalOutlined className="text-slate-400" />
-                                <strong>IP:</strong> {sess.ip}
+                                <GlobalOutlined className="text-slate-400 text-[11px]" />
+                                <span className="text-slate-400">IP:</span> {sess.ip}
                               </span>
-                              <span>•</span>
+                              <span className="text-slate-300">•</span>
                               <span>
-                                <strong>Last active:</strong> {new Date(sess.lastActive).toLocaleString()}
+                                <span className="text-slate-400">Last active:</span> {new Date(sess.lastActive).toLocaleString()}
+                              </span>
+                              <span className="text-slate-300">•</span>
+                              <span className="flex items-center gap-1 text-slate-600">
+                                <ClockCircleOutlined className="text-slate-400 text-[11px]" />
+                                <span className="text-slate-400">Expires:</span> {sess.expiresAt ? new Date(sess.expiresAt).toLocaleString() : (formattedExpiry || '24h from login')}
                               </span>
                             </div>
                           </div>
@@ -637,7 +611,7 @@ export default function SecurityManagement() {
                           <button
                             type="button"
                             onClick={() => handleRevokeSession(sess.id, sess.ip)}
-                            className="text-xs font-semibold text-red-600 hover:text-red-800 px-3 py-1.5 border border-red-200 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                            className="text-xs font-medium text-slate-600 hover:text-red-600 px-3 py-1.5 border border-slate-200 hover:border-red-200 hover:bg-red-50/50 rounded-lg transition-colors cursor-pointer shrink-0"
                           >
                             Revoke Access
                           </button>

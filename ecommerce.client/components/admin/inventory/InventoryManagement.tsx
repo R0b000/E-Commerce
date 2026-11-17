@@ -20,7 +20,9 @@ import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
   AppCard,
+  AppTable,
   AppButton,
+  AppInput,
   AppSelect,
   AppModal,
   PageHeader,
@@ -161,13 +163,6 @@ export const InventoryManagement: React.FC = () => {
         title="Inventory & Stock Management"
         description="Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments."
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Inventory' }]}
-        extra={
-          <div className="flex items-center gap-3">
-            <AppButton icon={<SyncOutlined />} onClick={loadInventory}>
-              Refresh Stock
-            </AppButton>
-          </div>
-        }
       />
 
       {/* KPI Stats Overview Cards */}
@@ -307,23 +302,21 @@ export const InventoryManagement: React.FC = () => {
             />
 
             {/* Search Input */}
-            <div className="relative w-full sm:w-56">
-              <SearchOutlined className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <input
-                type="text"
-                placeholder="Search product or SKU..."
+            <div className="w-full sm:w-[180px] max-w-[180px] shrink-0">
+              <AppInput
+                prefix={<SearchOutlined className="text-slate-400" />}
+                placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50/70 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0284c7] focus:bg-white transition-all"
+                allowClear
               />
             </div>
           </div>
         </div>
 
         {/* Inventory Stock Table */}
-        <div className="app-table-scroll overflow-x-auto">
-          <table className="app-table w-full text-left">
-            <thead>
+        <AppTable>
+          <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Product & SKU</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Category</th>
@@ -480,18 +473,7 @@ export const InventoryManagement: React.FC = () => {
                 })
               )}
             </tbody>
-          </table>
-        </div>
-
-        {/* Bottom Paginator matching /admin/permissions */}
-        <div className="paginator">
-          <span>{filteredProducts.length} Items</span>
-          <div className="flex items-center gap-1.5">
-            <span className="pagination-text px-1">
-              Page 1 of 1
-            </span>
-          </div>
-        </div>
+        </AppTable>
       </AppCard>
 
       {/* Custom Adjust Stock Modal (Top-10 Positioned with modal.css) */}

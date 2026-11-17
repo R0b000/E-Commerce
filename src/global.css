@@ -1,6 +1,7 @@
 /* =========================================================================
    Modular Stylesheet Architecture
    ========================================================================= */
+@import './styles/fonts.css';
 @import './styles/variables.css';
 @import './styles/button.css';
 @import './styles/table.css';
@@ -264,3 +265,90 @@ aside[data-drawer="true"],
   color: var(--color-accent);
   font-weight: bold;
 }
+
+/* =========================================================================
+   Universal Focus CSS Removal - Complete elimination of all focus outlines,
+   rings, glows, and focus-visible halos across all components & browsers
+   ========================================================================= */
+*,
+*::before,
+*::after {
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-color: transparent !important;
+}
+
+*:focus,
+*:focus-visible,
+*:focus-within {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  --tw-ring-color: transparent !important;
+}
+
+button:focus,
+button:focus-visible,
+a:focus,
+a:focus-visible,
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+[tabindex]:focus,
+[tabindex]:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Ant Design Component Focus Overrides */
+.ant-btn:focus,
+.ant-btn-focused,
+.ant-btn:focus-visible,
+.ant-btn:active,
+.ant-input:focus,
+.ant-input-focused,
+.ant-input-affix-wrapper:focus,
+.ant-input-affix-wrapper-focused,
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector,
+.ant-select-selector:focus,
+.ant-select:focus .ant-select-selector,
+.ant-picker-focused,
+.ant-checkbox-input:focus + .ant-checkbox-inner,
+.ant-radio-input:focus + .ant-radio-inner,
+.ant-switch:focus,
+.ant-switch-checked:focus,
+.ant-tabs-tab:focus,
+.ant-tabs-tab-btn:focus,
+.ant-pagination-item:focus,
+.ant-dropdown-trigger:focus,
+.ant-popover-open:focus,
+.ant-menu-item:focus,
+.ant-menu-submenu-title:focus {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Autocomplete Select Dropdown Standard Font Size & Weight */
+.autocomplete-select,
+.autocomplete-select__input,
+.autocomplete-select__option--selected {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.autocomplete-select__dropdown,
+.autocomplete-select__option,
+.ant-select-dropdown,
+.ant-select-item,
+.ant-select-item-option-content {
+  font-size: 11px !important;
+}
+

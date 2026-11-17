@@ -19,6 +19,9 @@ export type { AppInputProps } from './AppInput';
 export { AppSelect } from './AppSelect';
 export type { AppSelectProps } from './AppSelect';
 
+export { AutoCompleteSelect } from '../UI/components/AutoCompleteSelect/AutoCompleteSelect';
+export type { AutoCompleteSelectProps, AutoCompleteSelectOption } from '../UI/components/AutoCompleteSelect/AutoCompleteSelect.types';
+
 export { StatusBadge } from './StatusBadge';
 export type { StatusType } from './StatusBadge';
 

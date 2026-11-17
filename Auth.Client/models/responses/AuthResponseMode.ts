@@ -23,5 +23,8 @@ export interface UserProfileResponse {
   agreementVersion?: string;
   role: string;
   isActive: boolean;
+  tokenExpiresAt?: string;
+  expiresAt?: string;
+  expiresIn?: number;
   createdAt: string;
 }

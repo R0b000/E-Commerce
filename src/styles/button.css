@@ -209,16 +209,62 @@
 .ant-btn:not(.ant-btn-sm):not(.ant-btn-lg),
 .btn-control,
 .btn:not(.btn-xs):not(.btn-sm):not(.btn-lg),
-.ant-input:not(.ant-input-sm):not(.ant-input-lg),
+.ant-input:not(.ant-input-sm):not(.ant-input-lg):not(.ant-input-affix-wrapper input),
 .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-sm):not(.ant-input-affix-wrapper-lg),
 .ant-select-single:not(.ant-select-sm):not(.ant-select-lg) .ant-select-selector,
-input[type="text"]:not(.input-sm):not(.input-lg),
-input[type="password"]:not(.input-sm):not(.input-lg),
-input[type="email"]:not(.input-sm):not(.input-lg),
+input[type="text"]:not(.input-sm):not(.input-lg):not(.ant-input-affix-wrapper input),
+input[type="password"]:not(.input-sm):not(.input-lg):not(.ant-input-affix-wrapper input),
+input[type="email"]:not(.input-sm):not(.input-lg):not(.ant-input-affix-wrapper input),
 select:not(.select-sm):not(.select-lg) {
   height: var(--control-height) !important;
   min-height: var(--control-height) !important;
   box-sizing: border-box;
+}
+
+/* Ant Design Affix Wrapper (Search and prefixed/suffixed inputs) */
+.ant-input-affix-wrapper {
+  display: inline-flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  padding: 0 12px !important;
+  width: 100% !important;
+}
+
+.ant-input-affix-wrapper input.ant-input,
+.ant-input-affix-wrapper input[type="text"],
+.ant-input-affix-wrapper input[type="password"],
+.ant-input-affix-wrapper input[type="email"],
+.ant-input-affix-wrapper > input {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  font-size: 12px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: normal !important;
+  background: transparent !important;
+}
+
+.ant-input-affix-wrapper .ant-input-prefix {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-inline-end: 8px !important;
+  color: #94a3b8;
+}
+
+.ant-input-affix-wrapper .ant-input-suffix {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin-inline-start: 8px !important;
+  color: #94a3b8;
 }
 
 .ant-btn.ant-btn-sm,

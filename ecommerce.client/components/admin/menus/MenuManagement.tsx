@@ -25,6 +25,7 @@ import { MenuItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
   AppCard,
+  AppTable,
   AppButton,
   AppInput,
   AppModal,
@@ -201,27 +202,23 @@ export const MenuManagement: React.FC = () => {
         title="Dynamic Menu & Page Addition"
         description="Add, arrange, and control navigation pages dynamically without hardcoding. Grant page access by Role or Permission."
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Menus' }]}
-        extra={
-          <div className="flex items-center gap-3">
-            <AppButton icon={<SyncOutlined />} onClick={loadData}>
-              Sync
-            </AppButton>
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={openAddModal}
-              style={{ backgroundColor: '#0096C7' }}
-            >
-              Add New Menu Page
-            </AppButton>
-          </div>
-        }
       />
 
+      {/* Action Toolbar on Right */}
+      <div className="flex items-center justify-end">
+        <AppButton
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={openAddModal}
+          style={{ backgroundColor: '#0096C7' }}
+        >
+          Add New Menu Page
+        </AppButton>
+      </div>
+
       <AppCard bodyStyle={{ padding: 0 }}>
-        <div className="app-table-scroll overflow-x-auto">
-          <table className="app-table w-full text-left">
-            <thead>
+        <AppTable>
+          <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Order</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Menu Name & Icon</th>
@@ -326,18 +323,7 @@ export const MenuManagement: React.FC = () => {
                 })
               )}
             </tbody>
-          </table>
-        </div>
-
-        {/* Bottom Paginator matching /admin/permissions */}
-        <div className="paginator">
-          <span>{menus.length} Items</span>
-          <div className="flex items-center gap-1.5">
-            <span className="pagination-text px-1">
-              Page 1 of 1
-            </span>
-          </div>
-        </div>
+        </AppTable>
       </AppCard>
 
       {/* Add / Edit Menu Page Modal */}

@@ -28,6 +28,7 @@ import { useToast } from '../../../context/ToastContext';
 import { usePermissions } from '../../../context/PermissionContext';
 import {
   AppCard,
+  AppTable,
   AppButton,
   AppInput,
   AppSelect,
@@ -523,7 +524,7 @@ export const PermissionManagement: React.FC = () => {
   const activeRoleDoc = roles.find((r) => r.name.toLowerCase() === selectedRoleId.toLowerCase());
 
   return (
-    <div className="space-y-4 font-['Poppins','Inter',sans-serif]">
+    <div className="space-y-4 font-['Nunito_Sans','Poppins',sans-serif]">
       {/* Native Page Header with Actions */}
       <PageHeader
         title="Role Permissions & Access Matrix"
@@ -669,26 +670,32 @@ export const PermissionManagement: React.FC = () => {
       )}
 
       {/* Main Permissions Matrix Table (Shared Standard Table Architecture) */}
-      <AppCard>
+      <AppCard bodyStyle={{ padding: 0 }}>
         {loading ? (
           <div className="p-6">
             <MatrixSkeleton />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-[11px]">
-              {/* Cyan Table Header */}
-              <thead>
-                <tr className="bg-[#0096C7] text-white text-[12px] font-medium tracking-wide">
-                  <th className="py-2.5 px-4 rounded-tl-xl font-medium">Module / Resource</th>
-                  <th className="py-2.5 px-4 font-medium">Category</th>
-                  <th className="py-2.5 px-3 text-center font-medium">Read / View</th>
-                  <th className="py-2.5 px-3 text-center font-medium">Create / Add</th>
-                  <th className="py-2.5 px-3 text-center font-medium">Update / Edit</th>
-                  <th className="py-2.5 px-3 text-center font-medium">Delete / Remove</th>
-                  <th className="py-2.5 px-4 text-center rounded-tr-xl font-medium">Row Action</th>
-                </tr>
-              </thead>
+          <AppTable
+            pagination={{
+              current: currentPage,
+              pageSize: pageSize,
+              total: totalItems,
+              onChange: (page) => setCurrentPage(page),
+            }}
+          >
+            {/* Cyan Table Header */}
+            <thead>
+              <tr className="bg-[#0096C7] text-white text-[12px] font-medium tracking-wide">
+                <th className="py-2.5 px-4 rounded-tl-xl font-medium">Module / Resource</th>
+                <th className="py-2.5 px-4 font-medium">Category</th>
+                <th className="py-2.5 px-3 text-center font-medium">Read / View</th>
+                <th className="py-2.5 px-3 text-center font-medium">Create / Add</th>
+                <th className="py-2.5 px-3 text-center font-medium">Update / Edit</th>
+                <th className="py-2.5 px-3 text-center font-medium">Delete / Remove</th>
+                <th className="py-2.5 px-4 text-center rounded-tr-xl font-medium">Row Action</th>
+              </tr>
+            </thead>
 
               {/* Table Rows */}
               <tbody className="divide-y divide-slate-100">
@@ -860,38 +867,7 @@ export const PermissionManagement: React.FC = () => {
                   })
                 )}
               </tbody>
-            </table>
-
-            {/* Standard App Table Bottom Paginator & Summary */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50/50 text-[11px] text-slate-500 rounded-b-xl">
-              <div>
-                Showing <span className="font-bold text-slate-700">{displayedMenus.length}</span> of{' '}
-                <span className="font-bold text-slate-700">{totalItems}</span> modules
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="px-2 py-1 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <LeftOutlined className="text-[10px]" />
-                </button>
-                <span className="font-medium text-slate-600 px-1">
-                  Page {currentPage} of {totalPages}
-                </span>
-                <button
-                  type="button"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  className="px-2 py-1 rounded border border-slate-200 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <RightOutlined className="text-[10px]" />
-                </button>
-              </div>
-            </div>
-          </div>
+          </AppTable>
         )}
       </AppCard>
     </div>

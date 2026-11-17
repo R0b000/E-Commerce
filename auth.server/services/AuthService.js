@@ -89,7 +89,19 @@ class AuthService {
     });
   }
 
-  formatUserResponse(user) {
+  formatUserResponse(user, tokenPayload = null) {
+    let tokenExpiresAt = null;
+    let expiresIn = null;
+
+    if (tokenPayload && tokenPayload.exp) {
+      tokenExpiresAt = new Date(tokenPayload.exp * 1000).toISOString();
+      expiresIn = Math.max(0, tokenPayload.exp - Math.floor(Date.now() / 1000));
+    } else {
+      const defaultDurationSec = parseInt(this.JWT_EXPIRES_IN) || 86400;
+      tokenExpiresAt = new Date(Date.now() + defaultDurationSec * 1000).toISOString();
+      expiresIn = defaultDurationSec;
+    }
+
     return {
       id: user._id.toString(),
       email: user.email,
@@ -112,6 +124,9 @@ class AuthService {
       agreementVersion: user.agreementVersion || '1.0',
       lastLoginIp: user.lastLoginIp || null,
       lastPasswordChange: user.lastPasswordChange || null,
+      tokenExpiresAt,
+      expiresAt: tokenExpiresAt,
+      expiresIn,
     };
   }
 
@@ -564,7 +579,7 @@ class AuthService {
     }
   }
 
-  async getUserProfile(userId) {
+  async getUserProfile(userId, tokenPayload = null) {
     try {
       const user = await User.findById(userId).exec();
 
@@ -572,7 +587,7 @@ class AuthService {
         return Response.fail('User not found', [], 404);
       }
 
-      const profileResponse = this.formatUserResponse(user);
+      const profileResponse = this.formatUserResponse(user, tokenPayload);
       return Response.success(profileResponse, ['Profile retrieved successfully']);
     } catch (error) {
       console.error('[AuthService.getUserProfile] Error:', error);
@@ -774,12 +789,17 @@ class AuthService {
           (d.userAgent && currentUserAgent && d.userAgent === currentUserAgent) ||
           index === user.deviceLogs.length - 1;
 
+        const loginTime = d.lastLoginAt ? new Date(d.lastLoginAt).getTime() : Date.now();
+        const durationMs = 24 * 60 * 60 * 1000;
+        const expiresAt = new Date(loginTime + durationMs);
+
         return {
           id: d._id ? d._id.toString() : String(index),
           ip: d.ip || '127.0.0.1',
           userAgent: d.userAgent || 'Chrome / Web Browser',
           macOrDevice: d.macOrDevice || '',
           lastActive: d.lastLoginAt || new Date(),
+          expiresAt: expiresAt.toISOString(),
           isCurrent,
         };
       });

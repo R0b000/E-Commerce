@@ -19,6 +19,7 @@ import { AuditLogItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
   AppCard,
+  AppTable,
   AppButton,
   AppInput,
   PageHeader,
@@ -70,22 +71,17 @@ export const AuditLogManagement: React.FC = () => {
         title="User Activity & Security Audit Logs"
         description="Tamper-evident trail of user actions, login IPs, MAC/device telemetry, and administrative mutations."
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Audit Logs' }]}
-        extra={
-          <AppButton icon={<SyncOutlined />} onClick={loadLogs}>
-            Refresh Logs
-          </AppButton>
-        }
       />
 
       {/* Filter and Search Bar */}
-      <AppCard>
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          <div className="w-full md:w-[40vw]">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="w-full sm:w-[180px] max-w-[180px] shrink-0">
             <AppInput
               prefix={<SearchOutlined className="text-slate-400" />}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by user, IP address, action, or route..."
+              placeholder="Search logs..."
               allowClear
             />
           </div>
@@ -114,13 +110,12 @@ export const AuditLogManagement: React.FC = () => {
             ))}
           </div>
         </div>
-      </AppCard>
+      </div>
 
       {/* Audit Log Table */}
       <AppCard bodyStyle={{ padding: 0 }}>
-        <div className="app-table-scroll overflow-x-auto">
-          <table className="app-table w-full text-left">
-            <thead>
+        <AppTable>
+          <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Timestamp</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">User & Role</th>
@@ -227,18 +222,7 @@ export const AuditLogManagement: React.FC = () => {
                 })
               )}
             </tbody>
-          </table>
-        </div>
-
-        {/* Bottom Paginator matching /admin/permissions */}
-        <div className="paginator">
-          <span>{filteredLogs.length} Items</span>
-          <div className="flex items-center gap-1.5">
-            <span className="pagination-text px-1">
-              Page 1 of 1
-            </span>
-          </div>
-        </div>
+        </AppTable>
       </AppCard>
     </div>
   );

@@ -16,6 +16,7 @@ import { useAuth } from 'auth-client/hooks/useAuth';
 import { usePermissions } from '../../../context/PermissionContext';
 import {
   AppCard,
+  AppTable,
   AppButton,
   AppInput,
   AppSelect,
@@ -195,16 +196,21 @@ export const OrderManagement: React.FC = () => {
             : 'Review platform-wide customer transactions, update tracking numbers, and manage dispatch.'
         }
         breadcrumbs={[{ label: isSeller ? 'Seller' : 'Admin', path: '/admin' }, { label: 'Orders' }]}
-        extra={
-          <AppButton icon={<SyncOutlined />} onClick={loadOrders}>
-            Refresh Orders
-          </AppButton>
-        }
       />
 
       {/* Filter Tabs and Search */}
-      <AppCard>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
+        <div className="flex flex-wrap items-center gap-3">
+          <form onSubmit={handleSearch} className="w-full sm:w-[180px] max-w-[180px] shrink-0">
+            <AppInput
+              prefix={<SearchOutlined className="text-slate-400" />}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search orders..."
+              allowClear
+            />
+          </form>
+
           <Radio.Group
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -218,24 +224,13 @@ export const OrderManagement: React.FC = () => {
             <Radio.Button value="delivered">Delivered</Radio.Button>
             <Radio.Button value="cancelled">Cancelled</Radio.Button>
           </Radio.Group>
-
-          <form onSubmit={handleSearch} className="w-full md:w-80">
-            <AppInput
-              prefix={<SearchOutlined className="text-slate-400" />}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by order # or email..."
-              allowClear
-            />
-          </form>
         </div>
-      </AppCard>
+      </div>
 
       {/* Orders Table Card */}
       <AppCard bodyStyle={{ padding: 0 }}>
-        <div className="app-table-scroll overflow-x-auto">
-          <table className="app-table w-full text-left">
-            <thead>
+        <AppTable>
+          <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Order ID</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Date</th>
@@ -335,18 +330,7 @@ export const OrderManagement: React.FC = () => {
                 })
               )}
             </tbody>
-          </table>
-        </div>
-
-        {/* Bottom Paginator matching /admin/permissions */}
-        <div className="paginator">
-          <span>{orders.length} Items</span>
-          <div className="flex items-center gap-1.5">
-            <span className="pagination-text px-1">
-              Page 1 of 1
-            </span>
-          </div>
-        </div>
+        </AppTable>
       </AppCard>
 
       {/* Order Live Map & GPS Dispatch Tracker */}

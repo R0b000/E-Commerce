@@ -36,7 +36,7 @@ export const CartDrawer: React.FC = () => {
       width={420}
       footer={
         cart.length > 0 ? (
-          <div className="p-2 space-y-3 font-['Poppins','Inter',sans-serif]">
+          <div className="p-2 space-y-3 font-['Nunito_Sans','Poppins',sans-serif]">
             <div className="flex items-center justify-between text-xs text-slate-600">
               <span>Items Total</span>
               <span className="font-bold text-slate-900">${cartTotal.toFixed(2)}</span>
@@ -63,7 +63,7 @@ export const CartDrawer: React.FC = () => {
         ) : null
       }
     >
-      <div className="space-y-3.5 font-['Poppins','Inter',sans-serif]">
+      <div className="space-y-3.5 font-['Nunito_Sans','Poppins',sans-serif]">
         {cart.length === 0 ? (
           <div className="text-center py-20 space-y-3">
             <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto text-slate-400">

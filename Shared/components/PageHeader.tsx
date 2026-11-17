@@ -18,18 +18,18 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   icon,
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 mb-4 font-['Poppins','Inter',sans-serif]">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 mb-4 font-['Nunito_Sans','Poppins',sans-serif]">
       <div className="space-y-0.5">
         {breadcrumbs && (
           <Breadcrumb
-            className="text-[11px] mb-0.5 text-slate-400"
+            className="text-[11px] mb-0.5 text-slate-400 border-0 [&_*]:border-0"
             items={breadcrumbs.map((b) => ({
-              title: b.path ? <Link to={b.path} className="text-slate-400 hover:text-[#0096C7]">{b.label}</Link> : b.label,
+              title: b.path ? <Link to={b.path} className="text-slate-400 hover:text-[#0096C7] border-0">{b.label}</Link> : b.label,
             }))}
           />
         )}
         <div className="flex items-center gap-2">
-          {icon && <span className="text-base text-[#0096C7]">{icon}</span>}
+          {icon && <span className="text-base text-[#0096C7] border-0">{icon}</span>}
           <h1 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-tight leading-tight">
             {title}
           </h1>

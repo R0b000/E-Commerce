@@ -10,7 +10,6 @@ import {
   PhoneOutlined,
   FileTextOutlined,
   StarFilled,
-  ThunderboltFilled,
   ArrowRightOutlined,
 } from '@ant-design/icons';
 import { Tag, Spin, Divider } from 'antd';
@@ -67,7 +66,7 @@ export const SellerProfile: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
+    <div className="space-y-6 w-full font-['Nunito_Sans','Poppins',sans-serif]">
       {/* Header */}
       <PageHeader
         title="Seller & Vendor Profile"
@@ -75,30 +74,28 @@ export const SellerProfile: React.FC = () => {
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Seller Profile' }]}
       />
 
-      {/* Dual Persona Customer Privileges Notice Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-blue-900 via-slate-900 to-slate-900 text-white p-5 sm:p-6 shadow-sm border border-blue-800/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-2xl text-blue-300 shrink-0">
-            <ThunderboltFilled />
+      {/* Dual Persona Customer Privileges Notice */}
+      <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#0284c7] flex items-center justify-center text-base shrink-0 border border-blue-100">
+            <ShopOutlined />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-white">Dual-Persona Access: Seller & Customer</h3>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/30">
-                Active
-              </span>
+              <h3 className="text-xs font-bold text-slate-900">Dual-Persona Access: Seller & Customer</h3>
+              <Tag color="success" className="text-[10px] font-semibold m-0">Active</Tag>
             </div>
-            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              As an authorized Seller, you inherently retain full Customer privileges. You can browse the public storefront, place customer orders, purchase items from other artisans, and track your personal delivery shipments.
+            <p className="text-xs text-slate-500 mt-0.5 max-w-2xl">
+              As an authorized Seller, you retain full Customer privileges. You can browse the public storefront, place customer orders, and track deliveries.
             </p>
           </div>
         </div>
 
         <Link
           to="/"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-[#0284c7] font-bold text-xs transition-colors shrink-0 shadow-sm"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors shrink-0"
         >
-          <span>Open Storefront as Customer</span>
+          <span>Open Storefront</span>
           <ArrowRightOutlined className="text-[10px]" />
         </Link>
       </div>

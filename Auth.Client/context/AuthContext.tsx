@@ -16,15 +16,57 @@ export interface AuthContextType extends AuthState {
   originalRole: string | null;
 }
 
+export const parseTokenExpiry = (
+  token: string | null
+): { expiresAt: Date | null; expiresIn: number | null; formattedExpiry: string | null } => {
+  if (!token) return { expiresAt: null, expiresIn: null, formattedExpiry: null };
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return { expiresAt: null, expiresIn: null, formattedExpiry: null };
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const decoded = JSON.parse(jsonPayload);
+    if (decoded && decoded.exp) {
+      const expiresAt = new Date(decoded.exp * 1000);
+      const remainingSeconds = Math.max(0, Math.floor((expiresAt.getTime() - Date.now()) / 1000));
+      return {
+        expiresAt,
+        expiresIn: remainingSeconds,
+        formattedExpiry: expiresAt.toLocaleString(undefined, {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }),
+      };
+    }
+  } catch {
+    // fallback
+  }
+  return { expiresAt: null, expiresIn: null, formattedExpiry: null };
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [state, setState] = useState<AuthState>(() => ({
-    user: null,
-    token: localStorage.getItem('authToken'),
-    isAuthenticated: !!localStorage.getItem('authToken'),
-    isLoading: !!localStorage.getItem('authToken'),
-  }));
+  const [state, setState] = useState<AuthState>(() => {
+    const initialToken = localStorage.getItem('authToken');
+    const { expiresAt, expiresIn, formattedExpiry } = parseTokenExpiry(initialToken);
+    return {
+      user: null,
+      token: initialToken,
+      isAuthenticated: !!initialToken,
+      isLoading: !!initialToken,
+      expiresAt,
+      expiresIn,
+      formattedExpiry,
+    };
+  });
 
   const [originalRole, setOriginalRole] = useState<string | null>(() => {
     return sessionStorage.getItem('testOriginalRole') || null;
@@ -39,7 +81,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       localStorage.removeItem('authToken');
     }
-    setState((prev) => ({ ...prev, token, isAuthenticated: !!token }));
+    const { expiresAt, expiresIn, formattedExpiry } = parseTokenExpiry(token);
+    setState((prev) => ({
+      ...prev,
+      token,
+      isAuthenticated: !!token,
+      expiresAt,
+      expiresIn,
+      formattedExpiry,
+    }));
   };
 
   const switchRole = (newRole: Role) => {
@@ -71,6 +121,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const savedOverride = sessionStorage.getItem('testRoleOverride');
         if (savedOverride) {
           u.role = savedOverride as Role;
+        }
+        if (!u.tokenExpiresAt && state.expiresAt) {
+          u.tokenExpiresAt = state.expiresAt.toISOString();
+        }
+        if (!u.expiresAt && state.expiresAt) {
+          u.expiresAt = state.expiresAt.toISOString();
+        }
+        if (u.expiresIn === undefined && state.expiresIn !== null) {
+          u.expiresIn = state.expiresIn;
         }
         setUser(u);
       } else {

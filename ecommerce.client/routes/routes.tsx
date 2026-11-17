@@ -1,11 +1,11 @@
 import React from 'react';
 import { RouteConfig } from 'shared-ui/router/RouteRenderer.types';
-import { StoreLayout } from '../components/store/StoreLayout';
+import { PublicLayout } from '../components/store/PublicLayout';
 import { StoreHomePage } from '../components/store/StoreHomePage';
 import { CheckoutPage } from '../components/store/CheckoutPage';
 
 // Direct component imports from dedicated feature folders
-import AdminLayout from '../components/admin/layout/AdminLayout';
+import { AuthorizedLayout } from '../components/admin/layout/AuthorizedLayout';
 import DashboardOverview from '../components/admin/dashboard/DashboardOverview';
 import ProductManagement from '../components/admin/products/ProductManagement';
 import CategoryManagement from '../components/admin/categories/CategoryManagement';
@@ -29,7 +29,7 @@ export const EcommerceRoutes: RouteConfig = {
   routes: [
     {
       path: '/',
-      element: StoreLayout,
+      element: PublicLayout,
       children: [
         { index: true, element: StoreHomePage },
         { path: 'checkout', element: CheckoutPage },
@@ -37,7 +37,7 @@ export const EcommerceRoutes: RouteConfig = {
     },
     {
       path: '/admin',
-      element: AdminLayout,
+      element: AuthorizedLayout,
       children: [
         { index: true, element: DashboardOverview },
         { path: 'products', element: ProductManagement },
