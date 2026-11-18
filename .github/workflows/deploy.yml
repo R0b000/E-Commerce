@@ -20,10 +20,9 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
+      - name: Install Tools
+        run: |
+          npm install -g pnpm@9 esbuild
 
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
@@ -34,10 +33,13 @@ jobs:
       - name: Bundle Server & Built Assets into Single Clean Distribution
         run: |
           mkdir -p deploy
-          # Copy compiled client build
+          
+          # Copy compiled client build (both as /dist and at root for direct web serving)
           cp -r dist deploy/
-          # Bundle backend into a single lean file with npx --yes
-          npx --yes esbuild index.js \
+          cp -r dist/* deploy/
+          
+          # Bundle backend into a single lean file (no raw source folders)
+          esbuild index.js \
             --bundle \
             --platform=node \
             --target=node20 \
@@ -54,6 +56,7 @@ jobs:
             --external:morgan \
             --external:express-rate-limit \
             --external:dotenv
+          
           cp package.json deploy/
           mkdir -p deploy/tmp
           touch deploy/tmp/restart.txt
@@ -100,7 +103,7 @@ jobs:
           security: loose
           timeout: 120000
           local-dir: ./deploy/
-          server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/' }}
+          server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/public_html/himalayaonlineshop/' }}
           exclude: |
             **/.git*
             **/.git*/**
