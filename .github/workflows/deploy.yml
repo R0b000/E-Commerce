@@ -98,16 +98,15 @@ jobs:
           zip -r ../deploy.zip .
           cd ..
 
-      - name: Deploy to Server via HTTPS
+      - name: Deploy to Server via HTTPS (Binary Stream)
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN || 'my_super_secret_deploy_token_123' }}
         run: |
           echo "Uploading deploy.zip to https://himalayaonlineshop.engicheck.com/deploy.php ..."
           RESPONSE=$(curl -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
             -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
-            -H "Accept-Language: en-US,en;q=0.5" \
-            -F "bundle=@deploy.zip" \
+            -H "Content-Type: application/octet-stream" \
+            --data-binary "@deploy.zip" \
             "https://himalayaonlineshop.engicheck.com/deploy.php?token=${DEPLOY_TOKEN}")
           
           BODY=$(echo "$RESPONSE" | sed -e '$d')
