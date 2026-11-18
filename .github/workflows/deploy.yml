@@ -98,10 +98,9 @@ jobs:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          protocol: ftps
+          protocol: ftp
           port: 21
-          security: loose
-          timeout: 120000
+          timeout: 60000
           local-dir: ./deploy/
           server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/' }}
           exclude: |
