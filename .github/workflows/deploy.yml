@@ -77,12 +77,16 @@ jobs:
             }
           '
 
-      - name: Deploy to Server via FTP
+      - name: Deploy to Server via FTPS / FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          timeout: 120000
           local-dir: ./deploy/
           server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/' }}
           exclude: |
