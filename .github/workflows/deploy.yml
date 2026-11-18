@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p deploy
           
-          # Copy compiled client build (both as /dist and at root for direct web serving)
+          # Copy compiled client build
           cp -r dist deploy/
           cp -r dist/* deploy/
           
@@ -95,42 +95,24 @@ jobs:
       - name: Compress Build Bundle
         run: |
           cd deploy
-          zip -r ../deploy.zip .
+          zip -q -r ../deploy.zip .
           cd ..
+          ls -lh deploy.zip
 
-      - name: Deploy to Server via HTTPS (Auto-Fallback)
+      - name: Deploy to Server via HTTPS
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN || 'my_super_secret_deploy_token_123' }}
         run: |
-          TARGET_URL="https://himalayaonlineshop.engicheck.com/deploy.php"
-          echo "Attempting upload to: $TARGET_URL"
+          TARGET_URL="https://engicheck.com/himalayaonlineshop/deploy.php"
+          echo "Uploading deploy.zip to verified endpoint: $TARGET_URL ..."
           
           RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
             -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            -H "Content-Type: application/octet-stream" \
-            --data-binary "@deploy.zip" \
+            -F "bundle=@deploy.zip" \
             "${TARGET_URL}?token=${DEPLOY_TOKEN}")
           
           BODY=$(echo "$RESPONSE" | sed -e '$d')
           STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
-          
-          echo "Status: $STATUS"
-          
-          # If subdomain returns 404, try through primary domain folder path
-          if [ "$STATUS" -eq 404 ]; then
-            TARGET_URL="https://engicheck.com/himalayaonlineshop/deploy.php"
-            echo "Subdomain was 404. Trying primary domain path: $TARGET_URL"
-            
-            RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
-              -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              -H "Content-Type: application/octet-stream" \
-              --data-binary "@deploy.zip" \
-              "${TARGET_URL}?token=${DEPLOY_TOKEN}")
-            
-            BODY=$(echo "$RESPONSE" | sed -e '$d')
-            STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
-            echo "Status: $STATUS"
-          fi
           
           echo "Server Response: $BODY"
           echo "Final HTTP Status: $STATUS"
