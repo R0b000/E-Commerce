@@ -103,7 +103,7 @@ jobs:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN || 'my_super_secret_deploy_token_123' }}
         run: |
           echo "Uploading deploy.zip to https://himalayaonlineshop.engicheck.com/deploy.php ..."
-          RESPONSE=$(curl -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+          RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
             -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
             -H "Content-Type: application/octet-stream" \
             --data-binary "@deploy.zip" \
