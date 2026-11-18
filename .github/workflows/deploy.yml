@@ -1,4 +1,4 @@
-name: CI/CD Deploy to Server
+name: CI/CD Deploy Built Code
 
 on:
   push:
@@ -28,19 +28,33 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build Frontend Client (Vite SPA)
+      - name: Build Project (Compile Vite SPA)
         run: pnpm build
 
-      - name: Package Application for Server
+      - name: Bundle Server & Built Assets into Single Clean Distribution
         run: |
           mkdir -p deploy
+          # Copy only the compiled client build
           cp -r dist deploy/
-          cp -r Shared deploy/
-          cp -r auth.server deploy/
-          cp -r ecommerce.server deploy/
-          cp index.js deploy/
+          # Bundle backend into a single lean file (no raw source folders)
+          npx esbuild index.js \
+            --bundle \
+            --platform=node \
+            --target=node20 \
+            --format=cjs \
+            --outfile=deploy/index.js \
+            --external:express \
+            --external:mongoose \
+            --external:ioredis \
+            --external:socket.io \
+            --external:bcryptjs \
+            --external:jsonwebtoken \
+            --external:helmet \
+            --external:cors \
+            --external:morgan \
+            --external:express-rate-limit \
+            --external:dotenv
           cp package.json deploy/
-          cp pnpm-lock.yaml deploy/
           mkdir -p deploy/tmp
           touch deploy/tmp/restart.txt
 
@@ -60,7 +74,6 @@ jobs:
             const fs = require("fs");
             if (process.env.APP_ENV && process.env.APP_ENV.trim()) {
               fs.writeFileSync("deploy/.env", process.env.APP_ENV.trim() + "\n");
-              console.log("Written .env from APP_ENV secret.");
             } else {
               const lines = [
                 `NODE_ENV=${process.env.NODE_ENV || "production"}`,
@@ -73,16 +86,19 @@ jobs:
                 `REDIS_URL=${process.env.REDIS_URL || "redis://localhost:6379"}`
               ];
               fs.writeFileSync("deploy/.env", lines.join("\n") + "\n");
-              console.log("Written .env from individual secrets.");
             }
           '
 
-      - name: Deploy to Server via FTP
+      - name: Deploy Built Code to Server via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          security: loose
+          timeout: 120000
           local-dir: ./deploy/
           server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/' }}
           exclude: |
