@@ -1,0 +1,91 @@
+name: CI/CD Deploy to Server
+
+on:
+  push:
+    branches:
+      - production
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Frontend Client (Vite SPA)
+        run: pnpm build
+
+      - name: Package Application for Server
+        run: |
+          mkdir -p deploy
+          cp -r dist deploy/
+          cp -r Shared deploy/
+          cp -r auth.server deploy/
+          cp -r ecommerce.server deploy/
+          cp index.js deploy/
+          cp package.json deploy/
+          cp pnpm-lock.yaml deploy/
+          mkdir -p deploy/tmp
+          touch deploy/tmp/restart.txt
+
+      - name: Securely Generate Production .env
+        env:
+          APP_ENV: ${{ secrets.APP_ENV }}
+          NODE_ENV: ${{ secrets.NODE_ENV }}
+          PORT: ${{ secrets.PORT }}
+          CLIENT_URL: ${{ secrets.CLIENT_URL }}
+          CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
+          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            if (process.env.APP_ENV && process.env.APP_ENV.trim()) {
+              fs.writeFileSync("deploy/.env", process.env.APP_ENV.trim() + "\n");
+              console.log("Written .env from APP_ENV secret.");
+            } else {
+              const lines = [
+                `NODE_ENV=${process.env.NODE_ENV || "production"}`,
+                `PORT=${process.env.PORT || "30160"}`,
+                `CLIENT_URL=${process.env.CLIENT_URL || "https://himalayaonlineshop.engicheck.com"}`,
+                `CLOUDINARY_URL=${process.env.CLOUDINARY_URL || ""}`,
+                `JWT_EXPIRES_IN=${process.env.JWT_EXPIRES_IN || "24h"}`,
+                `JWT_SECRET=${process.env.JWT_SECRET || ""}`,
+                `MONGO_URI=${process.env.MONGO_URI || ""}`,
+                `REDIS_URL=${process.env.REDIS_URL || "redis://localhost:6379"}`
+              ];
+              fs.writeFileSync("deploy/.env", lines.join("\n") + "\n");
+              console.log("Written .env from individual secrets.");
+            }
+          '
+
+      - name: Deploy to Server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: ./deploy/
+          server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/' }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
