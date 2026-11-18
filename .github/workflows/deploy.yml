@@ -1,0 +1,58 @@
+name: CI/CD Deploy to Server
+
+on:
+  push:
+    branches:
+      - production
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Frontend Client (Vite SPA)
+        run: pnpm build
+
+      - name: Package Application for Server
+        run: |
+          mkdir -p deploy
+          cp -r dist deploy/
+          cp -r Shared deploy/
+          cp -r auth.server deploy/
+          cp -r ecommerce.server deploy/
+          cp index.js deploy/
+          cp package.json deploy/
+          cp pnpm-lock.yaml deploy/
+          mkdir -p deploy/tmp
+          touch deploy/tmp/restart.txt
+
+      - name: Deploy to Server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: ./deploy/
+          server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/ecommerce/' }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
