@@ -34,10 +34,10 @@ jobs:
       - name: Bundle Server & Built Assets into Single Clean Distribution
         run: |
           mkdir -p deploy
-          # Copy only the compiled client build
+          # Copy compiled client build
           cp -r dist deploy/
-          # Bundle backend into a single lean file (no raw source folders)
-          npx esbuild index.js \
+          # Bundle backend into a single lean file with npx --yes
+          npx --yes esbuild index.js \
             --bundle \
             --platform=node \
             --target=node20 \
