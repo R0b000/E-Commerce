@@ -103,7 +103,7 @@ jobs:
           security: loose
           timeout: 120000
           local-dir: ./deploy/
-          server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/public_html/himalayaonlineshop/' }}
+          server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/' }}
           exclude: |
             **/.git*
             **/.git*/**
