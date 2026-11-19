@@ -68,6 +68,48 @@ app.use(auditLogMiddleware);
 app.use('/api/auth', authRouter);
 app.use('/api/ecommerce', ecommerceRouter);
 
+// Database One-Click Seeding Endpoint (No local mongo installation needed)
+let seedDataFn;
+try {
+  seedDataFn = require('./seed').seedData;
+} catch (e) {
+  // seed.js will be loaded if available
+}
+
+app.get('/api/seed', async (req, res) => {
+  const token = req.query.token;
+  const validToken = process.env.DEPLOY_TOKEN || 'my_super_secret_deploy_token_123';
+  if (!token || token !== validToken) {
+    return res.status(403).json({ success: false, message: 'Forbidden: invalid or missing token' });
+  }
+
+  if (!seedDataFn) {
+    try {
+      seedDataFn = require('./seed').seedData;
+    } catch (e) {
+      return res.status(500).json({ success: false, message: 'seed.js module could not be loaded: ' + e.message });
+    }
+  }
+
+  try {
+    const result = await seedDataFn(false);
+    return res.status(200).json({
+      success: true,
+      message: 'Database seeded successfully with all Roles, Permissions, Categories, Products, and Admin!',
+      admin: 'admin@store.com / admin123',
+      seller: 'seller@store.com / seller123',
+      customer: 'customer@store.com / customer123',
+      result,
+    });
+  } catch (error) {
+    console.error('Seeding error via API:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Seeding error: ' + error.message,
+    });
+  }
+});
+
 const fs = require('fs');
 const distPath = path.join(__dirname, 'dist');
 
