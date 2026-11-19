@@ -290,14 +290,9 @@ export const LoginForm = ({
 
           {/* Password Input */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Password
-              </label>
-              <a href="#forgot" className="text-xs font-semibold text-orange-600 hover:text-orange-500 transition-colors">
-                Forgot password?
-              </a>
-            </div>
+            <label htmlFor="password" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+              Password
+            </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -358,19 +353,24 @@ export const LoginForm = ({
             </div>
           )}
 
-          {/* Remember Me Box */}
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              disabled={isLoading}
-              className="h-4.5 w-4.5 rounded border-slate-300 text-orange-600 focus:outline-none transition-colors disabled:opacity-60 cursor-pointer"
-            />
-            <label htmlFor="remember-me" className="ml-2.5 block text-xs text-slate-600 select-none cursor-pointer">
-              Remember this device for instant passkey login
-            </label>
+          {/* Remember Me & Forgot Password Row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center min-w-0">
+              <input
+                id="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={isLoading}
+                className="h-4.5 w-4.5 rounded border-slate-300 text-orange-600 focus:outline-none transition-colors disabled:opacity-60 cursor-pointer shrink-0"
+              />
+              <label htmlFor="remember-me" className="ml-2.5 block text-xs text-slate-600 select-none cursor-pointer truncate">
+                Remember this device for instant passkey login
+              </label>
+            </div>
+            <a href="#forgot" className="text-xs font-semibold text-orange-600 hover:text-orange-500 transition-colors shrink-0 whitespace-nowrap">
+              Forgot password?
+            </a>
           </div>
 
           {/* Sign In Button */}
@@ -498,9 +498,9 @@ export const LoginForm = ({
             <button
               type="button"
               onClick={() => onRegisterClick('seller')}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors focus:outline-none cursor-pointer inline-flex items-center gap-1.5"
+              className="text-xs font-semibold text-amber-600 hover:text-amber-700 hover:underline transition-colors focus:outline-none cursor-pointer inline-flex items-center gap-1.5"
             >
-              <ShopOutlined className="text-xs" />
+              <ShopOutlined className="text-xs text-amber-600" />
               <span>Sign In As Seller</span>
             </button>
           </div>

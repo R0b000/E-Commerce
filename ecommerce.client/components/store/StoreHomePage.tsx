@@ -118,24 +118,107 @@ export const StoreHomePage: React.FC = () => {
   return (
     <div className="space-y-14 pb-16">
       {/* Hero Banner Section */}
-      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-8 md:p-14 shadow-2xl">
-        <div className="relative z-10 max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-semibold text-orange-400">
-            <ThunderboltFilled /> Handcrafted in Nepal
+      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0369a1] via-[#0096c7] to-[#0284c7] text-white p-8 md:p-12 lg:p-16 shadow-xl border border-sky-400/20">
+        {/* Ambient decorative glowing orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/15 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-sky-300/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          {/* Left Column: Heading & CTAs */}
+          <div className="lg:col-span-7 space-y-5">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-amber-200 border border-white/25 shadow-xs">
+              <ThunderboltFilled className="text-amber-300" />
+              <span>Handcrafted in Nepal • Ethically Sourced</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
+              Authentic Himalayan Craftsmanship, Direct to Your Door
+            </h1>
+
+            <p className="text-sky-100 text-sm md:text-base leading-relaxed max-w-xl font-normal">
+              Explore authentic hand-hammered singing bowls, organic high-altitude teas, pure pashmina shawls, and artisan crafts certified for ethical fair trade.
+            </p>
+
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setSelectedCategory('all')}
+                className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] font-bold text-xs uppercase tracking-wider text-slate-950 transition-all shadow-lg shadow-amber-500/25 cursor-pointer flex items-center gap-2"
+              >
+                <span>Shop All Catalog</span>
+                <span className="text-sm">→</span>
+              </button>
+              <a
+                href="#featured"
+                className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all border border-white/30 cursor-pointer"
+              >
+                Featured Items
+              </a>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="pt-4 border-t border-white/15 flex flex-wrap items-center gap-6 text-xs text-sky-100">
+              <div className="flex items-center gap-2">
+                <CheckCircleOutlined className="text-amber-300" />
+                <span>100% Artisan Made</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <StarFilled className="text-amber-300" />
+                <span>4.9 / 5 Customer Rating</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>Fast Nationwide Delivery</span>
+              </div>
+            </div>
           </div>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
-            Authentic Himalayan Craftsmanship, Direct to Your Door
-          </h1>
-          <p className="text-slate-300 text-sm md:text-base leading-relaxed">
-            Explore authentic singing bowls, organic mountain teas, pure pashmina shawls, and artisan crafts certified for ethical fair trade.
-          </p>
-          <div className="pt-2 flex flex-wrap gap-3">
-            <button
-              onClick={() => setSelectedCategory('all')}
-              className="px-6 py-3 rounded-xl bg-[#f97316] hover:bg-[#ea580c] font-bold text-xs uppercase tracking-wider text-white transition-all shadow-md cursor-pointer"
-            >
-              Shop All Catalog
-            </button>
+
+          {/* Right Column: Featured Product Spotlight Card */}
+          <div className="lg:col-span-5 flex justify-center lg:justify-end">
+            {featuredProduct ? (
+              <div
+                onClick={() => setQuickViewProduct(featuredProduct)}
+                className="w-full max-w-sm bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl p-4 shadow-2xl hover:bg-white/20 transition-all duration-300 cursor-pointer group"
+              >
+                <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-white/20 mb-3.5">
+                  <img
+                    src={featuredProduct.images?.[0] || 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80'}
+                    alt={featuredProduct.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow-sm">
+                    Staff Spotlight
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className="text-white font-bold text-base truncate group-hover:text-amber-200 transition-colors">
+                      {featuredProduct.name}
+                    </h4>
+                    <span className="text-amber-300 font-extrabold text-base whitespace-nowrap">
+                      ${(featuredProduct.salePrice ?? featuredProduct.price).toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-sky-100 text-xs line-clamp-2 leading-relaxed">
+                    {featuredProduct.description}
+                  </p>
+                  <div className="pt-1 flex items-center justify-between">
+                    <span className="text-[11px] text-sky-200">Click to view details</span>
+                    <button
+                      onClick={(e) => handleAddToCart(featuredProduct, e)}
+                      className="px-3 py-1.5 rounded-lg bg-white text-[#0096C7] hover:bg-amber-400 hover:text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                    >
+                      <ShoppingOutlined /> Add to Bag
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full max-w-sm aspect-4/3 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/60">
+                <ShoppingOutlined className="text-4xl text-white/40" />
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -151,7 +234,7 @@ export const StoreHomePage: React.FC = () => {
             onClick={() => setSelectedCategory('all')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               selectedCategory === 'all'
-                ? 'bg-slate-900 text-white shadow-sm'
+                ? 'bg-[#0096C7] text-white shadow-sm'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >

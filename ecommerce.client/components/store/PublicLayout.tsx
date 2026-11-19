@@ -13,8 +13,9 @@ import {
   ShopOutlined,
   CheckCircleOutlined,
   ThunderboltFilled,
+  DownOutlined,
 } from '@ant-design/icons';
-import { Badge, Avatar, Modal, Tag, Spin } from 'antd';
+import { Badge, Avatar, Modal, Tag, Spin, Popover } from 'antd';
 import { useCart } from '../../context/CartContext';
 import { CartDrawer } from './CartDrawer';
 import { useAuth } from 'auth-client/hooks/useAuth';
@@ -87,31 +88,9 @@ export const PublicLayout: React.FC = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
-            {/* Customer Orders Trigger */}
-            {isAuthenticated && (
-              <AppButton
-                size="middle"
-                icon={<FileTextOutlined />}
-                onClick={openMyOrders}
-              >
-                My Orders
-              </AppButton>
-            )}
-
-            {/* Shopping Bag Trigger */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="relative p-2.5 text-slate-700 hover:text-[#0096C7] rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-              title="Shopping Cart"
-            >
-              <Badge count={cartCount} size="small" offset={[2, -2]}>
-                <ShoppingOutlined className="text-xl" />
-              </Badge>
-            </button>
-
-            {/* User Account / Auth */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
+              <>
+                {/* Seller / Admin Portal Badge if authorized */}
                 {(isSeller || isAdmin) && (
                   <Link
                     to="/admin"
@@ -121,42 +100,124 @@ export const PublicLayout: React.FC = () => {
                     <span>{isSeller ? 'Seller Portal' : 'Admin Suite'}</span>
                   </Link>
                 )}
-                <div
-                  className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer"
-                  onClick={openMyOrders}
-                  title={`Authorized as ${user?.firstName} (${user?.role}) • Session Expiry: ${formattedExpiry || '24h'}`}
+
+                {/* Account Menu (replaces Sign In when authenticated) */}
+                <Popover
+                  trigger="click"
+                  placement="bottomRight"
+                  content={
+                    <div className="w-56 p-1 space-y-2 select-none">
+                      <div className="p-2 border-b border-slate-100 flex items-center gap-2.5">
+                        <Avatar
+                          style={{
+                            backgroundColor: isSeller ? '#f97316' : '#0284c7',
+                            color: '#fff',
+                          }}
+                          icon={<UserOutlined />}
+                          size="middle"
+                        >
+                          {user?.firstName?.[0] || 'U'}
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-slate-900 text-xs truncate">
+                            {user?.firstName} {user?.lastName}
+                          </div>
+                          <div className="text-[11px] text-slate-400 truncate">
+                            {user?.email}
+                          </div>
+                          <div className="mt-1">
+                            <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600 uppercase">
+                              {user?.role || 'Customer'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <button
+                          onClick={openMyOrders}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer text-left"
+                        >
+                          <FileTextOutlined className="text-slate-400" />
+                          <span>My Orders</span>
+                        </button>
+
+                        {(isSeller || isAdmin) && (
+                          <Link
+                            to="/admin"
+                            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors text-left"
+                          >
+                            <ShopOutlined className="text-slate-400" />
+                            <span>{isSeller ? 'Seller Dashboard' : 'Admin Dashboard'}</span>
+                          </Link>
+                        )}
+
+                        <button
+                          onClick={() => {
+                            logout();
+                            navigate('/login');
+                          }}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
+                        >
+                          <LogoutOutlined className="text-rose-500" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  }
                 >
-                  <Avatar
-                    style={{
-                      backgroundColor: isSeller ? '#f97316' : '#0284c7',
-                      color: '#fff',
-                    }}
-                    icon={<UserOutlined />}
-                    size="small"
+                  <button
+                    className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                    title={`Account: ${user?.firstName} (${user?.role}) • Session Expiry: ${formattedExpiry || '24h'}`}
                   >
-                    {user?.firstName?.[0] || 'U'}
-                  </Avatar>
-                  <span className="text-xs font-semibold text-slate-800 hidden sm:inline">
-                    {user?.firstName}
-                  </span>
-                </div>
+                    <Avatar
+                      style={{
+                        backgroundColor: isSeller ? '#f97316' : '#0284c7',
+                        color: '#fff',
+                      }}
+                      icon={<UserOutlined />}
+                      size="small"
+                    >
+                      {user?.firstName?.[0] || 'U'}
+                    </Avatar>
+                    <span className="text-xs font-semibold text-slate-800 hidden sm:inline">
+                      {user?.firstName}
+                    </span>
+                    <DownOutlined className="text-[10px] text-slate-400" />
+                  </button>
+                </Popover>
+
+                {/* Shopping Bag Trigger - Follows Account when authenticated */}
                 <button
-                  onClick={() => {
-                    logout();
-                    navigate('/login');
-                  }}
-                  title="Sign Out"
-                  className="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2.5 text-slate-700 hover:text-[#0096C7] rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Shopping Cart"
                 >
-                  <LogoutOutlined />
+                  <Badge count={cartCount} size="small" offset={[2, -2]}>
+                    <ShoppingOutlined className="text-xl" />
+                  </Badge>
                 </button>
-              </div>
+              </>
             ) : (
-              <Link to="/login">
-                <AppButton size="middle">
-                  Sign In
-                </AppButton>
-              </Link>
+              <>
+                {/* Shopping Bag Trigger */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2.5 text-slate-700 hover:text-[#0096C7] rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Shopping Cart"
+                >
+                  <Badge count={cartCount} size="small" offset={[2, -2]}>
+                    <ShoppingOutlined className="text-xl" />
+                  </Badge>
+                </button>
+
+                {/* Sign In Button */}
+                <Link to="/login">
+                  <AppButton size="middle">
+                    Sign In
+                  </AppButton>
+                </Link>
+              </>
             )}
           </div>
         </div>
