@@ -488,9 +488,9 @@ export const ProductManagement: React.FC = () => {
         {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
         <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
           {/* Left Side: Product Count */}
-          <div className="flex items-center gap-2 leading-none">
-            <span className="font-medium text-white/95 text-[11px] leading-none">Total Products:</span>
-            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[10px] border border-white/30 leading-none">
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-medium text-white/90 text-[11px] leading-none">Total Products:</span>
+            <span className="font-bold text-white text-[11px] leading-none">
               {products.length} Items
             </span>
           </div>
