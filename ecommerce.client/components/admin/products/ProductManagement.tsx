@@ -21,7 +21,6 @@ import {
   AppInput,
   AppSelect,
   AppModal,
-  PageHeader,
   StatusBadge,
   TableSkeleton,
 } from 'shared-components';
@@ -239,30 +238,25 @@ export const ProductManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-1 w-full font-['Poppins','Inter',sans-serif]">
-      {/* Reusable Page Header */}
-      <PageHeader
-        title={isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
-        description={
-          isSeller
-            ? 'Manage your store catalog listings, warehouse inventory, and selling prices.'
-            : 'Maintain your entire catalog, warehouse stock quantities, and retail pricing.'
-        }
-        breadcrumbs={[{ label: isSeller ? 'Seller' : 'Admin', path: '/admin' }, { label: 'Products' }]}
-        className="!mb-1.5 !pb-2 !border-b-0"
-      />
-
-      {/* Main Products Directory Card (Matching Inventory card layout) */}
+    <div className="space-y-4 w-full font-['Poppins','Inter',sans-serif]">
+      {/* Main Products Directory Card with Integrated Header */}
       <div className="bg-white rounded-2xl shadow-xs">
-        {/* Table Top Controls & Filter Bar (relative z-20 so dropdown floats cleanly over table) */}
+        {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
         <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
-          <div className="flex items-center gap-3">
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Products Catalog
-            </h3>
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
-              {products.length} Items
-            </span>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2.5">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                {isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
+              </h3>
+              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
+                {products.length} Items
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
+              {isSeller
+                ? 'Manage your store catalog listings, warehouse inventory, and selling prices.'
+                : 'Maintain your entire catalog, warehouse stock quantities, and retail pricing.'}
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
