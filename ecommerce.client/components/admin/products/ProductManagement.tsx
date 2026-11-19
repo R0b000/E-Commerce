@@ -269,7 +269,7 @@ export const ProductManagement: React.FC = () => {
       {/* Main Products Directory Card with Integrated Header */}
       <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
         {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
-        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex flex-col min-w-0">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               {isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
