@@ -267,7 +267,7 @@ export const ProductManagement: React.FC = () => {
       </div>
 
       {/* Main Products Directory Card with Integrated Header */}
-      <div className="bg-white rounded-2xl shadow-xs">
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
         {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
         <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex flex-col min-w-0">
@@ -338,7 +338,7 @@ export const ProductManagement: React.FC = () => {
         </div>
 
         {/* Products Table Wrapper */}
-        <div className="overflow-hidden rounded-b-2xl">
+        <div className="overflow-hidden">
           <AppTable>
             <thead>
               <tr>
@@ -485,20 +485,20 @@ export const ProductManagement: React.FC = () => {
           </AppTable>
         </div>
 
-        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height 40px & Roundness rounded-b-2xl) */}
-        <div className="px-6 h-[40px] min-h-[40px] bg-[#0096C7] text-white rounded-b-2xl flex items-center justify-between text-[12px] shadow-inner select-none">
+        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
           {/* Left Side: Product Count */}
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-white/95 text-[12px]">Total Products:</span>
-            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[11px] border border-white/30 leading-none">
+          <div className="flex items-center gap-2 leading-none">
+            <span className="font-medium text-white/95 text-[11px] leading-none">Total Products:</span>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[10px] border border-white/30 leading-none">
               {products.length} Items
             </span>
           </div>
 
           {/* Right Side: Pagination Controls (Rendered ONLY if products > 10) */}
           {products.length > 10 && (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 text-[11px] text-white/95 font-medium">
+            <div className="flex items-center gap-2.5 leading-none">
+              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
                 <span>Rows:</span>
                 <div className="relative">
                   <select
@@ -507,18 +507,18 @@ export const ProductManagement: React.FC = () => {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[11px] rounded-md pl-2 pr-5 py-0.5 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-6 leading-none"
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
                   >
                     <option value={10} className="bg-slate-800 text-white">10</option>
                     <option value={20} className="bg-slate-800 text-white">20</option>
                     <option value={50} className="bg-slate-800 text-white">50</option>
                     <option value={100} className="bg-slate-800 text-white">100</option>
                   </select>
-                  <DownOutlined className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/80" />
+                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
                 </div>
               </div>
 
-              <span className="text-[11px] text-white/95 font-medium whitespace-nowrap">
+              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
                 {products.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, products.length)} of {products.length}
               </span>
 
@@ -528,18 +528,18 @@ export const ProductManagement: React.FC = () => {
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   title="Previous page"
-                  className="w-6 h-6 flex items-center justify-center rounded-md bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
                 >
-                  <LeftOutlined className="text-[9px]" />
+                  <LeftOutlined className="text-[8px]" />
                 </button>
                 <button
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   title="Next page"
-                  className="w-6 h-6 flex items-center justify-center rounded-md bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="w-6 h-6 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
                 >
-                  <RightOutlined className="text-[9px]" />
+                  <RightOutlined className="text-[8px]" />
                 </button>
               </div>
             </div>
