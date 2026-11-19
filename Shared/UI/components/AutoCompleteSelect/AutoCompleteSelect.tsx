@@ -112,8 +112,11 @@ export const AutoCompleteSelect: React.FC<AutoCompleteSelectProps> = ({
 
   return (
     <div
-      className={`relative inline-block w-full font-['Nunito_Sans','Poppins',sans-serif] ${className}`}
-      style={style}
+      className={`relative inline-block w-full font-['Nunito_Sans','Poppins',sans-serif] ${className} ${isOpen ? 'z-[9000]' : ''}`}
+      style={{
+        ...style,
+        zIndex: isOpen ? 'var(--z-dropdown, 9000)' : undefined,
+      }}
       ref={containerRef}
     >
       {(label || showLabel) && (
@@ -164,9 +167,10 @@ export const AutoCompleteSelect: React.FC<AutoCompleteSelectProps> = ({
       {/* Dropdown Panel matching the exact width of the trigger button */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 top-full z-[9999] mt-1 w-full min-w-full overflow-hidden rounded-lg bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150 text-[11px] ${
+          className={`autocomplete-dropdown absolute left-0 right-0 top-full mt-1 w-full min-w-full overflow-hidden rounded-lg bg-white shadow-xl animate-in fade-in zoom-in-95 duration-150 text-[11px] ${
             isAmber ? 'border border-amber-200/80' : 'border border-gray-200'
           }`}
+          style={{ zIndex: 'var(--z-dropdown, 9000)' }}
         >
           {/* Top Search Input with width almost identical to dropdown */}
           <div

@@ -1,9 +1,51 @@
 /* =========================================================================
-   Modal Stylesheet (modal.css)
-   Top-10 Position & Smooth Transformation Entrance Animations
+   Modal & Overlay Stylesheet (modal.css)
+   Strict Z-Index Hierarchy:
+     1. Drawer (Highest: 10000)
+     2. Dropdown (9000)
+     3. Confirm Modal (8000)
+     4. Modal (7000)
    ========================================================================= */
 
-/* Exact Top-10 Positioning on Viewport & Z-Index Layering */
+/* 1. Drawer Layer (Highest: 10000) */
+.ant-drawer,
+.app-drawer,
+.cart-drawer,
+.ant-drawer-wrap {
+  z-index: var(--z-drawer, 10000) !important;
+}
+
+.ant-drawer-mask {
+  z-index: var(--z-drawer-mask, 9990) !important;
+}
+
+/* 2. Dropdown & Popover Layer (9000 - Higher than Confirm Modal & Modal) */
+.ant-dropdown,
+.ant-select-dropdown,
+.ant-picker-dropdown,
+.ant-cascader-dropdown,
+.ant-popover,
+.app-select-dropdown,
+.autocomplete-dropdown {
+  z-index: var(--z-dropdown, 9000) !important;
+}
+
+/* 3. Confirmation Modal Layer (8000 - Higher than Regular Modal) */
+.ant-modal-confirm,
+.ant-popconfirm,
+.ant-modal-wrap.ant-modal-confirm,
+.modal-confirm,
+.app-modal-confirm {
+  z-index: var(--z-confirm-modal, 8000) !important;
+}
+
+.ant-modal-confirm .ant-modal-mask,
+.ant-modal-mask:has(~ .ant-modal-wrap.ant-modal-confirm),
+.modal-confirm-overlay {
+  z-index: var(--z-confirm-mask, 7990) !important;
+}
+
+/* 4. Regular Modal Layer (7000) */
 .app-modal,
 .ant-modal.app-modal-top10,
 .app-modal-top10,
@@ -22,21 +64,6 @@
   -webkit-backdrop-filter: blur(4px);
   transition: opacity 0.25s ease-in-out;
   z-index: var(--z-modal-mask, 6990) !important;
-}
-
-/* Confirmation Modal Layer (Higher than Modal, Lower than Dropdown) */
-.ant-modal-confirm,
-.ant-popconfirm,
-.ant-modal-wrap.ant-modal-confirm,
-.modal-confirm,
-.app-modal-confirm {
-  z-index: var(--z-confirm-modal, 8000) !important;
-}
-
-.ant-modal-confirm .ant-modal-mask,
-.ant-modal-mask:has(~ .ant-modal-wrap.ant-modal-confirm),
-.modal-confirm-overlay {
-  z-index: var(--z-confirm-mask, 7990) !important;
 }
 
 .ant-modal .ant-modal-content,

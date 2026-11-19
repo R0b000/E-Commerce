@@ -155,9 +155,9 @@ export const InventoryManagement: React.FC = () => {
       />
 
       {/* Main Inventory Directory Table Card (Standard clean div without ant-card margins/borders) */}
-      <div className="bg-white rounded-2xl shadow-xs overflow-hidden">
-        {/* Table Top Controls & Filter Bar */}
-        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white">
+      <div className="bg-white rounded-2xl shadow-xs">
+        {/* Table Top Controls & Filter Bar (relative z-20 so dropdown floats cleanly over table) */}
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex items-center gap-3">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Warehouse Stock Ledger
@@ -235,7 +235,8 @@ export const InventoryManagement: React.FC = () => {
         </div>
 
         {/* Inventory Stock Table */}
-        <AppTable>
+        <div className="overflow-hidden rounded-b-2xl">
+          <AppTable>
           <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Product & SKU</th>
@@ -393,7 +394,8 @@ export const InventoryManagement: React.FC = () => {
                 })
               )}
             </tbody>
-        </AppTable>
+          </AppTable>
+        </div>
       </div>
 
       {/* Custom Adjust Stock Modal (Top-10 Positioned with modal.css) */}
