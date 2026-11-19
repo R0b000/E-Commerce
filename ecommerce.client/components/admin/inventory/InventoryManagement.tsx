@@ -154,8 +154,12 @@ export const InventoryManagement: React.FC = () => {
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Inventory' }]}
       />
 
-      {/* Main Inventory Directory Card */}
-      <AppCard className="overflow-hidden border border-slate-200/80 rounded-2xl shadow-xs p-0">
+      {/* Main Inventory Directory Card (Border removed) */}
+      <AppCard
+        bordered={false}
+        className="overflow-hidden !border-0 !border-none rounded-2xl shadow-xs p-0"
+        style={{ border: 'none', borderColor: 'transparent' }}
+      >
         {/* Table Top Controls & Filter Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white">
           <div className="flex items-center gap-3">
