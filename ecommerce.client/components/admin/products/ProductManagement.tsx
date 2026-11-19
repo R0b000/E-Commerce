@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -8,21 +8,22 @@ import {
   SyncOutlined,
   StarFilled,
   WarningOutlined,
+  DownOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
-import { Tag, Checkbox, Spin, Popconfirm } from 'antd';
+import { Tag, Checkbox, Spin, Popconfirm, Breadcrumb } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { usePermissions } from '../../../context/PermissionContext';
 import {
-  AppCard,
   AppTable,
   AppButton,
   AppInput,
   AppSelect,
   AppModal,
-  PageHeader,
   StatusBadge,
   TableSkeleton,
 } from 'shared-components';
@@ -45,6 +46,8 @@ export const ProductManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -239,80 +242,107 @@ export const ProductManagement: React.FC = () => {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
+  const paginatedProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
-    <div className="space-y-6">
-      {/* Reusable Page Header */}
-      <PageHeader
-        title={isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
-        description={
-          isSeller
-            ? 'Manage your store catalog listings, warehouse inventory, and selling prices.'
-            : 'Maintain your entire catalog, warehouse stock quantities, and retail pricing.'
-        }
-        breadcrumbs={[{ label: isSeller ? 'Seller' : 'Admin', path: '/admin' }, { label: 'Products' }]}
-      />
+    <div className="w-full font-['Poppins','Inter',sans-serif]">
+      {/* Breadcrumb Navigation */}
+      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+        <Breadcrumb
+          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  {isSeller ? 'Seller' : 'Admin'}
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-600 font-medium">Products</span>,
+            },
+          ]}
+        />
+      </div>
 
-      {/* Filter and Search Bar with Action on the Right */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
-        <div className="flex flex-wrap items-center gap-3">
-          <form onSubmit={handleSearchSubmit} className="w-full sm:w-[350px] max-w-[350px] shrink-0">
-            <AppInput
-              prefix={<SearchOutlined className="text-slate-400" />}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products..."
-              allowClear
-            />
-          </form>
-
-          <div className="w-full sm:w-[170px] shrink-0">
-            <AppSelect
-              value={selectedCategory}
-              onChange={(val) => setSelectedCategory(val as string)}
-              options={[
-                { label: 'All Departments', value: 'all' },
-                ...categories.map((c) => ({
-                  label: c.name,
-                  value: c._id || c.id || '',
-                })),
-              ]}
-            />
+      {/* Main Products Directory Card with Integrated Header */}
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
+        {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
+        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              {isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
+              {isSeller
+                ? 'Manage your store catalog listings, warehouse inventory, and selling prices.'
+                : 'Maintain your entire catalog, warehouse stock quantities, and retail pricing.'}
+            </p>
           </div>
 
-          <div className="w-full sm:w-[130px] shrink-0">
-            <AppSelect
-              value={statusFilter}
-              onChange={(val) => setStatusFilter(val as string)}
-              options={[
-                { label: 'All Statuses', value: 'all' },
-                { label: 'Active', value: 'active' },
-                { label: 'Draft', value: 'draft' },
-                { label: 'Archived', value: 'archived' },
-              ]}
-            />
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Search Input */}
+            <form onSubmit={handleSearchSubmit} className="w-full sm:w-[260px] shrink-0">
+              <AppInput
+                prefix={<SearchOutlined className="text-slate-400" />}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products..."
+                allowClear
+              />
+            </form>
+
+            {/* Department Dropdown */}
+            <div className="w-full sm:w-[160px] shrink-0">
+              <AppSelect
+                value={selectedCategory}
+                onChange={(val) => setSelectedCategory(val as string)}
+                options={[
+                  { label: 'All Departments', value: 'all' },
+                  ...categories.map((c) => ({
+                    label: c.name,
+                    value: c._id || c.id || '',
+                  })),
+                ]}
+              />
+            </div>
+
+            {/* Status Dropdown */}
+            <div className="w-full sm:w-[130px] shrink-0">
+              <AppSelect
+                value={statusFilter}
+                onChange={(val) => setStatusFilter(val as string)}
+                options={[
+                  { label: 'All Statuses', value: 'all' },
+                  { label: 'Active', value: 'active' },
+                  { label: 'Draft', value: 'draft' },
+                  { label: 'Archived', value: 'archived' },
+                ]}
+              />
+            </div>
+
+            {/* Add New Product Button */}
+            {canCreate && (
+              <AppButton
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={openAddModal}
+                className="shrink-0"
+                style={{ backgroundColor: '#0096C7' }}
+              >
+                Add Product
+              </AppButton>
+            )}
           </div>
         </div>
 
-        {canCreate && (
-          <AppButton
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={openAddModal}
-            className="shrink-0"
-            style={{ backgroundColor: '#0096C7' }}
-          >
-            Add New Product
-          </AppButton>
-        )}
-      </div>
-
-      {/* Products Table Card */}
-      <AppCard bodyStyle={{ padding: 0 }}>
-        <AppTable>
-          <thead>
+        {/* Products Table Wrapper */}
+        <div className="overflow-hidden">
+          <AppTable>
+            <thead>
               <tr>
-                <th className="py-2.5 px-6 font-medium text-[12px]">Product</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">SKU</th>
+                <th className="py-2.5 px-6 font-medium text-[12px]">Product & SKU</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Department</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Price</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Stock Units</th>
@@ -322,67 +352,69 @@ export const ProductManagement: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <TableSkeleton columns={7} rows={6} hasAvatar={true} />
+                <TableSkeleton columns={6} rows={6} hasAvatar={true} />
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400 text-sm">
+                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
                     No products found matching query.
                   </td>
                 </tr>
               ) : (
-                products.map((p) => {
+                paginatedProducts.map((p) => {
                   const pId = p._id || p.id || '';
                   const categoryName = typeof p.category === 'object' ? p.category.name : 'General';
                   const isLow = p.stock <= 5;
                   const isOut = p.stock === 0;
 
                   return (
-                    <tr key={pId} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-4 px-6">
+                    <tr key={pId} className="hover:bg-slate-50/70 transition-colors group cursor-default">
+                      {/* Product & SKU */}
+                      <td className="py-3.5 px-6 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <img
                             src={p.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}
                             alt={p.name}
-                            className="w-12 h-12 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0"
+                            className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0"
                           />
-                          <div className="min-w-0 w-[20vw]">
-                            <div className="font-semibold text-slate-900 text-xs truncate flex items-center gap-1.5">
+                          <div className="max-w-[220px]">
+                            <div className="font-bold text-slate-900 text-xs truncate flex items-center gap-1.5">
                               {p.name}
                               {p.isFeatured && (
                                 <StarFilled className="text-amber-400 text-xs" title="Featured Item" />
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400 truncate">{p.shortDescription || p.description}</div>
+                            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                              SKU: {p.sku || 'N/A'}
+                            </div>
                           </div>
                         </div>
                       </td>
 
-                      <td className="py-4 px-4 font-mono text-xs font-semibold text-[#0096C7]">
-                        {p.sku}
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <Tag className="m-0 font-medium text-xs px-2 py-0.5 rounded border-slate-200 bg-slate-100 text-slate-700">
+                      {/* Department */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <Tag className="m-0 font-semibold text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 border-slate-200 text-slate-700">
                           {categoryName}
                         </Tag>
                       </td>
 
-                      <td className="py-4 px-4">
-                        <div className="font-bold text-slate-900 text-sm">
+                      {/* Price */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="font-bold text-slate-900 text-xs">
                           ${p.salePrice ? p.salePrice.toFixed(2) : p.price.toFixed(2)}
                         </div>
                         {p.salePrice && (
-                          <div className="text-xs text-slate-400 line-through">
+                          <div className="text-[11px] text-slate-400 line-through">
                             ${p.price.toFixed(2)}
                           </div>
                         )}
                       </td>
 
-                      <td className="py-4 px-4">
+                      {/* Stock Units */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <Tag
                             color={isOut ? 'error' : isLow ? 'warning' : 'success'}
-                            className="m-0 font-bold text-xs px-2 py-0.5"
+                            className="m-0 font-bold text-[11px] px-2.5 py-0.5 rounded-full"
                           >
                             {p.stock} units
                           </Tag>
@@ -407,11 +439,13 @@ export const ProductManagement: React.FC = () => {
                         </div>
                       </td>
 
-                      <td className="py-4 px-4">
+                      {/* Status */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <StatusBadge status={p.status} />
                       </td>
 
-                      <td className="py-4 px-6 text-right">
+                      {/* Actions */}
+                      <td className="py-3.5 px-6 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
                           {canEdit && (
                             <AppButton
@@ -448,8 +482,70 @@ export const ProductManagement: React.FC = () => {
                 })
               )}
             </tbody>
-        </AppTable>
-      </AppCard>
+          </AppTable>
+        </div>
+
+        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+          {/* Left Side: Product Count */}
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-medium text-white/90 text-[11px] leading-none">Total Products:</span>
+            <span className="font-bold text-white text-[11px] leading-none">
+              {products.length} Items
+            </span>
+          </div>
+
+          {/* Right Side: Pagination Controls (Rendered ONLY if products > 10) */}
+          {products.length > 10 && (
+            <div className="flex items-center gap-2.5 leading-none">
+              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+                <span>Rows:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                  >
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
+                    <option value={100} className="bg-slate-800 text-white">100</option>
+                  </select>
+                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                </div>
+              </div>
+
+              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                {products.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, products.length)} of {products.length}
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  title="Previous page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <LeftOutlined className="text-[8px]" />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  title="Next page"
+                  className="w-6 h-6 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <RightOutlined className="text-[8px]" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Add / Edit Product Modal using Reusable AppModal */}
       <AppModal

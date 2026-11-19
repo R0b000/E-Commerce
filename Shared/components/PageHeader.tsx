@@ -8,6 +8,7 @@ export interface PageHeaderProps {
   breadcrumbs?: Array<{ label: string; path?: string }>;
   extra?: React.ReactNode;
   icon?: React.ReactNode;
+  className?: string;
 }
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
@@ -16,9 +17,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   breadcrumbs,
   extra,
   icon,
+  className = '',
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 mb-4 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 mb-4 font-['Nunito_Sans','Poppins',sans-serif] ${className}`}>
       <div className="space-y-0.5">
         {breadcrumbs && (
           <Breadcrumb

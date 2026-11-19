@@ -1,25 +1,26 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AppstoreOutlined,
   SyncOutlined,
   SearchOutlined,
   PlusOutlined,
-  AlertOutlined,
   CheckCircleOutlined,
   WarningOutlined,
   CloseCircleOutlined,
-  DollarOutlined,
   EditOutlined,
   ShopOutlined,
   ThunderboltFilled,
   DownloadOutlined,
+  LeftOutlined,
+  RightOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
-import { Tag, Spin, Tooltip, Progress } from 'antd';
+import { Tag, Spin, Tooltip, Progress, Breadcrumb } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
-  AppCard,
   AppTable,
   AppButton,
   AppInput,
@@ -36,6 +37,10 @@ export const InventoryManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState<'all' | 'healthy' | 'low' | 'out'>('all');
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Adjust Stock Modal State
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -147,111 +152,51 @@ export const InventoryManagement: React.FC = () => {
     });
   }, [products, searchQuery, categoryFilter, healthFilter]);
 
-  // Overall Inventory Stats
-  const totalUnits = useMemo(() => products.reduce((acc, p) => acc + (p.stock || 0), 0), [products]);
-  const lowStockCount = useMemo(() => products.filter((p) => p.stock > 0 && p.stock <= 5).length, [products]);
-  const outOfStockCount = useMemo(() => products.filter((p) => p.stock <= 0).length, [products]);
-  const totalValuation = useMemo(
-    () => products.reduce((acc, p) => acc + (p.stock || 0) * (p.salePrice ?? p.price), 0),
-    [products]
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
-      {/* Page Header */}
-      <PageHeader
-        title="Inventory & Stock Management"
-        description="Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments."
-        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Inventory' }]}
-      />
-
-      {/* KPI Stats Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total SKUs */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Tracked SKUs
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {products.length} Items
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Active catalog listings</div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-xl font-bold">
-            <AppstoreOutlined />
-          </div>
-        </div>
-
-        {/* Units on Hand */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Units on Hand
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {totalUnits.toLocaleString()} Units
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Total physically stocked</div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-            <CheckCircleOutlined />
-          </div>
-        </div>
-
-        {/* Low / Out of Stock Alert */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Stock Replenish Alerts
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {lowStockCount + outOfStockCount} SKUs
-            </div>
-            <div className="text-[11px] text-rose-500 font-semibold mt-0.5">
-              {outOfStockCount} Out · {lowStockCount} Critical
-            </div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-xl font-bold">
-            <AlertOutlined />
-          </div>
-        </div>
-
-        {/* Total Inventory Valuation */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Inventory Asset Value
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              ${totalValuation.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">At current selling prices</div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold">
-            <DollarOutlined />
-          </div>
-        </div>
+    <div className="w-full font-['Poppins','Inter',sans-serif]">
+      {/* Breadcrumb Navigation */}
+      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+        <Breadcrumb
+          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  Admin
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-600 font-medium">Inventory</span>,
+            },
+          ]}
+        />
       </div>
 
-      {/* Main Inventory Directory Card */}
-      <AppCard className="overflow-hidden border border-slate-200/80 rounded-2xl shadow-xs p-0">
-        {/* Table Top Controls & Filter Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white">
-          <div className="flex items-center gap-3">
+      {/* Main Inventory Directory Card with Integrated Header */}
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
+        {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
+        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+          <div className="flex flex-col min-w-0">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Warehouse Stock Ledger
             </h3>
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
-              {filteredProducts.length} Items
-            </span>
+            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
+              Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Health Filter */}
             <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
               <button
-                onClick={() => setHealthFilter('all')}
+                onClick={() => {
+                  setHealthFilter('all');
+                  setCurrentPage(1);
+                }}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                   healthFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -259,7 +204,10 @@ export const InventoryManagement: React.FC = () => {
                 All
               </button>
               <button
-                onClick={() => setHealthFilter('healthy')}
+                onClick={() => {
+                  setHealthFilter('healthy');
+                  setCurrentPage(1);
+                }}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                   healthFilter === 'healthy' ? 'bg-white text-emerald-700 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -267,7 +215,10 @@ export const InventoryManagement: React.FC = () => {
                 In Stock (&gt;10)
               </button>
               <button
-                onClick={() => setHealthFilter('low')}
+                onClick={() => {
+                  setHealthFilter('low');
+                  setCurrentPage(1);
+                }}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                   healthFilter === 'low' ? 'bg-white text-[#f97316] shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -275,7 +226,10 @@ export const InventoryManagement: React.FC = () => {
                 Low (1-10)
               </button>
               <button
-                onClick={() => setHealthFilter('out')}
+                onClick={() => {
+                  setHealthFilter('out');
+                  setCurrentPage(1);
+                }}
                 className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
                   healthFilter === 'out' ? 'bg-white text-rose-600 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
                 }`}
@@ -285,29 +239,36 @@ export const InventoryManagement: React.FC = () => {
             </div>
 
             {/* Category Dropdown */}
-            <AppSelect
-              value={categoryFilter}
-              onChange={(val) => setCategoryFilter(val as string)}
-              style={{ width: 180 }}
-              options={[
-                { label: 'All Categories', value: 'all' },
-                ...categories.map((c) => {
-                  const cId = (c._id || c.id) as string;
-                  return {
-                    label: c.name,
-                    value: cId,
-                  };
-                }),
-              ]}
-            />
+            <div className="w-full sm:w-[170px] shrink-0">
+              <AppSelect
+                value={categoryFilter}
+                onChange={(val) => {
+                  setCategoryFilter(val as string);
+                  setCurrentPage(1);
+                }}
+                options={[
+                  { label: 'All Categories', value: 'all' },
+                  ...categories.map((c) => {
+                    const cId = (c._id || c.id) as string;
+                    return {
+                      label: c.name,
+                      value: cId,
+                    };
+                  }),
+                ]}
+              />
+            </div>
 
             {/* Search Input */}
-            <div className="w-full sm:w-[350px] max-w-[350px] shrink-0">
+            <div className="w-full sm:w-[260px] shrink-0">
               <AppInput
                 prefix={<SearchOutlined className="text-slate-400" />}
                 placeholder="Search inventory..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
                 allowClear
               />
             </div>
@@ -315,7 +276,8 @@ export const InventoryManagement: React.FC = () => {
         </div>
 
         {/* Inventory Stock Table */}
-        <AppTable>
+        <div className="overflow-hidden">
+          <AppTable>
           <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Product & SKU</th>
@@ -336,7 +298,7 @@ export const InventoryManagement: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((p) => {
+                paginatedProducts.map((p) => {
                   const pId = (p._id || p.id) as string;
                   const price = p.salePrice ?? p.price;
                   const assetValue = (p.stock || 0) * price;
@@ -350,7 +312,7 @@ export const InventoryManagement: React.FC = () => {
                       className="hover:bg-slate-50/70 transition-colors group cursor-default"
                     >
                       {/* Product & SKU */}
-                      <td className="py-4 px-6 whitespace-nowrap">
+                      <td className="py-3.5 px-6 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <img
                             src={p.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}
@@ -369,14 +331,14 @@ export const InventoryManagement: React.FC = () => {
                       </td>
 
                       {/* Category */}
-                      <td className="py-4 px-4 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <Tag className="m-0 font-semibold text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 border-slate-200 text-slate-700">
                           {categoryName}
                         </Tag>
                       </td>
 
                       {/* Stock Level & Status */}
-                      <td className="py-4 px-4 whitespace-nowrap min-w-[180px]">
+                      <td className="py-3.5 px-4 whitespace-nowrap min-w-[180px]">
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
                             <span
@@ -415,17 +377,17 @@ export const InventoryManagement: React.FC = () => {
                       </td>
 
                       {/* Unit Price */}
-                      <td className="py-4 px-4 whitespace-nowrap font-semibold text-slate-800">
+                      <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800 text-xs">
                         ${price.toFixed(2)}
                       </td>
 
                       {/* Total Asset Value */}
-                      <td className="py-4 px-4 whitespace-nowrap font-black text-slate-900">
+                      <td className="py-3.5 px-4 whitespace-nowrap font-black text-slate-900 text-xs">
                         ${assetValue.toFixed(2)}
                       </td>
 
                       {/* Actions */}
-                      <td className="py-4 px-6 text-right whitespace-nowrap">
+                      <td className="py-3.5 px-6 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1.5">
                           {/* Fast +10 */}
                           <button
@@ -473,8 +435,70 @@ export const InventoryManagement: React.FC = () => {
                 })
               )}
             </tbody>
-        </AppTable>
-      </AppCard>
+          </AppTable>
+        </div>
+
+        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+          {/* Left Side: Product Count */}
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-medium text-white/90 text-[11px] leading-none">Total Products:</span>
+            <span className="font-bold text-white text-[11px] leading-none">
+              {filteredProducts.length} Items
+            </span>
+          </div>
+
+          {/* Right Side: Pagination Controls (Rendered ONLY if products > 10) */}
+          {filteredProducts.length > 10 && (
+            <div className="flex items-center gap-2.5 leading-none">
+              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+                <span>Rows:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                  >
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
+                    <option value={100} className="bg-slate-800 text-white">100</option>
+                  </select>
+                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                </div>
+              </div>
+
+              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                {filteredProducts.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, filteredProducts.length)} of {filteredProducts.length}
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  title="Previous page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <LeftOutlined className="text-[8px]" />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  title="Next page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <RightOutlined className="text-[8px]" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Custom Adjust Stock Modal (Top-10 Positioned with modal.css) */}
       <AppModal

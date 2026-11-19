@@ -1,5 +1,5 @@
 import React from 'react';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { LeftOutlined, RightOutlined, DownOutlined } from '@ant-design/icons';
 import { TableSkeleton } from './AppSkeleton';
 
 export interface AppTableColumn<T = any> {
@@ -31,6 +31,8 @@ export interface AppTableProps<T = any> {
   className?: string;
   wrapperClassName?: string;
   maxHeight?: string | number;
+  footerLabel?: string;
+  showFooter?: boolean;
   children?: React.ReactNode;
 }
 
@@ -46,6 +48,8 @@ export function AppTable<T extends object = any>({
   className = '',
   wrapperClassName = '',
   maxHeight,
+  footerLabel = 'Total',
+  showFooter,
   children,
 }: AppTableProps<T>) {
   const records = dataSource || data || [];
@@ -167,57 +171,68 @@ export function AppTable<T extends object = any>({
         </table>
       </div>
 
-      {/* Bottom Paginator (Material Design Table Pagination matching user reference) */}
-      {isPaginationEnabled && (
-        <div className="paginator">
-          <div className="paginator-rows-per-page">
-            <span>Rows per page:</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                const newSize = Number(e.target.value);
-                if (pagination && pagination.onChange) {
-                  pagination.onChange(1, newSize);
-                }
-              }}
-              className="paginator-select"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
+      {/* Signature Cyan Table Footer */}
+      {(isPaginationEnabled || showFooter) && (
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none w-full">
+          {/* Left Side: Count */}
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-medium text-white/90 text-[11px] leading-none">{footerLabel}:</span>
+            <span className="font-bold text-white text-[11px] leading-none">
+              {totalItems} Items
+            </span>
           </div>
 
-          <span className="paginator-range">
-            {records.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, totalItems)} of {totalItems}
-          </span>
+          {/* Right Side: Pagination Controls (Rendered ONLY if totalItems > 10 and isPaginationEnabled) */}
+          {isPaginationEnabled && totalItems > 10 && (
+            <div className="flex items-center gap-2.5 leading-none">
+              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+                <span>Rows:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      const newSize = Number(e.target.value);
+                      if (pagination && pagination.onChange) {
+                        pagination.onChange(1, newSize);
+                      }
+                    }}
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                  >
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
+                    <option value={100} className="bg-slate-800 text-white">100</option>
+                  </select>
+                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                </div>
+              </div>
 
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled={currentPage <= 1}
-              onClick={handlePrevPage}
-              title="Previous page"
-              className="paginator-btn"
-            >
-              <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.8} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              disabled={currentPage >= totalPages}
-              onClick={handleNextPage}
-              title="Next page"
-              className="paginator-btn"
-            >
-              <svg className="w-4 h-4 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.8} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, totalItems)} of {totalItems}
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={handlePrevPage}
+                  title="Previous page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <LeftOutlined className="text-[8px]" />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={handleNextPage}
+                  title="Next page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <RightOutlined className="text-[8px]" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

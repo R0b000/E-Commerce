@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { LoginForm } from './LoginForm';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 export const LoginPage = () => {
   const { login, googleLogin, fido2Login, isAuthenticated, user } = useAuth();
@@ -67,21 +68,23 @@ export const LoginPage = () => {
 
           {/* Logo container */}
           <div className="flex flex-col items-center text-center space-y-6 my-auto justify-center flex-1">
-            <img 
-              src="/images/logo.png" 
-              alt="Himalaya Online Shop Logo" 
-              className="max-w-[220px] h-auto object-contain transition-transform duration-300 hover:scale-105" 
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                const fb = document.getElementById('logo-fallback');
-                if (fb) fb.classList.remove('hidden');
-              }}
-            />
-            {/* Fallback styling if logo doesn't load */}
-            <div id="logo-fallback" className="hidden flex-col items-center space-y-2">
-              <div className="p-4 bg-orange-500 text-white rounded-xl font-bold text-2xl shadow-md">H</div>
-              <span className="font-bold text-xl text-slate-800 tracking-wider">HIMALAYA</span>
-            </div>
+            <Link to="/" title="Navigate to Storefront Home" className="cursor-pointer group flex flex-col items-center">
+              <img 
+                src="/images/logo.png" 
+                alt="Himalaya Online Shop Logo" 
+                className="max-w-[220px] h-auto object-contain transition-transform duration-300 group-hover:scale-105" 
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fb = document.getElementById('logo-fallback');
+                  if (fb) fb.classList.remove('hidden');
+                }}
+              />
+              {/* Fallback styling if logo doesn't load */}
+              <div id="logo-fallback" className="hidden flex-col items-center space-y-2">
+                <div className="p-4 bg-orange-500 text-white rounded-xl font-bold text-2xl shadow-md">H</div>
+                <span className="font-bold text-xl text-slate-800 tracking-wider">HIMALAYA</span>
+              </div>
+            </Link>
             
             <div className="space-y-2 max-w-[240px]">
               <h3 className="text-slate-800 font-semibold text-base tracking-tight">Portal Management</h3>
@@ -100,15 +103,29 @@ export const LoginPage = () => {
         {/* Right Side: Login Form */}
         <div className="col-span-1 md:col-span-7 flex flex-col justify-center p-8 md:p-12 bg-white relative">
           {/* Logo visible only on mobile */}
-          <div className="flex justify-center mb-8 md:hidden">
-            <img 
-              src="/images/logo.png" 
-              alt="Himalaya Online Shop Logo" 
-              className="max-w-[180px] h-auto object-contain"
-            />
+          <div className="flex justify-center mb-6 md:hidden">
+            <Link to="/" title="Navigate to Storefront Home">
+              <img 
+                src="/images/logo.png" 
+                alt="Himalaya Online Shop Logo" 
+                className="max-w-[180px] h-auto object-contain"
+              />
+            </Link>
           </div>
 
           <div className="w-full max-w-md mx-auto space-y-6">
+            {/* Quick Navigation to Storefront */}
+            <div>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#0096C7] transition-colors group cursor-pointer"
+                title="Return to Himalaya Storefront"
+              >
+                <ArrowLeftOutlined className="text-xs group-hover:-translate-x-1 transition-transform" />
+                <span>Back to Storefront</span>
+              </Link>
+            </div>
+
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Welcome Back</h2>
               <p className="text-slate-500 text-sm">Please sign in to access your administrative dashboard.</p>

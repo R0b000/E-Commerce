@@ -23,7 +23,7 @@ export const AppSelect: React.FC<AppSelectProps> = ({
 }) => {
   return (
     <div
-      className={`space-y-1 ${style?.width ? 'shrink-0' : 'w-full'} ${className}`}
+      className={`space-y-1 relative ${style?.width ? 'shrink-0' : 'w-full'} ${className}`}
       style={style}
     >
       <AutoCompleteSelect theme={theme} {...props} />

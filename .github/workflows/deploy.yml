@@ -1,4 +1,4 @@
-name: CI/CD Deploy Built Code
+name: CI/CD HTTPS Auto-Deploy
 
 on:
   push:
@@ -20,10 +20,9 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 9
+      - name: Install Tools
+        run: |
+          npm install -g pnpm@9 esbuild
 
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
@@ -31,32 +30,52 @@ jobs:
       - name: Build Project (Compile Vite SPA)
         run: pnpm build
 
-      - name: Bundle Server & Built Assets into Single Clean Distribution
+      - name: Bundle Server (100% Standalone - Zero node_modules needed on server)
         run: |
           mkdir -p deploy
-          # Copy only the compiled client build
+          
+          # Copy compiled client build (dist folder and its root contents)
           cp -r dist deploy/
-          # Bundle backend into a single lean file (no raw source folders)
-          npx esbuild index.js \
+          cp -r dist/* deploy/
+          
+          # Bundle backend + all dependencies into a single 100% standalone executable
+          esbuild index.js \
             --bundle \
             --platform=node \
             --target=node20 \
             --format=cjs \
-            --outfile=deploy/index.js \
-            --external:express \
-            --external:mongoose \
-            --external:ioredis \
-            --external:socket.io \
-            --external:bcryptjs \
-            --external:jsonwebtoken \
-            --external:helmet \
-            --external:cors \
-            --external:morgan \
-            --external:express-rate-limit \
-            --external:dotenv
+            --outfile=deploy/index.js
+          
           cp package.json deploy/
           mkdir -p deploy/tmp
           touch deploy/tmp/restart.txt
+          
+          # Create reverse-proxy .htaccess so Apache / LiteSpeed routes /api to Node.js port 30160
+          cat << 'EOF' > deploy/.htaccess
+          <IfModule mod_rewrite.c>
+          RewriteEngine On
+
+          # Prevent LiteSpeed timeouts
+          <IfModule Litespeed>
+          RewriteRule .* - [E=noabort:1,E=noconntimeout:1]
+          </IfModule>
+
+          # Proxy API and Health endpoints to Node.js backend
+          RewriteRule ^api/(.*)$ http://127.0.0.1:30160/api/$1 [P,L]
+          RewriteRule ^health$ http://127.0.0.1:30160/health [P,L]
+
+          # Proxy Socket.io WebSockets
+          RewriteCond %{HTTP:Upgrade} websocket [NC]
+          RewriteCond %{HTTP:Connection} upgrade [NC]
+          RewriteRule ^socket.io/(.*)$ ws://127.0.0.1:30160/socket.io/$1 [P,L]
+          RewriteRule ^socket.io/(.*)$ http://127.0.0.1:30160/socket.io/$1 [P,L]
+
+          # React SPA Frontend Fallback Routing
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.html [L]
+          </IfModule>
+          EOF
 
       - name: Securely Generate Production .env
         env:
@@ -89,19 +108,46 @@ jobs:
             }
           '
 
-      - name: Deploy Built Code to Server via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          security: loose
-          timeout: 120000
-          local-dir: ./deploy/
-          server-dir: ${{ secrets.CPANEL_SERVER_PATH || '/' }}
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+      - name: Compress Build Bundle
+        run: |
+          cd deploy
+          zip -9 -q -r ../deploy.zip .
+          cd ..
+          ls -lh deploy.zip
+
+      - name: Deploy to Server via HTTPS
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN || 'my_super_secret_deploy_token_123' }}
+        run: |
+          TARGET_URL="https://himalayaonlineshop.engicheck.com/deploy.php"
+          echo "Attempting upload to: $TARGET_URL ..."
+          
+          RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+            -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            -F "bundle=@deploy.zip" \
+            "${TARGET_URL}?token=${DEPLOY_TOKEN}")
+          
+          BODY=$(echo "$RESPONSE" | sed -e '$d')
+          STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+          
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Primary endpoint returned $STATUS. Trying fallback: https://engicheck.com/himalayaonlineshop/deploy.php ..."
+            TARGET_URL="https://engicheck.com/himalayaonlineshop/deploy.php"
+            RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+              -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+              -F "bundle=@deploy.zip" \
+              "${TARGET_URL}?token=${DEPLOY_TOKEN}")
+            
+            BODY=$(echo "$RESPONSE" | sed -e '$d')
+            STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+          fi
+          
+          echo "Server Response: $BODY"
+          echo "Final HTTP Status: $STATUS"
+          
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Deployment failed with HTTP $STATUS"
+            exit 1
+          fi
+          
+          echo "✅ Deployment Successful!"
