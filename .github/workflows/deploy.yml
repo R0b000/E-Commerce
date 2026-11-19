@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p deploy
           
-          # Copy compiled client build
+          # Copy compiled client build (dist folder and its root contents)
           cp -r dist deploy/
           cp -r dist/* deploy/
           
@@ -60,6 +60,14 @@ jobs:
           cp package.json deploy/
           mkdir -p deploy/tmp
           touch deploy/tmp/restart.txt
+          
+          # Prevent LiteSpeed timeouts via .htaccess
+          cat << 'EOF' > deploy/.htaccess
+          <IfModule Litespeed>
+          RewriteEngine On
+          RewriteRule .* - [E=noabort:1,E=noconntimeout:1]
+          </IfModule>
+          EOF
 
       - name: Securely Generate Production .env
         env:
@@ -95,7 +103,7 @@ jobs:
       - name: Compress Build Bundle
         run: |
           cd deploy
-          zip -q -r ../deploy.zip .
+          zip -9 -q -r ../deploy.zip .
           cd ..
           ls -lh deploy.zip
 
@@ -103,8 +111,8 @@ jobs:
         env:
           DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN || 'my_super_secret_deploy_token_123' }}
         run: |
-          TARGET_URL="https://engicheck.com/himalayaonlineshop/deploy.php"
-          echo "Uploading deploy.zip to verified endpoint: $TARGET_URL ..."
+          TARGET_URL="https://himalayaonlineshop.engicheck.com/deploy.php"
+          echo "Attempting upload to: $TARGET_URL ..."
           
           RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
             -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
@@ -113,6 +121,18 @@ jobs:
           
           BODY=$(echo "$RESPONSE" | sed -e '$d')
           STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+          
+          if [ "$STATUS" -ne 200 ]; then
+            echo "Primary endpoint returned $STATUS. Trying fallback: https://engicheck.com/himalayaonlineshop/deploy.php ..."
+            TARGET_URL="https://engicheck.com/himalayaonlineshop/deploy.php"
+            RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST \
+              -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+              -F "bundle=@deploy.zip" \
+              "${TARGET_URL}?token=${DEPLOY_TOKEN}")
+            
+            BODY=$(echo "$RESPONSE" | sed -e '$d')
+            STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+          fi
           
           echo "Server Response: $BODY"
           echo "Final HTTP Status: $STATUS"
