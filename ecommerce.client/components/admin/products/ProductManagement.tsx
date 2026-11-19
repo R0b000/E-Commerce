@@ -246,9 +246,9 @@ export const ProductManagement: React.FC = () => {
   const paginatedProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="space-y-1 w-full font-['Poppins','Inter',sans-serif]">
+    <div className="w-full font-['Poppins','Inter',sans-serif]">
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-1.5 text-[11px] leading-none text-slate-400 pb-0.5">
+      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
         <Breadcrumb
           className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
           items={[
