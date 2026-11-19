@@ -17,7 +17,6 @@ import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
-  AppCard,
   AppTable,
   AppButton,
   AppInput,
@@ -146,7 +145,7 @@ export const InventoryManagement: React.FC = () => {
   }, [products, searchQuery, categoryFilter, healthFilter]);
 
   return (
-    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
+    <div className="space-y-3 w-full font-['Poppins','Inter',sans-serif]">
       {/* Page Header */}
       <PageHeader
         title="Inventory & Stock Management"
@@ -154,12 +153,8 @@ export const InventoryManagement: React.FC = () => {
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Inventory' }]}
       />
 
-      {/* Main Inventory Directory Card (Border removed) */}
-      <AppCard
-        bordered={false}
-        className="overflow-hidden !border-0 !border-none rounded-2xl shadow-xs p-0"
-        style={{ border: 'none', borderColor: 'transparent' }}
-      >
+      {/* Main Inventory Directory Table Card (Standard clean div without ant-card margins/borders) */}
+      <div className="bg-white rounded-2xl shadow-xs overflow-hidden">
         {/* Table Top Controls & Filter Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white">
           <div className="flex items-center gap-3">
@@ -398,7 +393,7 @@ export const InventoryManagement: React.FC = () => {
               )}
             </tbody>
         </AppTable>
-      </AppCard>
+      </div>
 
       {/* Custom Adjust Stock Modal (Top-10 Positioned with modal.css) */}
       <AppModal
