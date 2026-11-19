@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   SafetyCertificateOutlined,
   CheckCircleOutlined,
@@ -15,8 +16,11 @@ import {
   LockOutlined,
   CheckOutlined,
   CloseOutlined,
+  LeftOutlined,
+  RightOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
-import { Tag, Spin, Checkbox, Row, Col, Divider, Tooltip } from 'antd';
+import { Tag, Spin, Checkbox, Row, Col, Divider, Tooltip, Breadcrumb } from 'antd';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { RoleItem, PermissionItem } from '../../../types/ecommerce.types';
@@ -40,6 +44,10 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Add Role Modal State
   const [isAddRoleModalOpen, setIsAddRoleModalOpen] = useState(false);
@@ -228,99 +236,128 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
   };
 
   const totalUsersCovered = roles.reduce((sum, r) => sum + (r.userCount || 0), 0);
+  const totalPages = Math.max(1, Math.ceil(filteredRoles.length / pageSize));
+  const paginatedRoles = filteredRoles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
-      {/* Page Title & Action Bar */}
-      <PageHeader
-        title="Role Management"
-        description="Structured table of security roles, granular access controls, and capability mappings."
-        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Roles' }]}
-      />
+    <div className="w-full font-['Poppins','Inter',sans-serif]">
+      {/* Breadcrumb Navigation */}
+      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+        <Breadcrumb
+          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  Admin
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-600 font-medium">Roles</span>,
+            },
+          ]}
+        />
+      </div>
 
       {/* KPI Stats Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-2">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs flex items-center justify-between">
           <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
               Configured Roles
             </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
+            <div className="text-xl font-black text-slate-900 mt-1">
               {roles.length} Roles
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Active security tiers</div>
+            <div className="text-[10px] text-slate-400">Active security tiers</div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-xl font-bold">
+          <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-lg font-bold">
             <SafetyCertificateOutlined />
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs flex items-center justify-between">
           <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
               Total Users Mapped
             </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
+            <div className="text-xl font-black text-slate-900 mt-1">
               {totalUsersCovered} Users
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Assigned to defined roles</div>
+            <div className="text-[10px] text-slate-400">Assigned to defined roles</div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-xl font-bold">
+          <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg font-bold">
             <TeamOutlined />
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs flex items-center justify-between">
           <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
               Granular Privileges
             </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
+            <div className="text-xl font-black text-slate-900 mt-1">
               {permissions.length} Permissions
             </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Across modules & endpoints</div>
+            <div className="text-[10px] text-slate-400">Across modules & endpoints</div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
+          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
             <KeyOutlined />
           </div>
         </div>
       </div>
 
       {/* Main Table Card */}
-      <AppCard className="overflow-hidden border border-slate-200/80 rounded-2xl shadow-xs p-0">
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
         {/* Table Top Filter Bar with Action on the Right */}
-        <div className="p-3 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
-          <div className="w-full sm:w-[350px] max-w-[350px] shrink-0">
-            <AppInput
-              prefix={<SearchOutlined className="text-slate-400" />}
-              placeholder="Search roles..."
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-              allowClear
-            />
+        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              Role Management
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
+              Structured table of security roles, granular access controls, and capability mappings.
+            </p>
           </div>
 
-          {isAdmin && (
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setNewRoleName('');
-                setNewRoleLabel('');
-                setNewRoleDescription('');
-                setIsAddRoleModalOpen(true);
-              }}
-              className="shrink-0"
-              style={{ backgroundColor: '#0284c7' }}
-            >
-              Add Role
-            </AppButton>
-          )}
+          <div className="flex items-center gap-2.5">
+            <div className="w-full sm:w-[240px] shrink-0">
+              <AppInput
+                prefix={<SearchOutlined className="text-slate-400" />}
+                placeholder="Search roles..."
+                value={searchQuery}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                allowClear
+              />
+            </div>
+
+            {isAdmin && (
+              <AppButton
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setNewRoleName('');
+                  setNewRoleLabel('');
+                  setNewRoleDescription('');
+                  setIsAddRoleModalOpen(true);
+                }}
+                className="shrink-0"
+                style={{ backgroundColor: '#0284c7' }}
+              >
+                Add Role
+              </AppButton>
+            )}
+          </div>
         </div>
 
-        {/* Roles Table */}
-        <AppTable>
-          <thead>
+        {/* Roles Table Wrapper */}
+        <div className="overflow-hidden">
+          <AppTable>
+            <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Role & Identity</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">System Code</th>
@@ -339,7 +376,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                   </td>
                 </tr>
               ) : (
-                filteredRoles.map((role) => {
+                paginatedRoles.map((role) => {
                   const visuals = getRoleVisuals(role.name);
                   const isSuperuser = role.permissions?.includes('*');
                   const roleId = role._id || role.id || role.name;
@@ -420,8 +457,70 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                 })
               )}
             </tbody>
-        </AppTable>
-      </AppCard>
+          </AppTable>
+        </div>
+
+        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+          {/* Left Side: Count */}
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-medium text-white/90 text-[11px] leading-none">Total Roles:</span>
+            <span className="font-bold text-white text-[11px] leading-none">
+              {filteredRoles.length} Items
+            </span>
+          </div>
+
+          {/* Right Side: Pagination Controls (Rendered ONLY if filteredRoles > 10) */}
+          {filteredRoles.length > 10 && (
+            <div className="flex items-center gap-2.5 leading-none">
+              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+                <span>Rows:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                  >
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
+                    <option value={100} className="bg-slate-800 text-white">100</option>
+                  </select>
+                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                </div>
+              </div>
+
+              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                {filteredRoles.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, filteredRoles.length)} of {filteredRoles.length}
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  title="Previous page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <LeftOutlined className="text-[8px]" />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  title="Next page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <RightOutlined className="text-[8px]" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Edit Role Permissions Modal (Top-10 Positioned with modal.css) */}
       <AppModal

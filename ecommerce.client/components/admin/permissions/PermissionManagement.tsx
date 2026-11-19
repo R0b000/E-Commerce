@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   SaveOutlined,
   ReloadOutlined,
@@ -21,7 +22,7 @@ import {
   RightOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
-import { Tag, Tooltip } from 'antd';
+import { Tag, Tooltip, Breadcrumb } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { RoleItem, MenuItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -524,17 +525,45 @@ export const PermissionManagement: React.FC = () => {
   const activeRoleDoc = roles.find((r) => r.name.toLowerCase() === selectedRoleId.toLowerCase());
 
   return (
-    <div className="space-y-4 font-['Nunito_Sans','Poppins',sans-serif]">
-      {/* Native Page Header with Actions */}
-      <PageHeader
-        title="Role Permissions & Access Matrix"
-        description="Configure granular Read, Create, Update, and Delete capabilities for each role and module. Real-time enforcement applies across the entire store admin."
-        breadcrumbs={[
-          { label: 'Admin', path: '/admin' },
-          { label: 'Setting', path: '/admin/roles' },
-          { label: 'Permissions' },
-        ]}
-        extra={
+    <div className="w-full font-['Poppins','Inter',sans-serif] space-y-4">
+      {/* Breadcrumb Navigation */}
+      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+        <Breadcrumb
+          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  Admin
+                </Link>
+              ),
+            },
+            {
+              title: (
+                <Link to="/admin/roles" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  Roles & Access
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-600 font-medium">Permissions Matrix</span>,
+            },
+          ]}
+        />
+      </div>
+
+      {/* Main Integrated Header */}
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
+        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              Role Permissions & Access Matrix
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
+              Configure granular Read, Create, Update, and Delete capabilities for each role and module. Real-time enforcement applies across the entire store admin.
+            </p>
+          </div>
+
           <div className="flex items-center gap-2">
             <AppButton
               icon={<ReloadOutlined />}
@@ -554,8 +583,8 @@ export const PermissionManagement: React.FC = () => {
               Save Permissions
             </AppButton>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {/* Role Selection & Filter Controls Card */}
       <AppCard>
@@ -670,13 +699,14 @@ export const PermissionManagement: React.FC = () => {
       )}
 
       {/* Main Permissions Matrix Table (Shared Standard Table Architecture) */}
-      <AppCard bodyStyle={{ padding: 0 }}>
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs overflow-hidden">
         {loading ? (
           <div className="p-6">
             <MatrixSkeleton />
           </div>
         ) : (
           <AppTable
+            footerLabel="Total Modules"
             pagination={{
               current: currentPage,
               pageSize: pageSize,
@@ -869,7 +899,7 @@ export const PermissionManagement: React.FC = () => {
               </tbody>
           </AppTable>
         )}
-      </AppCard>
+      </div>
     </div>
   );
 };

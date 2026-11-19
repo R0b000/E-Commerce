@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   MenuOutlined,
   PlusOutlined,
@@ -18,8 +19,11 @@ import {
   BellOutlined,
   ShopOutlined,
   TagOutlined,
+  DownOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
-import { Tag, Switch, Spin, Popconfirm, Select, InputNumber } from 'antd';
+import { Tag, Switch, Spin, Popconfirm, Select, InputNumber, Breadcrumb } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -69,6 +73,8 @@ export const MenuManagement: React.FC = () => {
   const [formPermission, setFormPermission] = useState<string>('');
   const [formBadge, setFormBadge] = useState<string>('');
   const [formActive, setFormActive] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { showToast } = useToast();
 
@@ -196,29 +202,59 @@ export const MenuManagement: React.FC = () => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Dynamic Menu & Page Addition"
-        description="Add, arrange, and control navigation pages dynamically without hardcoding. Grant page access by Role or Permission."
-        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Menus' }]}
-      />
+  const totalPages = Math.max(1, Math.ceil(menus.length / pageSize));
+  const paginatedMenus = menus.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-      {/* Action Toolbar on Right */}
-      <div className="flex items-center justify-end">
-        <AppButton
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={openAddModal}
-          style={{ backgroundColor: '#0096C7' }}
-        >
-          Add New Menu Page
-        </AppButton>
+  return (
+    <div className="w-full font-['Poppins','Inter',sans-serif]">
+      {/* Breadcrumb Navigation */}
+      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+        <Breadcrumb
+          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  Admin
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-600 font-medium">Menus</span>,
+            },
+          ]}
+        />
       </div>
 
-      <AppCard bodyStyle={{ padding: 0 }}>
-        <AppTable>
-          <thead>
+      {/* Main Menu Directory Card with Integrated Header */}
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
+        {/* Table Top Controls & Integrated Header */}
+        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              Dynamic Menu & Page Addition
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
+              Add, arrange, and control navigation pages dynamically without hardcoding. Grant page access by Role or Permission.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <AppButton
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={openAddModal}
+              style={{ backgroundColor: '#0096C7' }}
+            >
+              Add New Menu Page
+            </AppButton>
+          </div>
+        </div>
+
+        {/* Table Body */}
+        <div className="overflow-hidden">
+          <AppTable>
+            <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Order</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Menu Name & Icon</th>
@@ -231,14 +267,14 @@ export const MenuManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100 text-xs">
               {loading ? (
                 <TableSkeleton columns={6} rows={5} hasAvatar={false} />
-              ) : menus.length === 0 ? (
+              ) : paginatedMenus.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400">
                     No dynamic navigation menus found. Click "Add New Menu Page" to create one.
                   </td>
                 </tr>
               ) : (
-                menus.map((m) => {
+                paginatedMenus.map((m) => {
                   const mId = m._id || m.id;
                   const iconObj = AVAILABLE_ICONS.find((i) => i.value === m.icon);
 
@@ -323,8 +359,70 @@ export const MenuManagement: React.FC = () => {
                 })
               )}
             </tbody>
-        </AppTable>
-      </AppCard>
+          </AppTable>
+        </div>
+
+        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+          {/* Left Side: Count */}
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-medium text-white/90 text-[11px] leading-none">Total Menus:</span>
+            <span className="font-bold text-white text-[11px] leading-none">
+              {menus.length} Items
+            </span>
+          </div>
+
+          {/* Right Side: Pagination Controls (Rendered ONLY if menus > 10) */}
+          {menus.length > 10 && (
+            <div className="flex items-center gap-2.5 leading-none">
+              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+                <span>Rows:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                  >
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
+                    <option value={100} className="bg-slate-800 text-white">100</option>
+                  </select>
+                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                </div>
+              </div>
+
+              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                {menus.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, menus.length)} of {menus.length}
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  title="Previous page"
+                  className="w-5 h-5 rounded flex items-center justify-center bg-white/15 hover:bg-white/30 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors cursor-pointer"
+                >
+                  <LeftOutlined className="text-[8px]" />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  title="Next page"
+                  className="w-5 h-5 rounded flex items-center justify-center bg-white/15 hover:bg-white/30 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors cursor-pointer"
+                >
+                  <RightOutlined className="text-[8px]" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Add / Edit Menu Page Modal */}
       {isModalOpen && (

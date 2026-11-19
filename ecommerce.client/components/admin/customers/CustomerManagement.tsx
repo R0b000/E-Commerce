@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   TeamOutlined,
   SearchOutlined,
@@ -17,8 +18,11 @@ import {
   AppstoreOutlined,
   EyeOutlined,
   FileTextOutlined,
+  LeftOutlined,
+  RightOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
-import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio } from 'antd';
+import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio, Breadcrumb } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Customer } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -40,6 +44,10 @@ export const CustomerManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [viewingUser, setViewingUser] = useState<Customer | null>(null);
   const [creating, setCreating] = useState(false);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [form] = Form.useForm();
   const selectedRole = Form.useWatch('role', form);
   const { showToast } = useToast();
@@ -121,107 +129,141 @@ export const CustomerManagement: React.FC = () => {
   const sellersCount = customers.filter((c) => c.role === 'seller').length;
   const customersCount = customers.filter((c) => c.role === 'customer' || c.role === 'user').length;
 
+  const totalPages = Math.max(1, Math.ceil(customers.length / pageSize));
+  const paginatedCustomers = customers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
-    <div className="space-y-6 w-full">
-      <PageHeader
-        title="User & Customer Directory"
-        description="Comprehensive directory of registered customers, authorized sellers/vendors, and staff accounts."
-        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Customers & Sellers' }]}
-      />
+    <div className="w-full font-['Poppins','Inter',sans-serif]">
+      {/* Breadcrumb Navigation */}
+      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+        <Breadcrumb
+          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  Admin
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-600 font-medium">Customers & Sellers</span>,
+            },
+          ]}
+        />
+      </div>
 
       {/* Customer Overview Metric Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-            Total Buyers (Customers)
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 my-2">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
+          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+            Total Buyers
           </div>
-          <div className="text-2xl font-bold text-blue-600 mt-2">{customersCount}</div>
-          <div className="text-xs text-slate-400 mt-1">Verified buyer accounts</div>
+          <div className="text-xl font-bold text-blue-600 mt-1">{customersCount}</div>
+          <div className="text-[10px] text-slate-400">Verified buyer accounts</div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
+          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
             Active Sellers / Stores
           </div>
-          <div className="text-2xl font-bold text-orange-600 mt-2">{sellersCount}</div>
-          <div className="text-xs text-slate-400 mt-1">Authorized store vendors</div>
+          <div className="text-xl font-bold text-orange-600 mt-1">{sellersCount}</div>
+          <div className="text-[10px] text-slate-400">Authorized store vendors</div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
+          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
             Total Orders Placed
           </div>
-          <div className="text-2xl font-bold text-slate-900 mt-2">{totalOrdersAll}</div>
-          <div className="text-xs text-slate-400 mt-1">Across all active accounts</div>
+          <div className="text-xl font-bold text-slate-900 mt-1">{totalOrdersAll}</div>
+          <div className="text-[10px] text-slate-400">Across active accounts</div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
+          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
             Cumulative Revenue
           </div>
-          <div className="text-2xl font-bold text-[#0284c7] mt-2">
+          <div className="text-xl font-bold text-[#0284c7] mt-1">
             ${totalSpendAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <div className="text-xs text-slate-400 mt-1">Lifetime platform volume</div>
+          <div className="text-[10px] text-slate-400">Platform lifetime volume</div>
         </div>
       </div>
 
-      {/* Filter, Search Bar, and Action on Right */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
-        <div className="flex flex-wrap items-center gap-3">
-          <form onSubmit={handleSearch} className="w-full sm:w-[350px] max-w-[350px] shrink-0">
-            <AppInput
-              prefix={<SearchOutlined className="text-slate-400" />}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search users..."
-              allowClear
-            />
-          </form>
+      {/* Main Customers Directory Card with Integrated Header */}
+      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
+        {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
+        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+          <div className="flex flex-col min-w-0">
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              User & Customer Directory
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
+              Comprehensive directory of registered customers, authorized sellers/vendors, and staff accounts.
+            </p>
+          </div>
 
-          {/* Role Filter Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-            {[
-              { key: 'all', label: 'All Accounts', icon: null },
-              { key: 'customer', label: 'Customers', icon: <ShoppingOutlined /> },
-              { key: 'seller', label: 'Sellers / Vendors', icon: <ShopOutlined /> },
-              { key: 'support', label: 'Support', icon: <CustomerServiceOutlined /> },
-              { key: 'manager', label: 'Managers', icon: <AppstoreOutlined /> },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setSelectedRoleFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
-                  selectedRoleFilter === tab.key
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {tab.icon}
-                <span>{tab.label}</span>
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Search Input */}
+            <form onSubmit={handleSearch} className="w-full sm:w-[220px] shrink-0">
+              <AppInput
+                prefix={<SearchOutlined className="text-slate-400" />}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Search users..."
+                allowClear
+              />
+            </form>
+
+            {/* Role Filter Tabs */}
+            <div className="flex items-center gap-1 overflow-x-auto">
+              {[
+                { key: 'all', label: 'All Accounts', icon: null },
+                { key: 'customer', label: 'Customers', icon: <ShoppingOutlined /> },
+                { key: 'seller', label: 'Sellers', icon: <ShopOutlined /> },
+                { key: 'support', label: 'Support', icon: <CustomerServiceOutlined /> },
+                { key: 'manager', label: 'Managers', icon: <AppstoreOutlined /> },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => {
+                    setSelectedRoleFilter(tab.key);
+                    setCurrentPage(1);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1 ${
+                    selectedRoleFilter === tab.key
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <AppButton
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                form.setFieldsValue({ role: 'customer', agreementAccepted: true });
+                setIsModalOpen(true);
+              }}
+              className="shrink-0"
+              style={{ backgroundColor: '#0284c7' }}
+            >
+              Add User
+            </AppButton>
           </div>
         </div>
 
-        <AppButton
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            form.setFieldsValue({ role: 'customer', agreementAccepted: true });
-            setIsModalOpen(true);
-          }}
-          className="shrink-0"
-          style={{ backgroundColor: '#0284c7' }}
-        >
-          Add User / Seller
-        </AppButton>
-      </div>
-
-      {/* Directory Table */}
-      <AppCard bodyStyle={{ padding: 0 }}>
-        <AppTable>
-          <thead>
+        {/* Customers Table Wrapper */}
+        <div className="overflow-hidden">
+          <AppTable>
+            <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">User / Merchant</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Contact & Location</th>
@@ -242,7 +284,7 @@ export const CustomerManagement: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                customers.map((c) => {
+                paginatedCustomers.map((c) => {
                   const cId = c._id || c.id;
                   const joinedDate = c.createdAt
                     ? new Date(c.createdAt).toLocaleDateString('en-US', {
@@ -383,8 +425,70 @@ export const CustomerManagement: React.FC = () => {
                 })
               )}
             </tbody>
-        </AppTable>
-      </AppCard>
+          </AppTable>
+        </div>
+
+        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+          {/* Left Side: Count */}
+          <div className="flex items-center gap-1.5 leading-none">
+            <span className="font-medium text-white/90 text-[11px] leading-none">Total Users:</span>
+            <span className="font-bold text-white text-[11px] leading-none">
+              {customers.length} Items
+            </span>
+          </div>
+
+          {/* Right Side: Pagination Controls (Rendered ONLY if customers > 10) */}
+          {customers.length > 10 && (
+            <div className="flex items-center gap-2.5 leading-none">
+              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+                <span>Rows:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                  >
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
+                    <option value={100} className="bg-slate-800 text-white">100</option>
+                  </select>
+                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                </div>
+              </div>
+
+              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                {customers.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, customers.length)} of {customers.length}
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  title="Previous page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <LeftOutlined className="text-[8px]" />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  title="Next page"
+                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <RightOutlined className="text-[8px]" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Add New Customer / Seller Modal (Top-10 Positioned with smooth animation) */}
       <AppModal
