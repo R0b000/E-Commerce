@@ -485,21 +485,21 @@ export const ProductManagement: React.FC = () => {
           </AppTable>
         </div>
 
-        {/* Table Footer: Count on Left, Pagination on Right (Styled matching Table Header #0096c7) */}
-        <div className="px-5 py-3 bg-[#0096C7] text-white rounded-b-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-inner">
+        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height 40px & Roundness rounded-b-2xl) */}
+        <div className="px-6 h-[40px] min-h-[40px] bg-[#0096C7] text-white rounded-b-2xl flex items-center justify-between text-[12px] shadow-inner select-none">
           {/* Left Side: Product Count */}
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-white/95 text-xs">Total Products:</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold text-xs border border-white/30 backdrop-blur-xs">
+            <span className="font-medium text-white/95 text-[12px]">Total Products:</span>
+            <span className="px-2 py-0.5 rounded-full bg-white/20 text-white font-bold text-[11px] border border-white/30 leading-none">
               {products.length} Items
             </span>
           </div>
 
           {/* Right Side: Pagination Controls (Rendered ONLY if products > 10) */}
           {products.length > 10 && (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-xs text-white/95 font-medium">
-                <span>Rows per page:</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-[11px] text-white/95 font-medium">
+                <span>Rows:</span>
                 <div className="relative">
                   <select
                     value={pageSize}
@@ -507,39 +507,39 @@ export const ProductManagement: React.FC = () => {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs rounded-lg pl-2.5 pr-6 py-1 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white"
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[11px] rounded-md pl-2 pr-5 py-0.5 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-6 leading-none"
                   >
                     <option value={10} className="bg-slate-800 text-white">10</option>
                     <option value={20} className="bg-slate-800 text-white">20</option>
                     <option value={50} className="bg-slate-800 text-white">50</option>
                     <option value={100} className="bg-slate-800 text-white">100</option>
                   </select>
-                  <DownOutlined className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-white/80" />
+                  <DownOutlined className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-white/80" />
                 </div>
               </div>
 
-              <span className="text-xs text-white/95 font-medium">
+              <span className="text-[11px] text-white/95 font-medium whitespace-nowrap">
                 {products.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, products.length)} of {products.length}
               </span>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <button
                   type="button"
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   title="Previous page"
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-35 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="w-6 h-6 flex items-center justify-center rounded-md bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
                 >
-                  <LeftOutlined className="text-[10px]" />
+                  <LeftOutlined className="text-[9px]" />
                 </button>
                 <button
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   title="Next page"
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-35 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="w-6 h-6 flex items-center justify-center rounded-md bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
                 >
-                  <RightOutlined className="text-[10px]" />
+                  <RightOutlined className="text-[9px]" />
                 </button>
               </div>
             </div>
