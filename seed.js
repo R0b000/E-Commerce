@@ -9,7 +9,7 @@ const { Role } = require('./ecommerce.server/models/database/Role');
 const { Permission } = require('./ecommerce.server/models/database/Permission');
 const { Menu } = require('./ecommerce.server/models/database/Menu');
 
-async function seedData(shouldExit = true) {
+async function seedData() {
   try {
     console.log('Connecting to database...');
     await connectDatabase();
@@ -733,21 +733,11 @@ async function seedData(shouldExit = true) {
     console.log(`- Seller 1: seller@store.com / seller123`);
     console.log(`- Customer: customer@store.com / customer123`);
 
-    if (shouldExit) {
-      process.exit(0);
-    }
-    return { success: true, admin: 'admin@store.com / admin123' };
+    process.exit(0);
   } catch (error) {
     console.error('Seeding error:', error);
-    if (shouldExit) {
-      process.exit(1);
-    }
-    throw error;
+    process.exit(1);
   }
 }
 
-if (require.main === module) {
-  seedData(true);
-}
-
-module.exports = { seedData };
+seedData();
