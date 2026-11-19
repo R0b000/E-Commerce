@@ -145,18 +145,19 @@ export const InventoryManagement: React.FC = () => {
   }, [products, searchQuery, categoryFilter, healthFilter]);
 
   return (
-    <div className="space-y-3 w-full font-['Poppins','Inter',sans-serif]">
+    <div className="space-y-1 w-full font-['Poppins','Inter',sans-serif]">
       {/* Page Header */}
       <PageHeader
         title="Inventory & Stock Management"
         description="Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments."
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Inventory' }]}
+        className="!mb-1.5 !pb-2 !border-b-0"
       />
 
       {/* Main Inventory Directory Table Card (Standard clean div without ant-card margins/borders) */}
       <div className="bg-white rounded-2xl shadow-xs overflow-hidden">
         {/* Table Top Controls & Filter Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white">
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white">
           <div className="flex items-center gap-3">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Warehouse Stock Ledger
