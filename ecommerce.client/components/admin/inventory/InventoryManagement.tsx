@@ -23,7 +23,6 @@ import {
   AppInput,
   AppSelect,
   AppModal,
-  PageHeader,
   TableSkeleton,
 } from 'shared-components';
 
@@ -147,13 +146,6 @@ export const InventoryManagement: React.FC = () => {
 
   return (
     <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
-      {/* Page Header */}
-      <PageHeader
-        title="Inventory & Stock Management"
-        description="Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments."
-        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Inventory' }]}
-      />
-
       {/* Main Inventory Directory Card */}
       <AppCard className="overflow-hidden border border-slate-200/80 rounded-2xl shadow-xs p-0">
         {/* Table Top Controls & Filter Bar */}
