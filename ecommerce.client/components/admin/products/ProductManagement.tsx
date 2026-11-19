@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   PlusOutlined,
   SearchOutlined,
@@ -9,7 +9,7 @@ import {
   StarFilled,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Tag, Checkbox, Spin, Popconfirm } from 'antd';
+import { Tag, Checkbox, Spin, Popconfirm, Breadcrumb } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -43,6 +43,8 @@ export const ProductManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -237,21 +239,38 @@ export const ProductManagement: React.FC = () => {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
+  const paginatedProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
-    <div className="space-y-4 w-full font-['Poppins','Inter',sans-serif]">
+    <div className="space-y-2 w-full font-['Poppins','Inter',sans-serif]">
+      {/* Breadcrumb Navigation */}
+      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+        <Breadcrumb
+          className="text-xs text-slate-400 [&_*]:border-0"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                  {isSeller ? 'Seller' : 'Admin'}
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-600 font-medium">Products</span>,
+            },
+          ]}
+        />
+      </div>
+
       {/* Main Products Directory Card with Integrated Header */}
       <div className="bg-white rounded-2xl shadow-xs">
         {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
         <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2.5">
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                {isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
-              </h3>
-              <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs">
-                {products.length} Items
-              </span>
-            </div>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              {isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
+            </h3>
             <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
               {isSeller
                 ? 'Manage your store catalog listings, warehouse inventory, and selling prices.'
@@ -338,7 +357,7 @@ export const ProductManagement: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                products.map((p) => {
+                paginatedProducts.map((p) => {
                   const pId = p._id || p.id || '';
                   const categoryName = typeof p.category === 'object' ? p.category.name : 'General';
                   const isLow = p.stock <= 5;
@@ -461,6 +480,66 @@ export const ProductManagement: React.FC = () => {
               )}
             </tbody>
           </AppTable>
+        </div>
+
+        {/* Table Footer: Count on Left, Pagination on Right */}
+        <div className="px-5 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-white rounded-b-2xl">
+          {/* Left Side: Product Count */}
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-slate-500">Total Products:</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+              {products.length} Items
+            </span>
+          </div>
+
+          {/* Right Side: Pagination Controls */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500">
+              <span>Rows per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="border-0 bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
+            <span className="text-xs text-slate-500">
+              {products.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, products.length)} of {products.length}
+            </span>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                title="Previous page"
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                title="Next page"
+                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
