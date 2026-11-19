@@ -8,6 +8,9 @@ import {
   SyncOutlined,
   StarFilled,
   WarningOutlined,
+  DownOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
 import { Tag, Checkbox, Spin, Popconfirm, Breadcrumb } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -243,11 +246,11 @@ export const ProductManagement: React.FC = () => {
   const paginatedProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="space-y-2 w-full font-['Poppins','Inter',sans-serif]">
+    <div className="space-y-1 w-full font-['Poppins','Inter',sans-serif]">
       {/* Breadcrumb Navigation */}
-      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+      <div className="flex items-center gap-1.5 text-[11px] leading-none text-slate-400 pb-0.5">
         <Breadcrumb
-          className="text-xs text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
           items={[
             {
               title: (
@@ -482,64 +485,65 @@ export const ProductManagement: React.FC = () => {
           </AppTable>
         </div>
 
-        {/* Table Footer: Count on Left, Pagination on Right */}
-        <div className="px-5 py-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500 bg-white rounded-b-2xl">
+        {/* Table Footer: Count on Left, Pagination on Right (Styled matching Table Header #0096c7) */}
+        <div className="px-5 py-3 bg-[#0096C7] text-white rounded-b-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-inner">
           {/* Left Side: Product Count */}
           <div className="flex items-center gap-2">
-            <span className="font-medium text-slate-500">Total Products:</span>
-            <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs">
+            <span className="font-semibold text-white/95 text-xs">Total Products:</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-white font-bold text-xs border border-white/30 backdrop-blur-xs">
               {products.length} Items
             </span>
           </div>
 
-          {/* Right Side: Pagination Controls */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-              <span>Rows per page:</span>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
-                  setCurrentPage(1);
-                }}
-                className="border-0 bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
+          {/* Right Side: Pagination Controls (Rendered ONLY if products > 10) */}
+          {products.length > 10 && (
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-xs text-white/95 font-medium">
+                <span>Rows per page:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-xs rounded-lg pl-2.5 pr-6 py-1 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white"
+                  >
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
+                    <option value={100} className="bg-slate-800 text-white">100</option>
+                  </select>
+                  <DownOutlined className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-white/80" />
+                </div>
+              </div>
 
-            <span className="text-xs text-slate-500">
-              {products.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, products.length)} of {products.length}
-            </span>
+              <span className="text-xs text-white/95 font-medium">
+                {products.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, products.length)} of {products.length}
+              </span>
 
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                disabled={currentPage <= 1}
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                title="Previous page"
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                disabled={currentPage >= totalPages}
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                title="Next page"
-                className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  title="Previous page"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-35 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <LeftOutlined className="text-[10px]" />
+                </button>
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  title="Next page"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-35 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                >
+                  <RightOutlined className="text-[10px]" />
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
