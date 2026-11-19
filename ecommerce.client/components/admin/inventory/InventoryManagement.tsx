@@ -4,11 +4,9 @@ import {
   SyncOutlined,
   SearchOutlined,
   PlusOutlined,
-  AlertOutlined,
   CheckCircleOutlined,
   WarningOutlined,
   CloseCircleOutlined,
-  DollarOutlined,
   EditOutlined,
   ShopOutlined,
   ThunderboltFilled,
@@ -147,15 +145,6 @@ export const InventoryManagement: React.FC = () => {
     });
   }, [products, searchQuery, categoryFilter, healthFilter]);
 
-  // Overall Inventory Stats
-  const totalUnits = useMemo(() => products.reduce((acc, p) => acc + (p.stock || 0), 0), [products]);
-  const lowStockCount = useMemo(() => products.filter((p) => p.stock > 0 && p.stock <= 5).length, [products]);
-  const outOfStockCount = useMemo(() => products.filter((p) => p.stock <= 0).length, [products]);
-  const totalValuation = useMemo(
-    () => products.reduce((acc, p) => acc + (p.stock || 0) * (p.salePrice ?? p.price), 0),
-    [products]
-  );
-
   return (
     <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
       {/* Page Header */}
@@ -164,75 +153,6 @@ export const InventoryManagement: React.FC = () => {
         description="Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments."
         breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Inventory' }]}
       />
-
-      {/* KPI Stats Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total SKUs */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Tracked SKUs
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {products.length} Items
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Active catalog listings</div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-xl font-bold">
-            <AppstoreOutlined />
-          </div>
-        </div>
-
-        {/* Units on Hand */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Units on Hand
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {totalUnits.toLocaleString()} Units
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">Total physically stocked</div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold">
-            <CheckCircleOutlined />
-          </div>
-        </div>
-
-        {/* Low / Out of Stock Alert */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Stock Replenish Alerts
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {lowStockCount + outOfStockCount} SKUs
-            </div>
-            <div className="text-[11px] text-rose-500 font-semibold mt-0.5">
-              {outOfStockCount} Out · {lowStockCount} Critical
-            </div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-xl font-bold">
-            <AlertOutlined />
-          </div>
-        </div>
-
-        {/* Total Inventory Valuation */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex items-center justify-between">
-          <div>
-            <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Inventory Asset Value
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              ${totalValuation.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-            <div className="text-[11px] text-slate-400 mt-0.5">At current selling prices</div>
-          </div>
-          <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl font-bold">
-            <DollarOutlined />
-          </div>
-        </div>
-      </div>
 
       {/* Main Inventory Directory Card */}
       <AppCard className="overflow-hidden border border-slate-200/80 rounded-2xl shadow-xs p-0">
