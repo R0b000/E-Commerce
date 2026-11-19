@@ -30,7 +30,7 @@ jobs:
       - name: Build Project (Compile Vite SPA)
         run: pnpm build
 
-      - name: Bundle Server & Built Assets into Single Clean Distribution
+      - name: Bundle Server (100% Standalone - Zero node_modules needed on server)
         run: |
           mkdir -p deploy
           
@@ -38,34 +38,42 @@ jobs:
           cp -r dist deploy/
           cp -r dist/* deploy/
           
-          # Bundle backend into a single lean file (no raw source folders)
+          # Bundle backend + all dependencies into a single 100% standalone executable
           esbuild index.js \
             --bundle \
             --platform=node \
             --target=node20 \
             --format=cjs \
-            --outfile=deploy/index.js \
-            --external:express \
-            --external:mongoose \
-            --external:ioredis \
-            --external:socket.io \
-            --external:bcryptjs \
-            --external:jsonwebtoken \
-            --external:helmet \
-            --external:cors \
-            --external:morgan \
-            --external:express-rate-limit \
-            --external:dotenv
+            --outfile=deploy/index.js
           
           cp package.json deploy/
           mkdir -p deploy/tmp
           touch deploy/tmp/restart.txt
           
-          # Prevent LiteSpeed timeouts via .htaccess
+          # Create reverse-proxy .htaccess so Apache / LiteSpeed routes /api to Node.js port 30160
           cat << 'EOF' > deploy/.htaccess
-          <IfModule Litespeed>
+          <IfModule mod_rewrite.c>
           RewriteEngine On
+
+          # Prevent LiteSpeed timeouts
+          <IfModule Litespeed>
           RewriteRule .* - [E=noabort:1,E=noconntimeout:1]
+          </IfModule>
+
+          # Proxy API and Health endpoints to Node.js backend
+          RewriteRule ^api/(.*)$ http://127.0.0.1:30160/api/$1 [P,L]
+          RewriteRule ^health$ http://127.0.0.1:30160/health [P,L]
+
+          # Proxy Socket.io WebSockets
+          RewriteCond %{HTTP:Upgrade} websocket [NC]
+          RewriteCond %{HTTP:Connection} upgrade [NC]
+          RewriteRule ^socket.io/(.*)$ ws://127.0.0.1:30160/socket.io/$1 [P,L]
+          RewriteRule ^socket.io/(.*)$ http://127.0.0.1:30160/socket.io/$1 [P,L]
+
+          # React SPA Frontend Fallback Routing
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule . /index.html [L]
           </IfModule>
           EOF
 
