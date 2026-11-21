@@ -621,14 +621,16 @@ export const AuthorizedLayout: React.FC = () => {
           );
         if (!matchName && !matchNepali && !matchPath && !matchSub) return false;
       }
-      // Explicitly remove Setting menu and its setup submenus per user request
-      if (
-        m.name === 'Setting' ||
-        m.name === 'Settings' ||
-        m.path?.startsWith('/settings') ||
-        [18, 19, 20, 21, 22, 23, 24, 25].includes(m.menuId || 0)
-      ) {
+      // Strictly filter to legitimate E-Commerce platform pages only
+      if (m.path && !m.path.startsWith('/admin') && m.path !== '#') {
         return false;
+      }
+
+      // Filter subItems to only valid E-Commerce platform paths
+      if (Array.isArray(m.subItems)) {
+        m.subItems = m.subItems.filter(
+          (s) => s.path && (s.path.startsWith('/admin') || s.path === '#')
+        );
       }
 
       if (isAdmin || userRole === 'admin') return true;

@@ -8,116 +8,243 @@ const { redisService } = require('./RedisService');
 
 class RbacService {
   /**
-   * Synchronizes standard hierarchical menu dataset matching user's exact specification
+   * Synchronizes standard E-Commerce menus and completely purges any non-ecommerce / reference menus
    */
   async syncStandardMenus() {
     try {
-      // Remove Setting menu and all its submenus per user instruction
+      // 1. Permanently remove all restaurant, HRM, and non-ecommerce menus
+      const nonEcommerceNames = [
+        'Restro Setup', 'Dining Tables', 'Restro Menu Categories', 'Restro Menu Items',
+        'Floor Plan Editor', 'Live Floor Plan', 'Menu Selection Types', 'Restro',
+        'Purchase', 'Purchase Requisition', 'Purchase Order', 'Receive Goods', 'Vendors', 'Bill Of Material',
+        'Staff', 'Staff Setup', 'Staff Details', 'Staff Profile Picture', 'Staff Profile Picture Review',
+        'Setting', 'Settings', 'Main Setup Layout', 'General Setup', 'Office Setup', 'Company Setup',
+        'Department Branch Setup', 'Department Setup', 'Level Designation',
+        'Holiday', 'Holiday Calendar', 'Holiday Setup', 'Holiday Lists',
+        'Duty Roster', 'Duty Overview', 'Manage Duty',
+        'Leave', 'Leave Setup', 'Leave Position Setup', 'Leave Request', 'Leave Approval',
+        'Leave Request HR', 'Leave Request By HR', 'Leave Cancel HR', 'Leave Balance',
+        'Attendance', 'Manual Attendance', 'Manual Attendance By HR', 'Manual Attendance Direct Approval',
+        'Pending Attendance', 'Attendance Pending View HR',
+        'Report', 'Order Report', 'Menu Items Report', 'Order Appraisal Report',
+        'KOT', 'BOT', 'Auth', 'Create Order', 'Order Dashboard'
+      ];
+
+      const nonEcommercePaths = [
+        /^\/restro/,
+        /^\/tables/,
+        /^\/menuitems/,
+        /^\/floorplan/,
+        /^\/dutyroster/,
+        /^\/Leave/,
+        /^\/Holiday/,
+        /^\/ManualAttendance/,
+        /^\/Attedance/,
+        /^\/PendingAttendance/,
+        /^\/hrm/,
+        /^\/settings/,
+        /^\/menuselectiontypes/,
+        /^\/report/,
+        /^\/orderitemdetails/,
+        /^\/purchase/,
+        /^\/auth$/,
+        /^\/categories$/,
+      ];
+
       await Menu.deleteMany({
         $or: [
-          { menuId: { $in: [18, 19, 20, 21, 22, 23, 24, 25] } },
-          {
-            name: {
-              $in: [
-                'Setting',
-                'Settings',
-                'Main Setup Layout',
-                'General Setup',
-                'Office Setup',
-                'Company Setup',
-                'Department Branch Setup',
-                'Department Setup',
-                'Level Designation',
-              ],
-            },
-          },
-          { path: { $regex: '^/settings' } },
+          { name: { $in: nonEcommerceNames } },
+          { path: { $in: ['/tables', '/categories', '/menuitems', '/floorplan/edit', '/floorplan/view', '/menuselectiontypes', '/restro/kot', '/restro/bot', '/restro/order-report', '/purchase', '/hrm', '/auth', '/settings'] } },
+          ...nonEcommercePaths.map((regex) => ({ path: regex })),
+          { menuId: { $in: [2, 4, 5, 6, 8, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70] } }
         ],
       });
 
-      const hasOrderSubs = await Menu.findOne({
-        $or: [{ parentId: 11 }, { parentId: '11' }],
-      }).lean();
+      // 2. Legitimate E-Commerce Platform Menus
+      const ecommerceMenus = [
+        {
+          menuId: 1,
+          name: 'Dashboard',
+          path: '/admin',
+          icon: 'dashboard',
+          order: 1,
+          parentId: null,
+          isSinglePage: true,
+          isPrimary: true,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 2,
+          name: 'Products',
+          path: '/admin/products',
+          icon: 'shopping_cart',
+          order: 2,
+          parentId: null,
+          isSinglePage: true,
+          isPrimary: true,
+          roles: ['admin', 'seller', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 3,
+          name: 'Categories',
+          path: '/admin/categories',
+          icon: 'category',
+          order: 3,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 4,
+          name: 'Orders',
+          path: '/admin/orders',
+          icon: 'receipt_long',
+          order: 4,
+          parentId: null,
+          isSinglePage: true,
+          isPrimary: true,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 5,
+          name: 'Inventory & Stock',
+          path: '/admin/inventory',
+          icon: 'inventory_2',
+          order: 5,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'seller', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 6,
+          name: 'Accounts',
+          path: '/admin/customers',
+          icon: 'groups',
+          order: 6,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 7,
+          name: 'Billing',
+          path: '/admin/billing',
+          icon: 'receipt',
+          order: 7,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 8,
+          name: 'Discounts & Coupons',
+          path: '/admin/discounts',
+          icon: 'tune',
+          order: 8,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 9,
+          name: 'Hero Banners',
+          path: '/admin/banners',
+          icon: 'photo_camera',
+          order: 9,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 10,
+          name: 'Customer Reviews',
+          path: '/admin/reviews',
+          icon: 'star',
+          order: 10,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'support', 'seller'],
+          isActive: true,
+        },
+        {
+          menuId: 11,
+          name: 'Roles',
+          path: '/admin/roles',
+          icon: 'shield',
+          order: 11,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 12,
+          name: 'Permissions',
+          path: '/admin/permissions',
+          icon: 'admin_panel_settings',
+          order: 12,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 13,
+          name: 'Menu Setup',
+          path: '/admin/menus',
+          icon: 'menu',
+          order: 13,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 14,
+          name: 'Audit Logs',
+          path: '/admin/audit-logs',
+          icon: 'analytics',
+          order: 14,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 15,
+          name: 'Security & Devices',
+          path: '/admin/security',
+          icon: 'lock',
+          order: 15,
+          parentId: null,
+          isSinglePage: true,
+          roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'],
+          isActive: true,
+        },
+      ];
 
-      if (hasOrderSubs) {
-        await redisService.delByPattern('ecommerce:menus:*');
-        return;
+      for (const m of ecommerceMenus) {
+        await Menu.findOneAndUpdate(
+          { path: m.path },
+          { $set: m },
+          { upsert: true, new: true }
+        );
       }
 
-      // Clean up old flat conflicting menus
-      await Menu.deleteMany({
-        $or: [
-          { menuId: null },
-          { path: { $in: ['/admin/orders', '/admin/billing', '/admin/customers', '/admin/roles', '/admin/permissions', '/admin/menus', '/admin/seller-profile'] } }
-        ]
-      });
-
-      const standardMenus = [
-        // 1. Dashboard
-        { menuId: 1, name: 'Dashboard', path: '/admin', icon: 'dashboard', order: 1, parentId: null, isSinglePage: true, isPrimary: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-
-        // 2. Products
-        { menuId: 3, name: 'Products', path: '/admin/products', icon: 'shopping_cart', order: 2, parentId: null, isSinglePage: true, isPrimary: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-
-        // 3. Categories
-        { menuId: 4, name: 'Categories', path: '/admin/categories', icon: 'category', order: 3, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
-
-        // 4. Order (Parent Category Menu)
-        { menuId: 11, name: 'Orders', path: '/admin/orders', icon: 'receipt_long', order: 4, parentId: null, isSinglePage: false, isPrimary: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-        // Children of Order (parentId: 11)
-        { menuId: 12, name: 'Create Order', path: '/admin/orders/create', icon: 'add_shopping_cart', order: 1, parentId: 11, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-        { menuId: 13, name: 'Order Details', path: '/admin/orders', icon: 'list_alt', order: 2, parentId: 11, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-        { menuId: 38, name: 'Order Dashboard', path: '/admin/orders/dashboard', icon: 'dashboard', order: 3, parentId: 11, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-        { menuId: 63, name: 'KOT', path: '/restro/kot', icon: 'receipt_long', order: 4, parentId: 11, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-        { menuId: 64, name: 'BOT', path: '/restro/bot', icon: 'local_bar', order: 5, parentId: 11, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-        { menuId: 65, name: 'Order Report', path: '/restro/order-report', icon: 'receipt_long', order: 6, parentId: 11, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-
-        // 5. Stock & Inventory
-        { menuId: 7, name: 'Stock & Inventory', path: '/admin/inventory', icon: 'inventory_2', order: 5, parentId: null, isSinglePage: true, isPrimary: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-
-        // 6. Purchase (Parent Category Menu)
-        { menuId: 15, name: 'Purchase', path: '/purchase', icon: 'shopping_cart', order: 6, parentId: null, isSinglePage: false, isPrimary: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-        // Children of Purchase (parentId: 15)
-        { menuId: 14, name: 'Purchase Requisition', path: '/restro/purchase/requisition', icon: 'request_quote', order: 1, parentId: 15, isSinglePage: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-        { menuId: 26, name: 'Purchase Order', path: '/restro/purchase/order', icon: 'shopping_cart_checkout', order: 2, parentId: 15, isSinglePage: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-        { menuId: 31, name: 'Receive Goods', menuNameNepali: 'Receive Goods', path: '/restro/purchase/grn', icon: 'move_to_inbox', order: 3, parentId: 15, isSinglePage: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-        { menuId: 32, name: 'Vendors', menuNameNepali: 'Vendors', path: '/restro/purchase/vendor', icon: 'groups', order: 4, parentId: 15, isSinglePage: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-        { menuId: 33, name: 'Invoicing', menuNameNepali: 'Invoicing', path: '/admin/billing', icon: 'receipt', order: 5, parentId: 15, isSinglePage: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-        { menuId: 46, name: 'Bill Of Material', path: '/restro/purchase/bom', icon: 'account_tree', order: 6, parentId: 15, isSinglePage: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-
-        // 7. Staff (Parent Category Menu)
-        { menuId: 53, name: 'Staff', path: '/hrm', icon: 'groups', order: 7, parentId: null, isSinglePage: false, roles: ['admin'], isActive: true },
-        // Children of Staff (parentId: 53)
-        { menuId: 54, name: 'Staff Setup', path: '/hrm/staffsetup', icon: 'person_add', order: 1, parentId: 53, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 55, name: 'Staff Details', path: '/hrm/staffdetails', icon: 'badge', order: 2, parentId: 53, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 66, name: 'Staff Profile Picture', menuNameNepali: 'कर्मचारी प्रोफाइल तस्वीर', path: '/hrm/staff-profile-picture', icon: 'photo_camera', order: 3, parentId: 53, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 67, name: 'Staff Profile Picture Review', menuNameNepali: 'प्रोफाइल तस्वीर समीक्षा', path: '/hrm/staff-profile-picture-review', icon: 'fact_check', order: 4, parentId: 53, isSinglePage: true, roles: ['admin'], isActive: true },
-
-        // 8. Auth (Parent Category Menu)
-        { menuId: 10, name: 'Auth', path: '/auth', icon: 'shield', order: 8, parentId: null, isSinglePage: false, roles: ['admin'], isActive: true },
-        // Children of Auth (parentId: 10)
-        { menuId: 2, name: 'Menu Setup', path: '/admin/menus', icon: 'menu', order: 1, parentId: 10, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 4, name: 'Menu Role Setup', path: '/admin/roles', icon: 'admin_panel_settings', order: 2, parentId: 10, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 16, name: 'User Setup', path: '/admin/customers', icon: 'person', order: 3, parentId: 10, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 17, name: 'User Role', path: '/admin/permissions', icon: 'group', order: 4, parentId: 10, isSinglePage: true, roles: ['admin'], isActive: true },
-
-        // 9. Restro Setup (Parent Category Menu)
-        { menuId: 34, name: 'Restro Setup', path: '/restro', icon: 'restaurant_menu', order: 9, parentId: null, isSinglePage: false, roles: ['admin'], isActive: true },
-        // Children of Restro Setup (parentId: 34)
-        { menuId: 5, name: 'Dining Tables', path: '/tables', icon: 'table_restaurant', order: 1, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 6, name: 'Restro Menu Categories', path: '/admin/categories', icon: 'category', order: 2, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 8, name: 'Restro Menu Items', path: '/admin/products', icon: 'menu_book', order: 3, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 35, name: 'Floor Plan Editor', path: '/floorplan/edit', icon: 'grid_view', order: 4, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 36, name: 'Live Floor Plan', path: '/floorplan/view', icon: 'map', order: 5, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 60, name: 'Menu Selection Types', menuNameNepali: 'Menu Selection Types', path: '/menuselectiontypes', icon: 'tune', order: 6, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
-
-        // 10. Standalone Administration Pages
-        { menuId: 71, name: 'Discounts & Coupons', path: '/admin/discounts', icon: 'tune', order: 11, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
-        { menuId: 72, name: 'Hero Banners', path: '/admin/banners', icon: 'photo_camera', order: 12, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
-        { menuId: 73, name: 'Customer Reviews', path: '/admin/reviews', icon: 'star', order: 13, parentId: null, isSinglePage: true, roles: ['admin', 'support', 'seller'], isActive: true },
-        { menuId: 74, name: 'Audit Logs', path: '/admin/audit-logs', icon: 'analytics', order: 14, parentId: null, isSinglePage: true, roles: ['admin'], isActive: true },
-        { menuId: 75, name: 'Security & Devices', path: '/admin/security', icon: 'lock', order: 15, parentId: null, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'], isActive: true },
-      ];
+      await redisService.delByPattern('ecommerce:menus:*');
+    } catch (err) {
+      console.error('syncStandardMenus error:', err);
+    }
+  }
 
       for (const m of standardMenus) {
         await Menu.findOneAndUpdate(
