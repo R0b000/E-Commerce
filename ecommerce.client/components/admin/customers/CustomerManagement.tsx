@@ -26,6 +26,8 @@ import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio, Breadcrumb } fro
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Customer } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
+import { useAuth } from 'auth-client/hooks/useAuth';
+import { SellerProfile } from '../profile/SellerProfile';
 import {
   AppCard,
   AppTable,
@@ -37,6 +39,13 @@ import {
 } from 'shared-components';
 
 export const CustomerManagement: React.FC = () => {
+  const { user } = useAuth();
+  const isSeller = user?.role === 'seller';
+
+  if (isSeller) {
+    return <SellerProfile />;
+  }
+
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,7 +156,7 @@ export const CustomerManagement: React.FC = () => {
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Customers & Sellers</span>,
+              title: <span className="text-slate-600 font-medium">Accounts</span>,
             },
           ]}
         />
@@ -190,16 +199,16 @@ export const CustomerManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Customers Directory Card with Integrated Header */}
+      {/* Main Accounts Directory Card with Integrated Header */}
       <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
         {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
         <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex flex-col min-w-0">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              User & Customer Directory
+              Accounts & Directory
             </h3>
             <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Comprehensive directory of registered customers, authorized sellers/vendors, and staff accounts.
+              Comprehensive directory of registered accounts, customer buyers, authorized sellers/vendors, and staff.
             </p>
           </div>
 
@@ -213,7 +222,7 @@ export const CustomerManagement: React.FC = () => {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                placeholder="Search users..."
+                placeholder="Search accounts..."
                 allowClear
               />
             </form>
@@ -255,7 +264,7 @@ export const CustomerManagement: React.FC = () => {
               className="shrink-0"
               style={{ backgroundColor: '#0284c7' }}
             >
-              Add User
+              Add Account
             </AppButton>
           </div>
         </div>
@@ -416,9 +425,8 @@ export const CustomerManagement: React.FC = () => {
                             e.stopPropagation();
                             setViewingUser(c);
                           }}
-                        >
-                          {isSellerAccount ? 'Vendor Profile' : 'View Profile'}
-                        </AppButton>
+                          title={isSellerAccount ? 'Vendor Profile' : 'View Profile'}
+                        />
                       </td>
                     </tr>
                   );
@@ -432,7 +440,7 @@ export const CustomerManagement: React.FC = () => {
         <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
           {/* Left Side: Count */}
           <div className="flex items-center gap-1.5 leading-none">
-            <span className="font-medium text-white/90 text-[11px] leading-none">Total Users:</span>
+            <span className="font-medium text-white/90 text-[11px] leading-none">Total Accounts:</span>
             <span className="font-bold text-white text-[11px] leading-none">
               {customers.length} Items
             </span>
@@ -490,9 +498,9 @@ export const CustomerManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add New Customer / Seller Modal (Top-10 Positioned with smooth animation) */}
+      {/* Add New Account Modal */}
       <AppModal
-        title="Register Platform User / Seller"
+        title="Register Platform Account"
         open={isModalOpen}
         onCancel={() => {
           setIsModalOpen(false);
@@ -670,7 +678,7 @@ export const CustomerManagement: React.FC = () => {
           okText="Close"
           width={640}
         >
-          <div className="space-y-4 py-2 text-xs">
+          <div className="space-y-4 text-xs">
             {/* Header Identity Badge */}
             <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-orange-50/40 border border-slate-200/80 flex items-center justify-between">
               <div className="flex items-center gap-3">

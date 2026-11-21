@@ -325,12 +325,23 @@ export const OrderManagement: React.FC = () => {
                       </td>
 
                       <td className="py-4 px-4">
-                        <Tag
-                          color={order.paymentStatus === 'paid' ? 'success' : 'warning'}
-                          className="font-medium text-xs px-2 py-0.5 rounded capitalize"
-                        >
-                          {order.paymentStatus}
-                        </Tag>
+                        <div className="flex flex-col gap-1 items-start">
+                          <Tag
+                            color={order.paymentStatus === 'paid' ? 'success' : 'warning'}
+                            className="font-medium text-xs px-2 py-0.5 rounded capitalize m-0"
+                          >
+                            {order.paymentStatus}
+                          </Tag>
+                          <span className="text-[10px] font-semibold">
+                            {order.paymentMethod === 'khalti' ? (
+                              <span className="text-[#5c2d91] font-bold">Khalti Pay</span>
+                            ) : order.paymentMethod === 'esewa' ? (
+                              <span className="text-[#60bb46] font-bold">eSewa ePay</span>
+                            ) : (
+                              <span className="text-slate-400 capitalize">{order.paymentMethod?.replace('_', ' ')}</span>
+                            )}
+                          </span>
+                        </div>
                       </td>
 
                       <td className="py-4 px-4">
@@ -345,9 +356,8 @@ export const OrderManagement: React.FC = () => {
                             icon={<CompassOutlined />}
                             onClick={() => openOrderDetail(order)}
                             style={{ backgroundColor: '#0096c7' }}
-                          >
-                            Track & Map
-                          </AppButton>
+                            title="Track & Map"
+                          />
                           {canDeleteOrders && !isSeller && (
                             <Popconfirm
                               title="Delete Order"

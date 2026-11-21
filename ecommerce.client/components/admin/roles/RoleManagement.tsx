@@ -2,10 +2,9 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   SafetyCertificateOutlined,
-  CheckCircleOutlined,
   UserOutlined,
   EditOutlined,
-  SyncOutlined,
+  DeleteOutlined,
   PlusOutlined,
   KeyOutlined,
   CustomerServiceOutlined,
@@ -13,25 +12,20 @@ import {
   SearchOutlined,
   ShopOutlined,
   TeamOutlined,
-  LockOutlined,
-  CheckOutlined,
-  CloseOutlined,
   LeftOutlined,
   RightOutlined,
   DownOutlined,
 } from '@ant-design/icons';
-import { Tag, Spin, Checkbox, Row, Col, Divider, Tooltip, Breadcrumb } from 'antd';
+import { Tag, Breadcrumb, Popconfirm } from 'antd';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { RoleItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
-  AppCard,
   AppTable,
   AppButton,
   AppInput,
   AppModal,
-  PageHeader,
   TableSkeleton,
 } from 'shared-components';
 import { RoleManagementProps } from './RoleManagement.types';
@@ -56,10 +50,11 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
   const [newRoleDescription, setNewRoleDescription] = useState('');
   const [isCreatingRole, setIsCreatingRole] = useState(false);
 
-  // Edit Permissions Modal State
+  // Edit Role Modal State (Editable Role Details)
   const [editingRole, setEditingRole] = useState<RoleItem | null>(null);
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
+  const [editLabel, setEditLabel] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [savingRole, setSavingRole] = useState(false);
 
   const { showToast } = useToast();
 
@@ -90,53 +85,64 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
 
   const openEditModal = (role: RoleItem) => {
     setEditingRole(role);
-    setSelectedPermissions(role.permissions || []);
+    setEditLabel(role.label);
+    setEditDescription(role.description || '');
     if (onRoleSelect) {
       onRoleSelect(role);
     }
   };
 
-  const handleTogglePermission = (code: string) => {
-    setSelectedPermissions((prev) =>
-      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
-    );
-  };
-
-  const handleSelectAllModule = (modulePermCodes: string[]) => {
-    setSelectedPermissions((prev) => {
-      const allSelected = modulePermCodes.every((c) => prev.includes(c));
-      if (allSelected) {
-        // Deselect all in module
-        return prev.filter((c) => !modulePermCodes.includes(c));
-      } else {
-        // Select all in module
-        const combined = new Set([...prev, ...modulePermCodes]);
-        return Array.from(combined);
-      }
-    });
-  };
-
-  const handleSavePermissions = async () => {
+  const handleSaveRole = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!editingRole) return;
-    setSaving(true);
+    if (!editLabel.trim()) {
+      showToast('Please provide a display label for the role', 'error');
+      return;
+    }
+
+    setSavingRole(true);
     try {
-      const res = await ecommerceService.updateRolePermissions(
-        editingRole.name,
-        selectedPermissions
-      );
+      const res = await ecommerceService.updateRole(editingRole.name, {
+        label: editLabel.trim(),
+        description: editDescription.trim(),
+      });
+
       if (res.success) {
-        showToast(`Permissions updated for ${editingRole.label}`, 'success');
+        showToast(`Role "${editLabel}" updated successfully`, 'success');
         setRoles((prev) =>
           prev.map((r) =>
-            r.name === editingRole.name ? { ...r, permissions: selectedPermissions } : r
+            r.name === editingRole.name
+              ? { ...r, label: editLabel.trim(), description: editDescription.trim() }
+              : r
           )
         );
         setEditingRole(null);
+      } else {
+        showToast(res.messages?.[0] || 'Failed to update role', 'error');
       }
     } catch (err: any) {
-      showToast(err.response?.data?.messages?.[0] || 'Failed to update permissions', 'error');
+      showToast(err.response?.data?.messages?.[0] || 'Failed to update role', 'error');
     } finally {
-      setSaving(false);
+      setSavingRole(false);
+    }
+  };
+
+  const handleDeleteRole = async (role: RoleItem) => {
+    if (role.isSystem) {
+      showToast('System core roles cannot be deleted', 'error');
+      return;
+    }
+
+    try {
+      const res = await ecommerceService.deleteRole(role.name);
+      if (res.success) {
+        showToast(`Role "${role.label}" deleted`, 'success');
+        setRoles((prev) => prev.filter((r) => r.name !== role.name));
+      } else {
+        showToast(res.messages?.[0] || 'Failed to delete role', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.response?.data?.messages?.[0] || 'Failed to delete role', 'error');
     }
   };
 
@@ -167,16 +173,6 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
       setIsCreatingRole(false);
     }
   };
-
-  // Group permissions by module
-  const permsByModule = useMemo(() => {
-    return permissions.reduce<Record<string, PermissionItem[]>>((acc, perm) => {
-      const mod = perm.module || 'General';
-      if (!acc[mod]) acc[mod] = [];
-      acc[mod].push(perm);
-      return acc;
-    }, {});
-  }, [permissions]);
 
   // Primary roles filtered by search query
   const filteredRoles = useMemo(() => {
@@ -300,7 +296,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
             <div className="text-xl font-black text-slate-900 mt-1">
               {permissions.length} Permissions
             </div>
-            <div className="text-[10px] text-slate-400">Across modules & endpoints</div>
+            <div className="text-[10px] text-slate-400">Configured in Permissions Matrix</div>
           </div>
           <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
             <KeyOutlined />
@@ -317,7 +313,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
               Role Management
             </h3>
             <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Structured table of security roles, granular access controls, and capability mappings.
+              Manage platform roles, modify identity descriptors, and inspect user mapping.
             </p>
           </div>
 
@@ -378,7 +374,6 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
               ) : (
                 paginatedRoles.map((role) => {
                   const visuals = getRoleVisuals(role.name);
-                  const isSuperuser = role.permissions?.includes('*');
                   const roleId = role._id || role.id || role.name;
 
                   return (
@@ -395,7 +390,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                             {visuals.icon}
                           </div>
                           <div>
-                            <div className="font-medium text-slate-900 text-[11px]">
+                            <div className="font-bold text-slate-900 text-xs">
                               {role.label}
                             </div>
                             <div className="text-[10px] text-slate-400 font-normal flex items-center gap-1.5 mt-0.5">
@@ -424,7 +419,9 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
                       {/* Description & Scope */}
                       <td className="py-3 px-4 min-w-[200px] max-w-[280px]">
                         <p className="text-[11px] font-normal text-slate-600 line-clamp-2 leading-relaxed">
-                          {role.description}
+                          {role.description || (
+                            <span className="text-slate-300 italic">No description provided</span>
+                          )}
                         </p>
                       </td>
 
@@ -438,19 +435,31 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
 
                       {/* Actions */}
                       <td className="py-3 px-6 text-right whitespace-nowrap">
-                        {isSuperuser ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 italic">
-                            <LockOutlined /> Unrestricted
-                          </span>
-                        ) : (
-                          <button
+                        <div className="flex items-center justify-end gap-2">
+                          <AppButton
+                            size="small"
+                            icon={<EditOutlined />}
                             onClick={() => openEditModal(role)}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-300 font-semibold text-xs text-slate-700 transition-all shadow-2xs cursor-pointer active:scale-95"
-                          >
-                            <EditOutlined className="text-xs" />
-                            <span>Configure</span>
-                          </button>
-                        )}
+                            title="Edit Role"
+                          />
+                          {!role.isSystem && (
+                            <Popconfirm
+                              title="Delete Role"
+                              description={`Are you sure you want to delete role "${role.label}"?`}
+                              onConfirm={() => handleDeleteRole(role)}
+                              okText="Yes, Delete"
+                              cancelText="Cancel"
+                              okButtonProps={{ danger: true }}
+                            >
+                              <AppButton
+                                size="small"
+                                danger
+                                icon={<DeleteOutlined />}
+                                title="Delete Custom Role"
+                              />
+                            </Popconfirm>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -460,7 +469,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
           </AppTable>
         </div>
 
-        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
+        {/* Table Footer: Count on Left, Pagination on Right */}
         <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
           {/* Left Side: Count */}
           <div className="flex items-center gap-1.5 leading-none">
@@ -470,7 +479,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
             </span>
           </div>
 
-          {/* Right Side: Pagination Controls (Rendered ONLY if filteredRoles > 10) */}
+          {/* Right Side: Pagination Controls */}
           {filteredRoles.length > 10 && (
             <div className="flex items-center gap-2.5 leading-none">
               <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
@@ -522,109 +531,77 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
         </div>
       </div>
 
-      {/* Edit Role Permissions Modal (Top-10 Positioned with modal.css) */}
-      <AppModal
-        open={!!editingRole}
-        onCancel={() => setEditingRole(null)}
-        title={`Configure Role Permissions: ${editingRole?.label}`}
-        width="max-w-3xl"
-      >
-        <div className="space-y-4 font-['Poppins','Inter',sans-serif]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200/80">
+      {/* Edit Role Details Modal */}
+      {editingRole && (
+        <AppModal
+          open={!!editingRole}
+          title={`Edit Role: ${editingRole.label}`}
+          onCancel={() => setEditingRole(null)}
+          onOk={handleSaveRole}
+          okText="Save Changes"
+          confirmLoading={savingRole}
+          width={520}
+        >
+          <form onSubmit={handleSaveRole} className="space-y-4 text-xs">
             <div>
-              <div className="text-xs font-bold text-slate-800">
-                Granting Capabilities for <span className="uppercase text-[#f97316]">{editingRole?.name}</span>
-              </div>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Check individual permissions or click "Select All" on a module to toggle all actions.
-              </p>
+              <label className="block font-semibold text-slate-700 uppercase mb-1">
+                System Code Identifier
+              </label>
+              <input
+                type="text"
+                disabled
+                value={editingRole.name}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-500 font-mono text-xs bg-slate-100 cursor-not-allowed"
+              />
+              <span className="text-[10px] text-slate-400 mt-1 block">
+                System code identifier is immutable to maintain referential integrity with backend access rules.
+              </span>
             </div>
-            <div className="text-xs font-bold text-[#0284c7] shrink-0">
-              {selectedPermissions.length} / {permissions.length} Selected
+
+            <div>
+              <label className="block font-semibold text-slate-700 uppercase mb-1">
+                Role Display Label *
+              </label>
+              <AppInput
+                placeholder="e.g. Store & Inventory Manager"
+                value={editLabel}
+                onChange={(e) => setEditLabel(e.target.value)}
+                required
+              />
             </div>
-          </div>
 
-          <div className="max-h-[55vh] overflow-y-auto space-y-4 pr-1">
-            {Object.entries(permsByModule).map(([moduleName, perms]) => {
-              const moduleCodes = perms.map((p) => p.code);
-              const allModuleSelected = moduleCodes.every((c) => selectedPermissions.includes(c));
-              const someModuleSelected =
-                moduleCodes.some((c) => selectedPermissions.includes(c)) && !allModuleSelected;
+            <div>
+              <label className="block font-semibold text-slate-700 uppercase mb-1">
+                Description & Scope
+              </label>
+              <textarea
+                placeholder="Describe the responsibilities and scope of this role..."
+                rows={3}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-slate-800 text-xs focus:outline-none focus:border-[#0284c7]"
+              />
+            </div>
 
-              return (
-                <div
-                  key={moduleName}
-                  className="p-4 bg-white rounded-xl border border-slate-200/80 shadow-2xs"
+            {/* Permissions Information Notice */}
+            <div className="p-3 bg-blue-50/70 border border-blue-200/80 rounded-xl flex items-start gap-2.5">
+              <KeyOutlined className="text-[#0284c7] text-sm mt-0.5 shrink-0" />
+              <div className="flex-1 text-xs">
+                <div className="font-bold text-slate-800">Permissions are configured centrally</div>
+                <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                  Granular capabilities and route access for this role are managed via the dedicated Permissions Matrix.
+                </p>
+                <Link
+                  to="/admin/permissions"
+                  className="inline-flex items-center gap-1 font-semibold text-[#0284c7] hover:text-[#0096c7] mt-1.5 text-xs hover:underline"
                 >
-                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#0284c7]" />
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                        {moduleName} Module
-                      </h4>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        ({perms.length} actions)
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() => handleSelectAllModule(moduleCodes)}
-                      className="text-[11px] font-semibold text-[#0284c7] hover:text-[#f97316] hover:underline cursor-pointer"
-                    >
-                      {allModuleSelected ? 'Deselect Module' : 'Select All in Module'}
-                    </button>
-                  </div>
-
-                  <Row gutter={[12, 12]}>
-                    {perms.map((p) => {
-                      const isChecked = selectedPermissions.includes(p.code);
-                      return (
-                        <Col xs={24} sm={12} key={p.code}>
-                          <div
-                            onClick={() => handleTogglePermission(p.code)}
-                            className={`p-2.5 rounded-xl border cursor-pointer transition-all flex items-start gap-2.5 ${
-                              isChecked
-                                ? 'bg-orange-50/50 border-[#f97316]/50 shadow-2xs'
-                                : 'bg-slate-50/60 border-slate-200/70 hover:bg-white hover:border-slate-300'
-                            }`}
-                          >
-                            <Checkbox checked={isChecked} className="mt-0.5" />
-                            <div className="text-left select-none flex-1 min-w-0">
-                              <div className="text-xs font-semibold text-slate-800 truncate">
-                                {p.name}
-                              </div>
-                              <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate">
-                                {p.code}
-                              </div>
-                            </div>
-                          </div>
-                        </Col>
-                      );
-                    })}
-                  </Row>
-                </div>
-              );
-            })}
-          </div>
-
-          <Divider className="my-2" />
-
-          <div className="flex items-center justify-end gap-2.5 pt-1">
-            <AppButton type="default" onClick={() => setEditingRole(null)}>
-              Cancel
-            </AppButton>
-            <AppButton
-              type="primary"
-              loading={saving}
-              onClick={handleSavePermissions}
-              style={{ backgroundColor: '#0284c7' }}
-            >
-              Save Role Permissions
-            </AppButton>
-          </div>
-        </div>
-      </AppModal>
+                  Open Permissions Matrix <RightOutlined className="text-[10px]" />
+                </Link>
+              </div>
+            </div>
+          </form>
+        </AppModal>
+      )}
 
       {/* Add Role Modal */}
       {isAddRoleModalOpen && (
@@ -637,7 +614,7 @@ export const RoleManagement: React.FC<RoleManagementProps> = ({ onRoleSelect }) 
           confirmLoading={isCreatingRole}
           width={480}
         >
-          <form onSubmit={handleCreateRole} className="space-y-4 py-2 text-xs">
+          <form onSubmit={handleCreateRole} className="space-y-4 text-xs">
             <div>
               <label className="block font-semibold text-slate-700 uppercase mb-1">
                 Role System Code *

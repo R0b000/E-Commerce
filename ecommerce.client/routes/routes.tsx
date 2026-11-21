@@ -3,6 +3,7 @@ import { RouteConfig } from 'shared-ui/router/RouteRenderer.types';
 import { PublicLayout } from '../components/store/PublicLayout';
 import { StoreHomePage } from '../components/store/StoreHomePage';
 import { CheckoutPage } from '../components/store/CheckoutPage';
+import { PaymentVerificationPage } from '../components/store/PaymentVerificationPage';
 
 // Direct component imports from dedicated feature folders
 import { AuthorizedLayout } from '../components/admin/layout/AuthorizedLayout';
@@ -20,6 +21,9 @@ import InventoryManagement from '../components/admin/inventory/InventoryManageme
 import SellerProfile from '../components/admin/profile/SellerProfile';
 import UserProfile from '../components/admin/profile/UserProfile';
 import SecurityManagement from '../components/admin/security/SecurityManagement';
+import BillingManagement from '../components/admin/billing/BillingManagement';
+import DiscountManagement from '../components/admin/discounts/DiscountManagement';
+import { BannerManagement } from '../components/admin/banners/BannerManagement';
 
 import { LoginPage } from '../../Auth.Client/components/login/LoginPage';
 import { RegisterPage } from '../../Auth.Client/components/register/RegisterPage';
@@ -33,6 +37,9 @@ export const EcommerceRoutes: RouteConfig = {
       children: [
         { index: true, element: StoreHomePage },
         { path: 'checkout', element: CheckoutPage },
+        { path: 'payment/verify/:gateway', element: PaymentVerificationPage },
+        { path: 'payment/verify', element: PaymentVerificationPage },
+        { path: 'payment/success', element: PaymentVerificationPage },
       ],
     },
     {
@@ -44,6 +51,7 @@ export const EcommerceRoutes: RouteConfig = {
         { path: 'categories', element: CategoryManagement },
         { path: 'orders', element: OrderManagement },
         { path: 'customers', element: CustomerManagement },
+        { path: 'accounts', element: CustomerManagement },
         { path: 'reviews', element: ReviewManagement },
         { path: 'audit-logs', element: AuditLogManagement },
         { path: 'roles', element: RoleManagement },
@@ -52,7 +60,11 @@ export const EcommerceRoutes: RouteConfig = {
         { path: 'inventory', element: InventoryManagement },
         { path: 'seller-profile', element: SellerProfile },
         { path: 'profile', element: UserProfile },
+        { path: 'profile/vendor', element: SellerProfile },
         { path: 'security', element: SecurityManagement },
+        { path: 'billing', element: BillingManagement },
+        { path: 'discounts', element: DiscountManagement },
+        { path: 'banners', element: BannerManagement },
       ],
     },
     { path: '/login', element: LoginPage },

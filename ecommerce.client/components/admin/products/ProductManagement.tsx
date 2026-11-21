@@ -11,8 +11,11 @@ import {
   DownOutlined,
   LeftOutlined,
   RightOutlined,
+  UploadOutlined,
+  LoadingOutlined,
+  PictureOutlined,
 } from '@ant-design/icons';
-import { Tag, Checkbox, Spin, Popconfirm, Breadcrumb } from 'antd';
+import { Tag, Checkbox, Spin, Popconfirm, Breadcrumb, Upload } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -68,8 +71,27 @@ export const ProductManagement: React.FC = () => {
     isFeatured: false,
     status: 'active',
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const { showToast } = useToast();
+
+  const handleImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const res = await ecommerceService.uploadImage(file, 'HimalayaOnlineShop');
+      if (res.success && res.data?.url) {
+        setFormData((prev) => ({ ...prev, image: res.data.url }));
+        showToast('Image uploaded to Cloudinary successfully', 'success');
+      } else {
+        showToast(res.messages?.[0] || 'Image upload failed', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.response?.data?.messages?.[0] || 'Failed to upload image to Cloudinary', 'error');
+    } finally {
+      setUploadingImage(false);
+    }
+    return false;
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -130,7 +152,7 @@ export const ProductManagement: React.FC = () => {
       stock: '25',
       description: '',
       shortDescription: '',
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+      image: '',
       isFeatured: false,
       status: 'active',
     });
@@ -557,7 +579,7 @@ export const ProductManagement: React.FC = () => {
         okText={editingProduct ? 'Update Product' : 'Create Product'}
         width={720}
       >
-        <form onSubmit={handleFormSubmit} className="space-y-4 pt-2">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <AppInput
@@ -642,13 +664,56 @@ export const ProductManagement: React.FC = () => {
             </div>
 
             <div className="sm:col-span-2">
-              <AppInput
-                label="Cover Image URL"
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://images.unsplash.com/..."
-              />
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                Product Image (Cloudinary)
+              </label>
+              <div className="flex flex-col sm:flex-row items-start gap-4 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                {formData.image ? (
+                  <div className="relative group w-24 h-24 rounded-lg overflow-hidden border border-slate-300 bg-white flex-shrink-0 shadow-sm">
+                    <img
+                      src={formData.image}
+                      alt="Product preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, image: '' }))}
+                      className="absolute inset-0 bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs font-medium cursor-pointer"
+                    >
+                      <DeleteOutlined className="mr-1" /> Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-lg border-2 border-dashed border-slate-300 bg-white flex flex-col items-center justify-center text-slate-400 flex-shrink-0">
+                    <PictureOutlined style={{ fontSize: '24px' }} />
+                    <span className="text-[10px] mt-1 text-slate-500">No Image</span>
+                  </div>
+                )}
+
+                <div className="flex-1 space-y-2">
+                  <Upload
+                    beforeUpload={(file) => {
+                      handleImageUpload(file);
+                      return false;
+                    }}
+                    showUploadList={false}
+                    accept="image/*"
+                    disabled={uploadingImage}
+                  >
+                    <button
+                      type="button"
+                      disabled={uploadingImage}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors shadow-sm cursor-pointer disabled:opacity-50"
+                    >
+                      {uploadingImage ? <LoadingOutlined spin /> : <UploadOutlined />}
+                      <span>{uploadingImage ? 'Uploading to Cloudinary...' : (formData.image ? 'Replace Image' : 'Upload Image')}</span>
+                    </button>
+                  </Upload>
+                  <p className="text-[11px] text-slate-500 leading-tight">
+                    Uploads directly to Cloudinary folder <code className="text-[10px] bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-700">HimalayaOnlineShop</code>. Only the secure URL is saved in the database.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="sm:col-span-2">

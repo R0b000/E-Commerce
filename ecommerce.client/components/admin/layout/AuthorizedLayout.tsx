@@ -29,6 +29,7 @@ import {
   CustomerServiceOutlined,
   LockOutlined,
   ClockCircleOutlined,
+  PictureOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, MenuProps, Tooltip, Result, Spin, Popover } from 'antd';
 import { io, Socket } from 'socket.io-client';
@@ -78,6 +79,8 @@ const renderMenuIcon = (iconName: string) => {
       return <HistoryOutlined />;
     case 'LockOutlined':
       return <LockOutlined />;
+    case 'PictureOutlined':
+      return <PictureOutlined />;
     default:
       return <AppstoreOutlined />;
   }
@@ -841,27 +844,25 @@ export const AuthorizedLayout: React.FC = () => {
             })
           )}
         </nav>
-
-        {/* Footer info in Drawer */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <div className="text-[11px] font-medium text-slate-500">
-            {isSeller ? 'Seller Portal' : isSupport ? 'Support Desk' : isManager ? 'Store Operations' : 'Super Admin'}
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-slate-400 hover:text-rose-600 p-1 text-xs transition-colors cursor-pointer"
-            title="Sign Out"
-          >
-            <LogoutOutlined />
-          </button>
-        </div>
       </aside>
 
       {/* =========================================================================
           Main Content Canvas (Fluid Window Ratio Sizing)
          ========================================================================= */}
-      <main className="flex-1 overflow-y-auto w-full relative bg-white">
-        <div className="w-full p-4">
+      <main
+        className={`flex-1 w-full relative bg-white ${
+          location.pathname.startsWith('/admin/profile')
+            ? 'overflow-hidden flex flex-col h-[calc(100vh-4rem)]'
+            : 'overflow-y-auto'
+        }`}
+      >
+        <div
+          className={`w-full ${
+            location.pathname.startsWith('/admin/profile')
+              ? 'h-full p-2 sm:p-3 flex flex-col overflow-hidden min-h-0'
+              : 'p-4'
+          }`}
+        >
           {canAccessPage(location.pathname) ? (
             <Outlet />
           ) : (

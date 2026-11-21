@@ -61,8 +61,14 @@ const OrderSchema = new mongoose.Schema(
     items: [OrderItemSchema],
     paymentMethod: {
       type: String,
-      enum: ['credit_card', 'paypal', 'stripe', 'cash_on_delivery'],
+      enum: ['credit_card', 'paypal', 'stripe', 'cash_on_delivery', 'khalti', 'esewa'],
       default: 'credit_card',
+    },
+    paymentDetails: {
+      transactionId: { type: String, default: '' },
+      pidx: { type: String, default: '' },
+      gateway: { type: String, default: '' },
+      verifiedAt: { type: Date, default: null },
     },
     paymentStatus: {
       type: String,

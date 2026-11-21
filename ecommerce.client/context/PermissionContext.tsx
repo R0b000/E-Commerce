@@ -118,6 +118,19 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
   const hasPermission = useCallback((code: string): boolean => {
     if (!code) return true;
     if (permissions.includes('*')) return true;
+    // Core pages accessible to all authenticated users from the start
+    if (
+      code === 'pages:dashboard' ||
+      code === 'dashboard:view' ||
+      code === 'dashboard:read' ||
+      code === 'pages:profile' ||
+      code === 'profile:read' ||
+      code === 'profile:view' ||
+      code === 'profile:manage' ||
+      code.startsWith('profile:')
+    ) {
+      return true;
+    }
     if (permissions.includes(code)) return true;
     
     // Check wildcard prefix e.g. "products:*"
@@ -132,6 +145,11 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
     if (permissions.includes('*')) return true;
 
     const mod = normalizeModuleName(module);
+    // Profile and Dashboard actions are granted to every authenticated user from the start
+    if (mod === 'profile' || mod === 'dashboard') {
+      return true;
+    }
+
     if (permissions.includes(`${mod}:*`) || permissions.includes(`${mod}:manage`)) {
       return true;
     }
@@ -190,9 +208,31 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
   // Route access verification
   const canAccessPage = useCallback((path: string): boolean => {
     if (permissions.includes('*')) return true;
-    if (path === '/admin' || path === '/admin/' || path === '/') return true;
+
+    const cleanPath = path.toLowerCase().replace(/\/$/, '');
+
+    // Dashboard, Profile, and Security pages are fundamental account pages granted to all logged-in users from the start
+    if (
+      cleanPath === '' ||
+      cleanPath === '/' ||
+      cleanPath === '/admin' ||
+      cleanPath === '/admin/dashboard' ||
+      cleanPath === '/admin/profile' ||
+      cleanPath.startsWith('/admin/profile') ||
+      cleanPath === '/profile' ||
+      cleanPath.startsWith('/profile') ||
+      cleanPath === '/admin/security' ||
+      cleanPath === '/admin/billing' ||
+      cleanPath.startsWith('/admin/billing')
+    ) {
+      return true;
+    }
 
     const mod = normalizeModuleName(path);
+    if (mod === 'dashboard' || mod === 'profile') {
+      return true;
+    }
+
     return (
       permissions.includes(`pages:${mod}`) ||
       permissions.includes(`${mod}:read`) ||
