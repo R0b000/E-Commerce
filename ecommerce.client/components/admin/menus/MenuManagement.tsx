@@ -160,7 +160,15 @@ export const MenuManagement: React.FC = () => {
       ]);
 
       if (menusRes.success && menusRes.data) {
-        setMenus(menusRes.data);
+        setMenus(
+          menusRes.data.filter(
+            (m: MenuItem) =>
+              m.name !== 'Setting' &&
+              m.name !== 'Settings' &&
+              !m.path?.startsWith('/settings') &&
+              ![18, 19, 20, 21, 22, 23, 24, 25].includes(m.menuId || 0)
+          )
+        );
       }
       if (permsRes.success && permsRes.data) {
         setPermissions(permsRes.data);

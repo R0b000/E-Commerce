@@ -621,6 +621,16 @@ export const AuthorizedLayout: React.FC = () => {
           );
         if (!matchName && !matchNepali && !matchPath && !matchSub) return false;
       }
+      // Explicitly remove Setting menu and its setup submenus per user request
+      if (
+        m.name === 'Setting' ||
+        m.name === 'Settings' ||
+        m.path?.startsWith('/settings') ||
+        [18, 19, 20, 21, 22, 23, 24, 25].includes(m.menuId || 0)
+      ) {
+        return false;
+      }
+
       if (isAdmin || userRole === 'admin') return true;
       // Direct path check if no subItems
       const hasSub = Array.isArray(m.subItems) && m.subItems.length > 0;

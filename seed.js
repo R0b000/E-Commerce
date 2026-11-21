@@ -144,25 +144,13 @@ async function seedData() {
       { menuId: 36, name: 'Live Floor Plan', path: '/floorplan/view', icon: 'map', order: 5, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
       { menuId: 60, name: 'Menu Selection Types', menuNameNepali: 'Menu Selection Types', path: '/menuselectiontypes', icon: 'tune', order: 6, parentId: 34, isSinglePage: true, roles: ['admin'], isActive: true },
 
-      // 10. Setting (Parent Category Menu)
-      { menuId: 18, name: 'Setting', path: '/settings', icon: 'settings', order: 10, parentId: null, isSinglePage: false, roles: ['admin'], isActive: true },
-      // Children of Setting (parentId: 18)
-      { menuId: 19, name: 'Main Setup Layout', path: '/settings/main-setup', icon: 'tune', order: 1, parentId: 18, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 21, name: 'Office Setup', path: '/settings/main-setup?section=office', icon: 'business', order: 2, parentId: 18, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 22, name: 'Company Setup', path: '/settings/main-setup?section=company', icon: 'business_center', order: 3, parentId: 18, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 23, name: 'Department Branch Setup', path: '/settings/main-setup?section=department-branch', icon: 'account_tree', order: 4, parentId: 18, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 24, name: 'Department Setup', path: '/settings/main-setup?section=department', icon: 'corporate_fare', order: 5, parentId: 18, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 25, name: 'Level Designation', path: '/settings/main-setup?section=level-designation', icon: 'badge', order: 6, parentId: 18, isSinglePage: true, roles: ['admin'], isActive: true },
-
-      // 11. Standalone Administration Pages
+      // 10. Standalone Administration Pages
       { menuId: 71, name: 'Discounts & Coupons', path: '/admin/discounts', icon: 'tune', order: 11, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
       { menuId: 72, name: 'Hero Banners', path: '/admin/banners', icon: 'photo_camera', order: 12, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
       { menuId: 73, name: 'Customer Reviews', path: '/admin/reviews', icon: 'star', order: 13, parentId: null, isSinglePage: true, roles: ['admin', 'support', 'seller'], isActive: true },
       { menuId: 74, name: 'Audit Logs', path: '/admin/audit-logs', icon: 'analytics', order: 14, parentId: null, isSinglePage: true, roles: ['admin'], isActive: true },
       { menuId: 75, name: 'Security & Devices', path: '/admin/security', icon: 'lock', order: 15, parentId: null, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'], isActive: true },
     ];
-        icon: 'MenuOutlined',
-        order: 8,
         roles: ['admin'],
         requiredPermission: 'pages:menus',
         badgeText: 'Dynamic',
