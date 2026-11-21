@@ -61,6 +61,7 @@ export const ProductManagement: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
+    brand: '',
     category: '',
     price: '',
     salePrice: '',
@@ -70,8 +71,51 @@ export const ProductManagement: React.FC = () => {
     image: '',
     isFeatured: false,
     status: 'active',
+    tags: [] as string[],
   });
+  const [tagInput, setTagInput] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  const PRESET_TAGS = [
+    'Oily Skin',
+    'Fair Skin',
+    'Dry Skin',
+    'Sensitive Skin',
+    'Acne-Prone',
+    'Anti-Aging',
+    'Organic',
+    'Cruelty-Free',
+    'Vegan',
+    'Hydrating',
+    'Handmade',
+    'Best Seller',
+  ];
+
+  const handleAddTag = (tagToAdd?: string) => {
+    const rawTag = (tagToAdd !== undefined ? tagToAdd : tagInput).trim();
+    if (!rawTag) return;
+    if (!formData.tags.some((t) => t.toLowerCase() === rawTag.toLowerCase())) {
+      setFormData((prev) => ({ ...prev, tags: [...prev.tags, rawTag] }));
+    }
+    if (tagToAdd === undefined) {
+      setTagInput('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((t) => t !== tagToRemove),
+    }));
+  };
+
+  const handleTogglePresetTag = (preset: string) => {
+    if (formData.tags.some((t) => t.toLowerCase() === preset.toLowerCase())) {
+      handleRemoveTag(preset);
+    } else {
+      handleAddTag(preset);
+    }
+  };
 
   const { showToast } = useToast();
 
@@ -146,6 +190,7 @@ export const ProductManagement: React.FC = () => {
     setFormData({
       name: '',
       sku: 'SKU-' + Math.floor(1000 + Math.random() * 9000),
+      brand: '',
       category: categories[0]?._id || categories[0]?.id || '',
       price: '',
       salePrice: '',
@@ -155,7 +200,9 @@ export const ProductManagement: React.FC = () => {
       image: '',
       isFeatured: false,
       status: 'active',
+      tags: [],
     });
+    setTagInput('');
     setIsModalOpen(true);
   };
 
@@ -169,6 +216,7 @@ export const ProductManagement: React.FC = () => {
     setFormData({
       name: product.name,
       sku: product.sku,
+      brand: product.brand || '',
       category: catId || '',
       price: product.price.toString(),
       salePrice: product.salePrice ? product.salePrice.toString() : '',
@@ -178,7 +226,9 @@ export const ProductManagement: React.FC = () => {
       image: product.images?.[0] || '',
       isFeatured: product.isFeatured || false,
       status: product.status || 'active',
+      tags: product.tags || [],
     });
+    setTagInput('');
     setIsModalOpen(true);
   };
 
@@ -194,6 +244,7 @@ export const ProductManagement: React.FC = () => {
       const payload: any = {
         name: formData.name,
         sku: formData.sku.toUpperCase(),
+        brand: formData.brand.trim(),
         category: formData.category,
         price: parseFloat(formData.price),
         salePrice: formData.salePrice ? parseFloat(formData.salePrice) : null,
@@ -203,6 +254,7 @@ export const ProductManagement: React.FC = () => {
         images: formData.image ? [formData.image] : [],
         isFeatured: formData.isFeatured,
         status: formData.status,
+        tags: formData.tags,
       };
 
       if (editingProduct) {
@@ -398,16 +450,40 @@ export const ProductManagement: React.FC = () => {
                             alt={p.name}
                             className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0"
                           />
-                          <div className="max-w-[220px]">
+                          <div className="max-w-[240px]">
                             <div className="font-bold text-slate-900 text-xs truncate flex items-center gap-1.5">
                               {p.name}
                               {p.isFeatured && (
                                 <StarFilled className="text-amber-400 text-xs" title="Featured Item" />
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                              SKU: {p.sku || 'N/A'}
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[11px] text-slate-400 font-mono">
+                                SKU: {p.sku || 'N/A'}
+                              </span>
+                              {p.brand && (
+                                <span className="text-[10px] font-semibold text-sky-700 bg-sky-50 px-1.5 py-0.2 rounded border border-sky-100 uppercase tracking-wider">
+                                  {p.brand}
+                                </span>
+                              )}
                             </div>
+                            {p.tags && p.tags.length > 0 && (
+                              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                {p.tags.slice(0, 3).map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded-full font-medium"
+                                  >
+                                    #{tag}
+                                  </span>
+                                ))}
+                                {p.tags.length > 3 && (
+                                  <span className="text-[9px] text-slate-400 font-medium">
+                                    +{p.tags.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -602,6 +678,15 @@ export const ProductManagement: React.FC = () => {
             </div>
 
             <div>
+              <AppInput
+                label="Brand / Manufacturer"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                placeholder="e.g. Himalaya Herbals, The Ordinary, CeraVe"
+              />
+            </div>
+
+            <div>
               <AppSelect
                 label="Department Category *"
                 value={formData.category}
@@ -712,6 +797,93 @@ export const ProductManagement: React.FC = () => {
                   <p className="text-[11px] text-slate-500 leading-tight">
                     Uploads directly to Cloudinary folder <code className="text-[10px] bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-700">HimalayaOnlineShop</code>. Only the secure URL is saved in the database.
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Product Tags & Classification Section */}
+            <div className="sm:col-span-2 p-3.5 bg-slate-50 border border-slate-200/90 rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-800">
+                  Product Tags & Classifications (e.g., Oily Skin, Fair Skin, Organic)
+                </label>
+                <span className="text-[10px] text-slate-500 font-medium">
+                  {formData.tags.length} tag{formData.tags.length === 1 ? '' : 's'} added
+                </span>
+              </div>
+
+              {/* Tag Input Field & Add Button */}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddTag();
+                    }
+                  }}
+                  placeholder="Type tag (e.g. Oily Skin, Fair Skin, Anti-Aging) & press Enter..."
+                  className="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-xs text-slate-800 bg-white focus:outline-none focus:border-[#0096C7]"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddTag()}
+                  className="px-3.5 py-1.5 bg-[#0096C7] hover:bg-[#0077b6] text-white text-xs font-semibold rounded-lg transition cursor-pointer shrink-0 shadow-xs"
+                >
+                  + Add Tag
+                </button>
+              </div>
+
+              {/* Active Selected Tags Pills */}
+              {formData.tags.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                  {formData.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200 shadow-xs"
+                    >
+                      <span>#{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTag(tag)}
+                        className="text-sky-600 hover:text-rose-600 font-bold ml-0.5 text-xs cursor-pointer transition-colors"
+                        title="Remove tag"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Quick Presets / Suggestions */}
+              <div className="pt-2 border-t border-slate-200/80">
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                  Popular & Beauty / Skincare Presets (Click to toggle):
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {PRESET_TAGS.map((preset) => {
+                    const isSelected = formData.tags.some(
+                      (t) => t.toLowerCase() === preset.toLowerCase()
+                    );
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => handleTogglePresetTag(preset)}
+                        className={`text-[11px] px-2.5 py-0.5 rounded-full border transition cursor-pointer font-medium ${
+                          isSelected
+                            ? 'bg-sky-600 border-sky-600 text-white shadow-xs'
+                            : 'bg-white border-slate-200 text-slate-600 hover:border-sky-400 hover:text-[#0096C7]'
+                        }`}
+                      >
+                        {isSelected ? '✓ ' : '+ '}
+                        {preset}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

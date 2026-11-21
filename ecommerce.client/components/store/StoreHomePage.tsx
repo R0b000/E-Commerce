@@ -134,9 +134,13 @@ export const StoreHomePage: React.FC = () => {
   };
 
   const filteredProducts = products.filter((p) => {
+    const query = searchQuery.toLowerCase().trim();
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      !query ||
+      p.name.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query) ||
+      (p.brand && p.brand.toLowerCase().includes(query)) ||
+      (p.tags && p.tags.some((t) => t.toLowerCase().includes(query)));
 
     const catId = typeof p.category === 'object' ? (p.category._id || p.category.id) : p.category;
     const matchesCategory = selectedCategory === 'all' || catId === selectedCategory;
@@ -449,17 +453,41 @@ export const StoreHomePage: React.FC = () => {
 
                   <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center gap-1 text-amber-500 text-xs font-semibold">
-                        <StarFilled />
-                        <span>{p.rating || 5.0}</span>
-                        <span className="text-slate-400 text-[10px]">({p.numReviews || 0})</span>
+                      <div className="flex items-center justify-between gap-1 text-xs mb-1">
+                        <div className="flex items-center gap-1 text-amber-500 font-semibold">
+                          <StarFilled />
+                          <span>{p.rating || 5.0}</span>
+                          <span className="text-slate-400 text-[10px]">({p.numReviews || 0})</span>
+                        </div>
+                        {p.brand && (
+                          <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-100 uppercase tracking-wider">
+                            {p.brand}
+                          </span>
+                        )}
                       </div>
-                      <h4 className="font-bold text-slate-900 text-sm mt-1 group-hover:text-[#0284c7] transition-colors line-clamp-1">
+                      <h4 className="font-bold text-slate-900 text-sm group-hover:text-[#0284c7] transition-colors line-clamp-1">
                         {p.name}
                       </h4>
                       <p className="text-xs text-slate-500 line-clamp-2 mt-1">
                         {p.description}
                       </p>
+                      {p.tags && p.tags.length > 0 && (
+                        <div className="flex items-center gap-1 mt-2 flex-wrap">
+                          {p.tags.slice(0, 2).map((tag) => (
+                            <span
+                              key={tag}
+                              className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-medium"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                          {p.tags.length > 2 && (
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              +{p.tags.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -657,9 +685,16 @@ export const StoreHomePage: React.FC = () => {
 
             <div className="space-y-4 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold mb-1">
-                  <StarFilled />
-                  <span>{quickViewProduct.rating} / 5.0 Rating</span>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
+                    <StarFilled />
+                    <span>{quickViewProduct.rating} / 5.0 Rating</span>
+                  </div>
+                  {quickViewProduct.brand && (
+                    <span className="text-xs font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-100 uppercase tracking-wider">
+                      {quickViewProduct.brand}
+                    </span>
+                  )}
                 </div>
 
                 <h2 className="text-xl font-bold text-slate-900">{quickViewProduct.name}</h2>
@@ -676,6 +711,24 @@ export const StoreHomePage: React.FC = () => {
                 <p className="mt-3 text-xs text-slate-600 leading-relaxed">
                   {quickViewProduct.description}
                 </p>
+
+                {quickViewProduct.tags && quickViewProduct.tags.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      Product Tags & Classifications:
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {quickViewProduct.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs bg-sky-50 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-full font-semibold"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="mt-3 flex items-center gap-2">
                   <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />

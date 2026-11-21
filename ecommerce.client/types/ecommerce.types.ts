@@ -18,6 +18,7 @@ export interface Product {
   name: string;
   slug: string;
   sku: string;
+  brand?: string;
   description: string;
   shortDescription?: string;
   price: number;

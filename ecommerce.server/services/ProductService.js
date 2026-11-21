@@ -15,6 +15,8 @@ class ProductService {
         limit = 20,
         search,
         category,
+        brand,
+        tag,
         status,
         featured,
         minPrice,
@@ -46,7 +48,17 @@ class ProductService {
           { name: { $regex: search, $options: 'i' } },
           { sku: { $regex: search, $options: 'i' } },
           { description: { $regex: search, $options: 'i' } },
+          { brand: { $regex: search, $options: 'i' } },
+          { tags: { $regex: search, $options: 'i' } },
         ];
+      }
+
+      if (brand && brand !== 'all') {
+        filter.brand = { $regex: brand, $options: 'i' };
+      }
+
+      if (tag && tag !== 'all') {
+        filter.tags = { $regex: tag, $options: 'i' };
       }
 
       if (category && category !== 'all') {
@@ -133,8 +145,16 @@ class ProductService {
         assignedSeller = user.id;
       }
 
+      const tagsArray = Array.isArray(data.tags)
+        ? data.tags.map((t) => String(t).trim()).filter(Boolean)
+        : typeof data.tags === 'string'
+        ? data.tags.split(',').map((t) => t.trim()).filter(Boolean)
+        : [];
+
       const product = new Product({
         ...data,
+        brand: data.brand ? String(data.brand).trim() : '',
+        tags: tagsArray,
         sku: data.sku.toUpperCase(),
         slug,
         seller: assignedSeller,
@@ -180,6 +200,18 @@ class ProductService {
       // Don't allow seller to change the owner of product
       if (user?.role === 'seller') {
         delete data.seller;
+      }
+
+      if (data.tags !== undefined) {
+        data.tags = Array.isArray(data.tags)
+          ? data.tags.map((t) => String(t).trim()).filter(Boolean)
+          : typeof data.tags === 'string'
+          ? data.tags.split(',').map((t) => t.trim()).filter(Boolean)
+          : [];
+      }
+
+      if (data.brand !== undefined) {
+        data.brand = String(data.brand).trim();
       }
 
       const updated = await Product.findByIdAndUpdate(id, data, { new: true, runValidators: true })
