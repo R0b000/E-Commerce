@@ -246,20 +246,6 @@ class RbacService {
     }
   }
 
-      for (const m of standardMenus) {
-        await Menu.findOneAndUpdate(
-          { menuId: m.menuId },
-          { $set: m },
-          { upsert: true, new: true }
-        );
-      }
-
-      await redisService.delByPattern('ecommerce:menus:*');
-    } catch (err) {
-      console.error('syncStandardMenus error:', err);
-    }
-  }
-
   /**
    * Returns dynamic navigation menus available to the logged in user
    * - Admin sees all menus
