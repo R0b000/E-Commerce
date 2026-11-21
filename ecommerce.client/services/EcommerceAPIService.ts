@@ -9,6 +9,10 @@ import {
   PermissionItem,
   RoleItem,
   UserPermissionItem,
+  BillingRecord,
+  BillingStats,
+  DiscountItem,
+  BannerItem,
 } from '../types/ecommerce.types';
 
 export class EcommerceAPIService {
@@ -183,10 +187,22 @@ export class EcommerceAPIService {
     return res.data;
   }
 
+  async updateRole(roleName: string, payload: { label?: string; description?: string; permissions?: string[] }) {
+    const res = await axiosConfig.put<{ success: boolean; data: RoleItem; messages?: string[] }>(
+      `/ecommerce/rbac/roles/${roleName}`,
+      payload
+    );
+    return res.data;
+  }
+
   async updateRolePermissions(roleName: string, permissions: string[]) {
-    const res = await axiosConfig.put<{ success: boolean; data: RoleItem }>(`/ecommerce/rbac/roles/${roleName}`, {
-      permissions,
-    });
+    return this.updateRole(roleName, { permissions });
+  }
+
+  async deleteRole(roleName: string) {
+    const res = await axiosConfig.delete<{ success: boolean; messages?: string[] }>(
+      `/ecommerce/rbac/roles/${roleName}`
+    );
     return res.data;
   }
 
@@ -239,6 +255,271 @@ export class EcommerceAPIService {
   // User Activity Audit Logs
   async getAuditLogs(params?: { search?: string; action?: string; limit?: number }) {
     const res = await axiosConfig.get<{ success: boolean; data: any[] }>('/ecommerce/audit-logs', { params });
+    return res.data;
+  }
+
+  async getMyAuditLogs(params?: { search?: string; action?: string; limit?: number }) {
+    const res = await axiosConfig.get<{ success: boolean; data: any[] }>('/ecommerce/audit-logs/my-logs', { params });
+    return res.data;
+  }
+
+  // Billing & Invoices
+  async getBillings(params?: { search?: string; status?: string; page?: number; limit?: number }) {
+    const res = await axiosConfig.get<{ success: boolean; data: { invoices: BillingRecord[]; total: number; totalPages: number } }>('/ecommerce/billing', { params });
+    return res.data;
+  }
+
+  async getBillingStats() {
+    const res = await axiosConfig.get<{ success: boolean; data: BillingStats }>('/ecommerce/billing/stats');
+    return res.data;
+  }
+
+  async getBillingById(id: string) {
+    const res = await axiosConfig.get<{ success: boolean; data: BillingRecord }>(`/ecommerce/billing/${id}`);
+    return res.data;
+  }
+
+  async createBilling(data: any) {
+    const res = await axiosConfig.post<{ success: boolean; data: BillingRecord; messages?: string[] }>('/ecommerce/billing', data);
+    return res.data;
+  }
+
+  async updateBillingStatus(id: string, data: { paymentStatus?: string; paymentMethod?: string; notes?: string }) {
+    const res = await axiosConfig.patch<{ success: boolean; data: BillingRecord; messages?: string[] }>(`/ecommerce/billing/${id}/status`, data);
+    return res.data;
+  }
+
+  async deleteBilling(id: string) {
+    const res = await axiosConfig.delete<{ success: boolean; messages: string[] }>(`/ecommerce/billing/${id}`);
+    return res.data;
+  }
+
+  // Cloudinary Image Upload (folder: HimalayaOnlineShop)
+  async uploadImage(file: File, folder: string = 'HimalayaOnlineShop') {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: { url: string; public_id: string; format: string; width: number; height: number };
+      messages?: string[];
+    }>('/ecommerce/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  }
+
+  async uploadMultipleImages(files: File[], folder: string = 'HimalayaOnlineShop') {
+    const formData = new FormData();
+    files.forEach((f) => formData.append('files', f));
+    formData.append('folder', folder);
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: { urls: string[]; files: any[]; count: number };
+      messages?: string[];
+    }>('/ecommerce/upload/multiple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  }
+
+  // Khalti & eSewa Self-Payment Integration
+  async initiateKhalti(payload: {
+    orderId: string;
+    amount?: number;
+    customerInfo?: { name?: string; email?: string; phone?: string };
+    returnUrl?: string;
+    websiteUrl?: string;
+  }) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: {
+        gateway: string;
+        pidx: string;
+        paymentUrl: string;
+        orderId: string;
+        orderNumber: string;
+        isSimulated?: boolean;
+      };
+      messages?: string[];
+    }>('/ecommerce/payment/khalti/initiate', payload);
+    return res.data;
+  }
+
+  async verifyKhalti(payload: { pidx?: string; orderId?: string }) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: any;
+      messages?: string[];
+    }>('/ecommerce/payment/khalti/verify', payload);
+    return res.data;
+  }
+
+  async initiateEsewa(payload: {
+    orderId: string;
+    amount?: number;
+    taxAmount?: number;
+    returnUrl?: string;
+    failureUrl?: string;
+  }) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: {
+        gateway: string;
+        gatewayUrl: string;
+        formFields: Record<string, string>;
+        orderId: string;
+        orderNumber: string;
+        totalAmount: string;
+      };
+      messages?: string[];
+    }>('/ecommerce/payment/esewa/initiate', payload);
+    return res.data;
+  }
+
+  async verifyEsewa(payload: { encodedData?: string; orderId?: string }) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: any;
+      messages?: string[];
+    }>('/ecommerce/payment/esewa/verify', payload);
+    return res.data;
+  }
+
+  // Discount & Coupon Management
+  async getDiscounts(params?: { search?: string; type?: string; status?: string; page?: number; limit?: number }) {
+    const res = await axiosConfig.get<{
+      success: boolean;
+      data: { discounts: DiscountItem[]; total: number; totalPages: number; page: number };
+      messages?: string[];
+    }>('/ecommerce/discounts', { params });
+    return res.data;
+  }
+
+  async getDiscountById(id: string) {
+    const res = await axiosConfig.get<{
+      success: boolean;
+      data: DiscountItem;
+      messages?: string[];
+    }>(`/ecommerce/discounts/${id}`);
+    return res.data;
+  }
+
+  async createDiscount(data: Partial<DiscountItem>) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: DiscountItem;
+      messages?: string[];
+    }>('/ecommerce/discounts', data);
+    return res.data;
+  }
+
+  async updateDiscount(id: string, data: Partial<DiscountItem>) {
+    const res = await axiosConfig.put<{
+      success: boolean;
+      data: DiscountItem;
+      messages?: string[];
+    }>(`/ecommerce/discounts/${id}`, data);
+    return res.data;
+  }
+
+  async deleteDiscount(id: string) {
+    const res = await axiosConfig.delete<{
+      success: boolean;
+      messages?: string[];
+    }>(`/ecommerce/discounts/${id}`);
+    return res.data;
+  }
+
+  async validateCoupon(payload: { code: string; cartTotal?: number }) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: {
+        valid: boolean;
+        code: string;
+        type: 'percentage' | 'fixed_amount';
+        value: number;
+        discountAmount: number;
+        description: string;
+      };
+      messages?: string[];
+    }>('/ecommerce/discounts/validate', payload);
+    return res.data;
+  }
+
+  // Hero Section & Banners Management
+  async getActiveBanners(params?: { position?: string; clientTime?: string }) {
+    const res = await axiosConfig.get<{
+      success: boolean;
+      data: BannerItem[];
+      messages?: string[];
+    }>('/ecommerce/banners/active', { params });
+    return res.data;
+  }
+
+  async getBanners(params?: { search?: string; position?: string; status?: string; page?: number; limit?: number }) {
+    const res = await axiosConfig.get<{
+      success: boolean;
+      data: {
+        banners: BannerItem[];
+        pagination: { page: number; limit: number; total: number; totalPages: number };
+        stats: {
+          activeNowCount: number;
+          scheduledCount: number;
+          totalImpressions: number;
+          totalClicks: number;
+          avgCtr: string;
+        };
+      };
+      messages?: string[];
+    }>('/ecommerce/banners', { params });
+    return res.data;
+  }
+
+  async getBannerById(id: string) {
+    const res = await axiosConfig.get<{
+      success: boolean;
+      data: BannerItem;
+      messages?: string[];
+    }>(`/ecommerce/banners/${id}`);
+    return res.data;
+  }
+
+  async createBanner(data: Partial<BannerItem>) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: BannerItem;
+      messages?: string[];
+    }>('/ecommerce/banners', data);
+    return res.data;
+  }
+
+  async updateBanner(id: string, data: Partial<BannerItem>) {
+    const res = await axiosConfig.put<{
+      success: boolean;
+      data: BannerItem;
+      messages?: string[];
+    }>(`/ecommerce/banners/${id}`, data);
+    return res.data;
+  }
+
+  async deleteBanner(id: string) {
+    const res = await axiosConfig.delete<{
+      success: boolean;
+      messages?: string[];
+    }>(`/ecommerce/banners/${id}`);
+    return res.data;
+  }
+
+  async recordBannerClick(id: string) {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      messages?: string[];
+    }>(`/ecommerce/banners/${id}/click`);
     return res.data;
   }
 }

@@ -18,30 +18,37 @@ import {
   SearchOutlined,
   RightOutlined,
   ArrowLeftOutlined,
-  SunOutlined,
-  MoonOutlined,
   IdcardOutlined,
   ExclamationCircleOutlined,
   CheckOutlined,
   ClockCircleOutlined,
+  HistoryOutlined,
+  SyncOutlined,
+  LaptopOutlined,
+  GlobalOutlined,
+  LoginOutlined,
+  CopyOutlined,
+  InfoCircleOutlined,
+  LeftOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons';
-import { Tag, Spin } from 'antd';
+import { Tag, Spin, Tooltip, Upload } from 'antd';
 import { Link } from 'react-router-dom';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { authAPIService } from 'auth-client/services/AuthAPIService';
+import { ecommerceService } from '../../../services/EcommerceAPIService';
+import { AuditLogItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 
-type ActiveTab = 'overview' | 'personal' | 'security' | 'contact' | 'legal';
+export type ActiveTab = 'overview' | 'personal' | 'security' | 'logs' | 'contact' | 'legal';
 
 export const UserProfile: React.FC = () => {
   const { user, refreshUser, formattedExpiry } = useAuth();
   const { showToast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Active View State
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Profile Information State
   const [firstName, setFirstName] = useState('');
@@ -66,6 +73,14 @@ export const UserProfile: React.FC = () => {
   const [savingAgreement, setSavingAgreement] = useState(false);
   const [agreementExpanded, setAgreementExpanded] = useState(false);
 
+  // User Activity Logs State
+  const [logs, setLogs] = useState<AuditLogItem[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [logSearch, setLogSearch] = useState('');
+  const [logFilterAction, setLogFilterAction] = useState('all');
+  const [logsCurrentPage, setLogsCurrentPage] = useState(1);
+  const logsPageSize = 8;
+
   // Populate data when user context is loaded
   useEffect(() => {
     if (user) {
@@ -79,39 +94,72 @@ export const UserProfile: React.FC = () => {
     }
   }, [user]);
 
-  // Handle Photo File Upload
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      showToast('Please select a valid image file (PNG, JPG, WEBP)', 'error');
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      showToast('Image size must be less than 2MB', 'error');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setAvatarUrl(reader.result);
-        showToast('Profile image staged. Click "Save Changes" to apply.', 'info');
+  // Fetch Activity Logs
+  const fetchLogs = async () => {
+    setLogsLoading(true);
+    try {
+      const res = await ecommerceService.getMyAuditLogs({ limit: 100 });
+      if (res && res.success && Array.isArray(res.data)) {
+        setLogs(res.data);
+      } else {
+        // Fallback for admin or general logs
+        const fallbackRes = await ecommerceService.getAuditLogs({ limit: 50 });
+        if (fallbackRes && fallbackRes.success && Array.isArray(fallbackRes.data)) {
+          const userLogs = user?.email
+            ? fallbackRes.data.filter((l: any) => l.userEmail?.toLowerCase() === user.email.toLowerCase())
+            : fallbackRes.data;
+          setLogs(userLogs);
+        }
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      try {
+        const fallbackRes = await ecommerceService.getAuditLogs({ limit: 50 });
+        if (fallbackRes && fallbackRes.success && Array.isArray(fallbackRes.data)) {
+          const userLogs = user?.email
+            ? fallbackRes.data.filter((l: any) => l.userEmail?.toLowerCase() === user.email.toLowerCase())
+            : fallbackRes.data;
+          setLogs(userLogs);
+        }
+      } catch {
+        // quiet error
+      }
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'logs' || activeTab === 'overview') {
+      fetchLogs();
+    }
+  }, [activeTab]);
+
+  // Handle Photo Cloudinary Upload
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const handleAvatarUpload = async (file: File) => {
+    setUploadingAvatar(true);
+    try {
+      const res = await ecommerceService.uploadImage(file, 'HimalayaOnlineShop');
+      if (res.success && res.data?.url) {
+        setAvatarUrl(res.data.url);
+        showToast('Avatar uploaded to Cloudinary! Click "Save Profile Changes" to persist.', 'success');
+      } else {
+        showToast(res.messages?.[0] || 'Image upload failed', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.response?.data?.messages?.[0] || 'Failed to upload avatar to Cloudinary', 'error');
+    } finally {
+      setUploadingAvatar(false);
+    }
+    return false;
   };
 
   const handleRemovePhoto = () => {
     setAvatarUrl('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
   };
 
-  // Submit Profile Information Changes
+  // Submit Profile & Bio Changes
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!firstName.trim() || !lastName.trim()) {
@@ -131,7 +179,7 @@ export const UserProfile: React.FC = () => {
       });
 
       if (res.success) {
-        showToast('Profile updated successfully', 'success');
+        showToast('Profile and Bio updated successfully', 'success');
         await refreshUser();
       } else {
         showToast(res.messages?.[0] || 'Failed to update profile', 'error');
@@ -170,6 +218,7 @@ export const UserProfile: React.FC = () => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
+        await refreshUser();
       } else {
         showToast(res.messages?.[0] || 'Failed to change password', 'error');
       }
@@ -199,14 +248,20 @@ export const UserProfile: React.FC = () => {
     }
   };
 
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    showToast(`${label} copied to clipboard`, 'success');
+  };
+
   const displayName = user ? `${user.firstName} ${user.lastName}`.trim() : 'User Profile';
   const avatarInitial = (firstName?.[0] || user?.email?.[0] || 'U').toUpperCase();
 
   // Search filter list
   const allSettings = [
-    { id: 'personal', title: 'Personal Details & Bio', desc: 'Update profile picture, name, and bio', icon: <UserOutlined /> },
-    { id: 'security', title: 'Password & Security', desc: 'Change password and account credentials', icon: <LockOutlined /> },
-    { id: 'contact', title: 'Address & Contact', desc: 'Phone numbers and shipping address', icon: <EnvironmentOutlined /> },
+    { id: 'personal', title: 'Personal Details & Bio', desc: 'Update profile picture, display name, and bio', icon: <UserOutlined /> },
+    { id: 'security', title: 'Password & Security', desc: 'Change password, view session credentials', icon: <LockOutlined /> },
+    { id: 'logs', title: 'Activity Logs & History', desc: 'View user sign-ins, IP addresses, and operations', icon: <HistoryOutlined /> },
+    { id: 'contact', title: 'Address & Contact', desc: 'Phone numbers and shipping/delivery address', icon: <EnvironmentOutlined /> },
     { id: 'legal', title: 'Legal Agreements & Terms', desc: 'Review and sign platform agreements', icon: <FileTextOutlined /> },
   ];
 
@@ -216,40 +271,56 @@ export const UserProfile: React.FC = () => {
       s.desc.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Facebook Dark Theme Palette
-  const fbBg = isDarkMode ? 'bg-[#18191a]' : 'bg-[#f0f2f5]';
-  const fbPanel = isDarkMode ? 'bg-[#242526]' : 'bg-white';
-  const fbSubPanel = isDarkMode ? 'bg-[#3a3b3c]' : 'bg-slate-100';
-  const fbBorder = isDarkMode ? 'border-[#393a3b]' : 'border-slate-200';
-  const fbTextPrimary = isDarkMode ? 'text-[#e4e6eb]' : 'text-slate-900';
-  const fbTextSecondary = isDarkMode ? 'text-[#b0b3b8]' : 'text-slate-500';
-  const fbHover = isDarkMode ? 'hover:bg-[#3a3b3c]' : 'hover:bg-slate-100';
+  // Filtered Logs
+  const filteredLogs = logs.filter((l) => {
+    const matchesAction = logFilterAction === 'all' || l.action?.toLowerCase().includes(logFilterAction.toLowerCase());
+    const matchesSearch =
+      !logSearch.trim() ||
+      l.action?.toLowerCase().includes(logSearch.toLowerCase()) ||
+      l.endpoint?.toLowerCase().includes(logSearch.toLowerCase()) ||
+      l.ipAddress?.toLowerCase().includes(logSearch.toLowerCase());
+    return matchesAction && matchesSearch;
+  });
+
+  const totalLogPages = Math.ceil(filteredLogs.length / logsPageSize) || 1;
+  const paginatedLogs = filteredLogs.slice((logsCurrentPage - 1) * logsPageSize, logsCurrentPage * logsPageSize);
+
+  // Clean Borderless Light Theme Palette
+  const fbBg = 'bg-[#f8fafc]';
+  const fbPanel = 'bg-white shadow-xs';
+  const fbSubPanel = 'bg-slate-100/70';
+  const fbTextPrimary = 'text-slate-900';
+  const fbTextSecondary = 'text-slate-500';
+  const fbHover = 'hover:bg-slate-100/80';
+
+  // Action Badge Color Helper
+  const getActionTagColor = (action: string = '') => {
+    const act = action.toUpperCase();
+    if (act.includes('LOGIN')) return 'cyan';
+    if (act.includes('PASSWORD')) return 'gold';
+    if (act.includes('CREATE') || act.includes('POST')) return 'blue';
+    if (act.includes('UPDATE') || act.includes('PUT') || act.includes('PATCH')) return 'purple';
+    if (act.includes('DELETE')) return 'volcano';
+    return 'default';
+  };
 
   return (
-    <div className={`w-full rounded-2xl overflow-hidden border ${fbBorder} ${fbBg} shadow-xl font-['Nunito_Sans','Poppins',sans-serif] transition-colors duration-200`}>
-      <div className="flex flex-col md:flex-row min-h-[720px]">
+    <div className={`w-full h-full rounded-2xl overflow-hidden ${fbBg} shadow-sm font-['Nunito_Sans','Poppins',sans-serif] flex flex-col`}>
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
         {/* =========================================================================
-            LEFT SIDEBAR: Settings & privacy (Identical to Facebook Layout)
+            LEFT SIDEBAR: Settings & Privacy Navigation Hub (Independent Scrollbar)
            ========================================================================= */}
-        <aside className={`w-full md:w-80 shrink-0 ${fbPanel} border-b md:border-b-0 md:border-r ${fbBorder} p-4 flex flex-col justify-between`}>
-          <div>
-            {/* Top Header & Search */}
-            <div className="flex items-center justify-between mb-3">
-              <h1 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
+        <aside className={`w-full md:w-80 shrink-0 ${fbPanel} flex flex-col h-full overflow-hidden`}>
+          {/* Top Fixed Header with Search in Left Sidebar */}
+          <div className="px-3 pt-3 pb-2 shrink-0">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className={`text-sm font-bold ${fbTextPrimary} tracking-tight`}>
                 Settings & privacy
               </h1>
-              <button
-                type="button"
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                className={`w-8 h-8 rounded-full flex items-center justify-center ${fbSubPanel} ${fbTextPrimary} hover:opacity-80 transition cursor-pointer`}
-              >
-                {isDarkMode ? <SunOutlined className="text-amber-400 text-xs" /> : <MoonOutlined className="text-slate-700 text-xs" />}
-              </button>
             </div>
 
             {/* Search Settings Pill */}
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${fbSubPanel} mb-4 transition focus-within:ring-2 focus-within:ring-[#0096c7]/40`}>
+            <div className={`flex items-center gap-2 px-2.5 py-1.5 rounded-full ${fbSubPanel} transition focus-within:ring-2 focus-within:ring-[#0096c7]/40`}>
               <SearchOutlined className={`text-xs ${fbTextSecondary}`} />
               <input
                 type="text"
@@ -259,8 +330,12 @@ export const UserProfile: React.FC = () => {
                 className={`w-full bg-transparent border-0 outline-none text-xs font-normal ${fbTextPrimary} placeholder:${fbTextSecondary} focus:ring-0`}
               />
             </div>
+          </div>
 
-            {/* Search Match Results if query present */}
+          {/* Left Menu Items: Scrollable Navigation List (Zero Extra Outer Padding) */}
+          <div className="flex-1 overflow-y-auto px-2 py-2 profile-menu-scroll space-y-3">
+
+            {/* Search Match Results */}
             {searchQuery.trim() && (
               <div className="mb-4 space-y-1">
                 <div className={`text-[11px] font-semibold uppercase tracking-wider ${fbTextSecondary} px-2`}>
@@ -287,16 +362,15 @@ export const UserProfile: React.FC = () => {
               </div>
             )}
 
-            {/* Section: Your account (Facebook "Meta Account" style) */}
+            {/* Section: Your Account Card */}
             <div className="mb-4">
               <div className={`text-[11px] font-semibold uppercase tracking-wider ${fbTextSecondary} px-2 mb-1.5`}>
                 Your account
               </div>
 
-              {/* Meta Account Profile Badge */}
               <div
                 onClick={() => setActiveTab('overview')}
-                className={`p-3 rounded-2xl ${fbSubPanel} border border-transparent hover:border-[#0096c7]/30 transition cursor-pointer flex items-start gap-3`}
+                className={`p-3 rounded-2xl ${fbSubPanel} hover:opacity-90 transition cursor-pointer flex items-start gap-3`}
               >
                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-[#0096c7] to-cyan-400 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
                   {avatarUrl ? (
@@ -313,16 +387,16 @@ export const UserProfile: React.FC = () => {
                     </Tag>
                   </div>
                   <p className={`text-[10px] ${fbTextSecondary} line-clamp-2 mt-0.5 leading-snug`}>
-                    Password, security, personal details, cross-profile experiences, verification
+                    Password, security, personal details, activity logs, verification
                   </p>
                 </div>
               </div>
 
-              {/* Authorized Person Session Expiry */}
-              <div className={`mt-2.5 pt-2 border-t ${fbBorder} flex items-center justify-between text-[10px]`}>
+              {/* Authorized Session Expiry */}
+              <div className="mt-2.5 pt-2 flex items-center justify-between text-[10px]">
                 <span className={`flex items-center gap-1 ${fbTextSecondary}`}>
                   <ClockCircleOutlined className="text-amber-400" />
-                  <span>Authorized Expiry:</span>
+                  <span>Session Expiry:</span>
                 </span>
                 <span className="font-medium text-emerald-400 font-mono">
                   {formattedExpiry || (user?.tokenExpiresAt ? new Date(user.tokenExpiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '24h active')}
@@ -335,9 +409,6 @@ export const UserProfile: React.FC = () => {
               <div className={`text-[11px] font-semibold uppercase tracking-wider ${fbTextSecondary} px-2 mb-1`}>
                 Tools and resources
               </div>
-              <p className={`text-[10px] ${fbTextSecondary} px-2 mb-2 leading-relaxed`}>
-                Our tools help you control and manage your profile & privacy.
-              </p>
 
               <div className="space-y-0.5">
                 <button
@@ -353,7 +424,7 @@ export const UserProfile: React.FC = () => {
                     <span className="w-7 h-7 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center text-xs">
                       <UserOutlined />
                     </span>
-                    <span className="text-xs font-medium">Personal Details</span>
+                    <span className="text-xs font-medium">Profile Details & Bio</span>
                   </div>
                   <RightOutlined className={`text-[9px] ${fbTextSecondary}`} />
                 </button>
@@ -372,6 +443,31 @@ export const UserProfile: React.FC = () => {
                       <LockOutlined />
                     </span>
                     <span className="text-xs font-medium">Password & Security</span>
+                  </div>
+                  <RightOutlined className={`text-[9px] ${fbTextSecondary}`} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('logs')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left cursor-pointer transition ${
+                    activeTab === 'logs'
+                      ? `${fbSubPanel} font-bold text-[#0096c7]`
+                      : `${fbHover} ${fbTextPrimary}`
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded-full bg-cyan-500/10 text-[#0096c7] flex items-center justify-center text-xs">
+                      <HistoryOutlined />
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium">Activity Logs</span>
+                      {logs.length > 0 && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#0096c7]/20 text-[#0096c7] font-semibold">
+                          {logs.length}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <RightOutlined className={`text-[9px] ${fbTextSecondary}`} />
                 </button>
@@ -417,11 +513,8 @@ export const UserProfile: React.FC = () => {
             {/* Section: Preferences */}
             <div>
               <div className={`text-[11px] font-semibold uppercase tracking-wider ${fbTextSecondary} px-2 mb-1`}>
-                Preferences
+                Security & Store
               </div>
-              <p className={`text-[10px] ${fbTextSecondary} px-2 mb-2 leading-relaxed`}>
-                Customize your experience across the platform.
-              </p>
 
               <div className="space-y-0.5">
                 <Link
@@ -453,107 +546,155 @@ export const UserProfile: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom user badge */}
-          <div className={`pt-4 border-t ${fbBorder} mt-4 flex items-center justify-between text-[11px] ${fbTextSecondary}`}>
-            <span className="truncate">{user?.email}</span>
-            <span className="text-emerald-500 font-semibold flex items-center gap-1">
+          {/* Fixed Bottom User Badge in Left Sidebar */}
+          <div className={`px-3 py-2.5 shrink-0 bg-white flex items-center justify-between text-[11px] ${fbTextSecondary}`}>
+            <span className="truncate max-w-[170px]" title={user?.email}>{user?.email}</span>
+            <span className="text-emerald-600 font-semibold flex items-center gap-1 shrink-0">
               <CheckCircleOutlined className="text-[10px]" /> Verified
             </span>
           </div>
         </aside>
 
         {/* =========================================================================
-            RIGHT MAIN CONTENT AREA: Facebook-style Hub & Dedicated Panels
+            RIGHT MAIN CONTENT AREA: Hub Panels & Editors (Independent Scrollbar)
            ========================================================================= */}
-        <main className={`flex-1 p-6 md:p-8 overflow-y-auto ${fbBg}`}>
-          {/* Header Bar with Back button if not on overview */}
+        <main className={`flex-1 p-6 md:p-8 overflow-y-auto ${fbBg} profile-content-scroll h-full`}>
+          {/* Header Bar with Back navigation */}
           {activeTab !== 'overview' && (
             <div className="mb-4 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => setActiveTab('overview')}
-                className={`inline-flex items-center gap-1.5 text-xs font-semibold text-[#0096c7] hover:underline cursor-pointer`}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0096c7] hover:underline cursor-pointer"
               >
                 <ArrowLeftOutlined className="text-[10px]" />
-                <span>Back to Settings & privacy</span>
+                <span>Back to Overview</span>
               </button>
-              <div className={`text-xs ${fbTextSecondary}`}>
-                Account &gt; <span className={`font-semibold ${fbTextPrimary}`}>{activeTab.toUpperCase()}</span>
-              </div>
             </div>
           )}
 
           {/* -------------------------------------------------------------------
-              VIEW 1: OVERVIEW (Facebook "Find the setting you need" + Cards)
+              VIEW 1: OVERVIEW HUB (Profile summary, stats, quick access & recent logs)
              ------------------------------------------------------------------- */}
           {activeTab === 'overview' && (
-            <div className="space-y-8 max-w-4xl">
-              {/* Find the setting you need Header */}
-              <div>
-                <h2 className={`text-lg font-bold ${fbTextPrimary} tracking-tight mb-2`}>
-                  Find the setting you need
-                </h2>
-                <div className={`flex items-center gap-3 px-4 py-3 rounded-full ${fbPanel} border ${fbBorder} shadow-xs transition focus-within:border-[#0096c7] focus-within:ring-2 focus-within:ring-[#0096c7]/20`}>
-                  <SearchOutlined className={`text-sm ${fbTextSecondary}`} />
-                  <input
-                    type="text"
-                    placeholder="Search settings"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className={`w-full bg-transparent border-0 outline-none text-xs ${fbTextPrimary} placeholder:${fbTextSecondary} focus:ring-0`}
-                  />
+            <div className="space-y-6 max-w-4xl">
+              {/* User Profile Identity Banner */}
+              <div className={`p-6 rounded-2xl ${fbPanel} shadow-sm relative overflow-hidden`}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-tr from-[#0096c7] to-cyan-400 text-white flex items-center justify-center font-bold text-2xl shrink-0 border-2 border-[#0096c7]/50 shadow-md">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        avatarInitial
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className={`text-base font-bold ${fbTextPrimary}`}>{displayName}</h2>
+                        <Tag color="cyan" className="font-semibold text-[10px] uppercase rounded-full">
+                          {user?.role || 'CUSTOMER'}
+                        </Tag>
+                        <Tag color="green" className="font-semibold text-[10px] rounded-full">
+                          <CheckCircleOutlined /> ACTIVE
+                        </Tag>
+                      </div>
+                      <p className={`text-xs ${fbTextSecondary} mt-0.5`}>{user?.email}</p>
+                      {bio && (
+                        <p className={`text-xs text-slate-700 italic mt-1.5 line-clamp-2 max-w-xl bg-slate-100/70 px-2.5 py-1 rounded-lg`}>
+                          "{bio}"
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('personal')}
+                    className="px-4 py-2 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white text-xs font-semibold inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm shrink-0"
+                  >
+                    <UserOutlined />
+                    <span>Edit Profile & Bio</span>
+                  </button>
+                </div>
+
+                {/* Account Details Badges Strip */}
+                <div className="mt-5 pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <div className={fbTextSecondary}>Account ID</div>
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold mt-0.5">
+                      <span className={`${fbTextPrimary} truncate max-w-[90px]`} title={user?.id || 'N/A'}>
+                        {user?.id ? `${user.id.slice(0, 8)}...` : 'N/A'}
+                      </span>
+                      {user?.id && (
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(user.id, 'Account ID')}
+                          className="text-[#0096c7] hover:opacity-80"
+                          title="Copy Account ID"
+                        >
+                          <CopyOutlined className="text-[11px]" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className={fbTextSecondary}>Member Since</div>
+                    <div className={`font-semibold mt-0.5 ${fbTextPrimary}`}>
+                      {user?.createdAt ? new Date(user.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'Active Member'}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className={fbTextSecondary}>Security Health</div>
+                    <div className="flex items-center gap-1 text-emerald-400 font-semibold mt-0.5">
+                      <SafetyCertificateOutlined />
+                      <span>{user?.hasPasskey ? 'FIDO2 Protected' : 'Password Protected'}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className={fbTextSecondary}>Activity Records</div>
+                    <div className={`font-semibold mt-0.5 ${fbTextPrimary} flex items-center gap-1`}>
+                      <HistoryOutlined className="text-[#0096c7]" />
+                      <span>{logs.length} logged events</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Most visited settings (3 Facebook Style Cards) */}
+              {/* Quick Setting Navigation Cards */}
               <div>
                 <h3 className={`text-xs font-bold ${fbTextPrimary} tracking-tight mb-3`}>
-                  Most visited settings
+                  Quick account shortcuts
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {/* Card 1: Personal Details */}
+                  {/* Card 1: Personal Details & Bio */}
                   <div
                     onClick={() => setActiveTab('personal')}
-                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl border ${fbBorder} cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg flex flex-col justify-between min-h-[170px] group`}
+                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[160px] group`}
                   >
-                    <div className="w-12 h-12 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                    <div className="w-11 h-11 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
                       <UserOutlined />
                     </div>
                     <div>
                       <div className={`text-xs font-bold ${fbTextPrimary} group-hover:text-[#0096c7] transition-colors`}>
-                        Personal Details
+                        Profile & Bio
                       </div>
                       <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
-                        Update your profile photo, display name, and public biography.
+                        Update your public photo, display name, and marketplace biography.
                       </p>
                     </div>
                   </div>
 
-                  {/* Card 2: Legal Agreements & Compliance */}
-                  <div
-                    onClick={() => setActiveTab('legal')}
-                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl border ${fbBorder} cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg flex flex-col justify-between min-h-[170px] group`}
-                  >
-                    <div className="w-12 h-12 rounded-full bg-emerald-400/20 text-emerald-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
-                      <FileTextOutlined />
-                    </div>
-                    <div>
-                      <div className={`text-xs font-bold ${fbTextPrimary} group-hover:text-[#0096c7] transition-colors`}>
-                        Legal Agreements
-                      </div>
-                      <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
-                        Review and accept platform artisan partner & shopper terms.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Card 3: Password & Security */}
+                  {/* Card 2: Password & Security */}
                   <div
                     onClick={() => setActiveTab('security')}
-                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl border ${fbBorder} cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg flex flex-col justify-between min-h-[170px] group`}
+                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[160px] group`}
                   >
-                    <div className="w-12 h-12 rounded-full bg-rose-400/20 text-rose-400 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+                    <div className="w-11 h-11 rounded-full bg-rose-400/20 text-rose-400 flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
                       <LockOutlined />
                     </div>
                     <div>
@@ -561,84 +702,100 @@ export const UserProfile: React.FC = () => {
                         Password & Security
                       </div>
                       <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
-                        Update account credentials, verify passwords, and session tokens.
+                        Change your credentials and view active session validity.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Activity Logs */}
+                  <div
+                    onClick={() => setActiveTab('logs')}
+                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[160px] group`}
+                  >
+                    <div className="w-11 h-11 rounded-full bg-cyan-400/20 text-[#0096c7] flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
+                      <HistoryOutlined />
+                    </div>
+                    <div>
+                      <div className={`text-xs font-bold ${fbTextPrimary} group-hover:text-[#0096c7] transition-colors`}>
+                        Activity Logs & Audits
+                      </div>
+                      <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
+                        View your real-time sign-ins, IP addresses, and platform operations.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Looking for something else? (Wide Facebook Cards) */}
-              <div>
-                <h3 className={`text-xs font-bold ${fbTextPrimary} tracking-tight mb-3`}>
-                  Looking for something else?
-                </h3>
-
-                <div className="space-y-3">
-                  {/* Privacy & Passkeys Center */}
-                  <Link
-                    to="/admin/security"
-                    className={`${fbPanel} hover:${fbSubPanel} p-4 rounded-2xl border ${fbBorder} transition flex items-center justify-between group cursor-pointer block`}
+              {/* Recent Activity Snapshot */}
+              <div className={`p-5 rounded-2xl ${fbPanel}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <HistoryOutlined className="text-[#0096c7] text-sm" />
+                    <h3 className={`text-xs font-bold ${fbTextPrimary}`}>
+                      Recent Activity Preview
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('logs')}
+                    className="text-xs text-[#0096c7] font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
                   >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg shrink-0">
-                        <SafetyCertificateOutlined />
-                      </div>
-                      <div>
-                        <div className={`text-xs font-bold ${fbTextPrimary} group-hover:text-[#0096c7] transition-colors`}>
-                          FIDO2 Security & Passkeys Center
-                        </div>
-                        <p className={`text-[11px] ${fbTextSecondary} mt-0.5`}>
-                          Learn how to manage biometric passkeys, hardware tokens, and two-factor authentication.
-                        </p>
-                      </div>
-                    </div>
-                    <RightOutlined className={`text-xs ${fbTextSecondary} group-hover:translate-x-1 group-hover:text-[#0096c7] transition-all`} />
-                  </Link>
-
-                  {/* Artisan Vendor Storefront */}
-                  <Link
-                    to="/admin/profile/vendor"
-                    className={`${fbPanel} hover:${fbSubPanel} p-4 rounded-2xl border ${fbBorder} transition flex items-center justify-between group cursor-pointer block`}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-orange-500/10 text-orange-400 flex items-center justify-center text-lg shrink-0">
-                        <ShopOutlined />
-                      </div>
-                      <div>
-                        <div className={`text-xs font-bold ${fbTextPrimary} group-hover:text-[#0096c7] transition-colors`}>
-                          Artisan Vendor Storefront Profile
-                        </div>
-                        <p className={`text-[11px] ${fbTextSecondary} mt-0.5`}>
-                          Manage verified business identity, artisan craft category, and storefront branding.
-                        </p>
-                      </div>
-                    </div>
-                    <RightOutlined className={`text-xs ${fbTextSecondary} group-hover:translate-x-1 group-hover:text-[#0096c7] transition-all`} />
-                  </Link>
+                    <span>View All Activity</span>
+                    <RightOutlined className="text-[9px]" />
+                  </button>
                 </div>
+
+                {logsLoading ? (
+                  <div className="py-6 flex items-center justify-center gap-2 text-xs text-[#0096c7]">
+                    <Spin size="small" />
+                    <span>Loading recent operations...</span>
+                  </div>
+                ) : logs.length === 0 ? (
+                  <div className={`py-6 text-center text-xs ${fbTextSecondary}`}>
+                    No recent activity records found. Actions you perform will be listed here.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/5 space-y-1">
+                    {logs.slice(0, 3).map((item, idx) => (
+                      <div key={item._id || item.id || idx} className="py-2.5 flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-3">
+                          <Tag color={getActionTagColor(item.action)} className="font-mono text-[10px] m-0">
+                            {item.action || 'ACTIVITY'}
+                          </Tag>
+                          <span className={`font-medium ${fbTextPrimary} truncate max-w-xs`}>
+                            {item.endpoint || 'Platform interaction'}
+                          </span>
+                        </div>
+                        <div className={`text-[11px] ${fbTextSecondary} font-mono shrink-0`}>
+                          {item.createdAt ? new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Recently'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* -------------------------------------------------------------------
-              VIEW 2: PERSONAL DETAILS (Photo upload, Name, Bio)
+              VIEW 2: PROFILE & BIO (Photo Upload, Names, Bio, Live Preview)
              ------------------------------------------------------------------- */}
           {activeTab === 'personal' && (
-            <div className="max-w-2xl space-y-6">
+            <div className="max-w-3xl space-y-6">
               <div>
                 <h2 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
-                  Personal Profile & Identity
+                  Personal Profile & Biography
                 </h2>
                 <p className={`text-[11px] ${fbTextSecondary} mt-0.5`}>
-                  Manage your display name, public profile photograph, and personal bio.
+                  Manage your display name, public profile photograph, and personal bio visible to shoppers and artisans.
                 </p>
               </div>
 
               {/* Photo Upload Section */}
-              <div className={`p-5 rounded-2xl ${fbPanel} border ${fbBorder} space-y-4`}>
-                <div className={`text-xs font-bold ${fbTextPrimary}`}>Profile Picture</div>
-                <div className="flex items-center gap-5">
+              <div className={`p-5 rounded-2xl ${fbPanel} space-y-4`}>
+                <div className={`text-xs font-bold ${fbTextPrimary}`}>Profile Photograph</div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
                   <div className="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-tr from-[#0096c7] to-cyan-400 text-white flex items-center justify-center text-2xl font-bold shrink-0 border-2 border-[#0096c7]/50 shadow-md">
                     {avatarUrl ? (
                       <img src={avatarUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
@@ -648,22 +805,25 @@ export const UserProfile: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
                     <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="px-3 py-1.5 rounded-lg bg-[#0096c7] hover:bg-[#0077b6] text-white text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                      <Upload
+                        beforeUpload={(file) => {
+                          handleAvatarUpload(file);
+                          return false;
+                        }}
+                        showUploadList={false}
+                        accept="image/*"
+                        disabled={uploadingAvatar}
                       >
-                        <UploadOutlined className="text-xs" />
-                        <span>Upload New Photo</span>
-                      </button>
+                        <button
+                          type="button"
+                          disabled={uploadingAvatar}
+                          className="px-3.5 py-1.5 rounded-lg bg-[#0096c7] hover:bg-[#0077b6] text-white text-xs font-medium inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50"
+                        >
+                          {uploadingAvatar ? <LoadingOutlined spin className="text-xs" /> : <UploadOutlined className="text-xs" />}
+                          <span>{uploadingAvatar ? 'Uploading to Cloudinary...' : 'Upload New Photo'}</span>
+                        </button>
+                      </Upload>
 
                       {avatarUrl && (
                         <button
@@ -677,14 +837,14 @@ export const UserProfile: React.FC = () => {
                       )}
                     </div>
                     <p className={`text-[10px] ${fbTextSecondary}`}>
-                      JPG, PNG, or WEBP up to 2MB. Square ratio recommended.
+                      Directly uploads to Cloudinary folder <code className="text-[10px] bg-slate-100 text-slate-700 px-1 py-0.5 rounded font-mono">HimalayaOnlineShop</code>. Click &quot;Save Profile Changes&quot; below to save.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Profile Details Form */}
-              <form onSubmit={handleSaveProfile} className={`p-5 rounded-2xl ${fbPanel} border ${fbBorder} space-y-4`}>
+              {/* Profile Details & Bio Form */}
+              <form onSubmit={handleSaveProfile} className={`p-5 rounded-2xl ${fbPanel} space-y-5`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={`block text-[11px] font-semibold ${fbTextSecondary} mb-1.5`}>
@@ -694,9 +854,9 @@ export const UserProfile: React.FC = () => {
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="e.g. John"
+                      placeholder="e.g. Bijaya"
                       required
-                      className={`w-full px-3 py-2 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition`}
+                      className={`w-full px-3 py-2 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition`}
                     />
                   </div>
 
@@ -708,37 +868,91 @@ export const UserProfile: React.FC = () => {
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      placeholder="e.g. Doe"
+                      placeholder="e.g. Shrestha"
                       required
-                      className={`w-full px-3 py-2 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition`}
+                      className={`w-full px-3 py-2 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition`}
                     />
                   </div>
                 </div>
 
+                {/* Personal Bio */}
                 <div>
-                  <label className={`block text-[11px] font-semibold ${fbTextSecondary} mb-1.5`}>
-                    Personal Bio
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className={`block text-[11px] font-semibold ${fbTextSecondary}`}>
+                      Personal Bio
+                    </label>
+                    <span className={`text-[10px] ${bio.length > 400 ? 'text-amber-400 font-bold' : fbTextSecondary}`}>
+                      {bio.length} / 500 characters
+                    </span>
+                  </div>
                   <textarea
-                    rows={3}
+                    rows={4}
+                    maxLength={500}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell other shoppers and artisans about yourself..."
-                    className={`w-full px-3 py-2 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition resize-none`}
+                    placeholder="Tell other shoppers and artisans about yourself, your passion for Himalayan handicrafts, or your merchant background..."
+                    className={`w-full px-3 py-2.5 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition resize-none leading-relaxed`}
                   />
-                  <p className={`text-[10px] ${fbTextSecondary} mt-1`}>
-                    Brief summary visible on your verified profile and reviews.
-                  </p>
+                  
+                  {/* Quick Bio Tag suggestions */}
+                  <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                    <span className={`text-[10px] ${fbTextSecondary}`}>Add bio snippet:</span>
+                    {[
+                      'Handcrafted Artisan Supporter',
+                      'Verified Merchant',
+                      'Himalayan Organic Enthusiast',
+                      'Store Administrator',
+                    ].map((snippet) => (
+                      <button
+                        key={snippet}
+                        type="button"
+                        onClick={() => setBio((prev) => (prev ? `${prev} • ${snippet}` : snippet))}
+                        className={`text-[10px] px-2 py-0.5 rounded-full ${fbSubPanel} hover:bg-[#0096c7]/20 hover:text-[#0096c7] ${fbTextSecondary} transition cursor-pointer`}
+                      >
+                        + {snippet}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live Profile Card Preview */}
+                <div className={`p-4 rounded-xl ${fbSubPanel} space-y-2`}>
+                  <div className={`text-[10px] font-bold uppercase tracking-wider ${fbTextSecondary} flex items-center gap-1`}>
+                    <InfoCircleOutlined className="text-[#0096c7]" />
+                    <span>Live Public Profile Preview</span>
+                  </div>
+                  <div className="flex items-start gap-3 pt-1">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-[#0096c7] to-cyan-400 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        avatarInitial
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs font-bold ${fbTextPrimary}`}>
+                          {firstName || 'First'} {lastName || 'Last'}
+                        </span>
+                        <Tag color="cyan" className="text-[9px] px-1.5 py-0 leading-tight m-0 font-medium rounded-full">
+                          {user?.role?.toUpperCase() || 'USER'}
+                        </Tag>
+                      </div>
+                      <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-relaxed italic`}>
+                        {bio || 'No public bio provided yet. Write something above to introduce yourself!'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="pt-2 flex justify-end">
                   <button
                     type="submit"
                     disabled={savingProfile}
-                    className="px-5 py-2 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white font-medium text-xs inline-flex items-center gap-2 transition cursor-pointer disabled:opacity-60 shadow-sm"
+                    className="px-6 py-2.5 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white font-semibold text-xs inline-flex items-center gap-2 transition cursor-pointer disabled:opacity-60 shadow-sm"
                   >
                     {savingProfile ? <Spin size="small" /> : <SaveOutlined />}
-                    <span>{savingProfile ? 'Saving Changes...' : 'Save Profile Changes'}</span>
+                    <span>{savingProfile ? 'Saving Changes...' : 'Save Profile & Bio'}</span>
                   </button>
                 </div>
               </form>
@@ -746,7 +960,7 @@ export const UserProfile: React.FC = () => {
           )}
 
           {/* -------------------------------------------------------------------
-              VIEW 3: PASSWORD & SECURITY (Current, New, Confirm Password)
+              VIEW 3: PASSWORD & SECURITY
              ------------------------------------------------------------------- */}
           {activeTab === 'security' && (
             <div className="max-w-2xl space-y-6">
@@ -755,22 +969,23 @@ export const UserProfile: React.FC = () => {
                   Password & Security Settings
                 </h2>
                 <p className={`text-[11px] ${fbTextSecondary} mt-0.5`}>
-                  Choose a unique password to safeguard your account against unauthorized logins.
+                  Choose a robust password to safeguard your account against unauthorized logins.
                 </p>
               </div>
 
-              {/* Active Authorization Info */}
-              <div className={`p-3 rounded-xl ${fbSubPanel} border ${fbBorder} flex items-center justify-between text-xs`}>
-                <span className={fbTextSecondary}>
-                  Current authenticated session expires at:{' '}
-                  <strong className={`${fbTextPrimary} font-mono`}>
-                    {formattedExpiry || (user?.tokenExpiresAt ? new Date(user.tokenExpiresAt).toLocaleString() : '24h from login')}
+              {/* Active Session Info */}
+              <div className={`p-4 rounded-xl ${fbSubPanel} flex items-center justify-between text-xs`}>
+                <div>
+                  <span className={fbTextSecondary}>Active Session Expiration: </span>
+                  <strong className={`${fbTextPrimary} font-mono ml-1`}>
+                    {formattedExpiry || (user?.tokenExpiresAt ? new Date(user.tokenExpiresAt).toLocaleString() : '24h active')}
                   </strong>
-                </span>
+                </div>
                 <Tag color="success" className="font-semibold text-[10px] m-0">ACTIVE</Tag>
               </div>
 
-              <form onSubmit={handleChangePassword} className={`p-5 rounded-2xl ${fbPanel} border ${fbBorder} space-y-4`}>
+              {/* Change Password Form */}
+              <form onSubmit={handleChangePassword} className={`p-5 rounded-2xl ${fbPanel} space-y-4`}>
                 <div>
                   <label className={`block text-[11px] font-semibold ${fbTextSecondary} mb-1.5`}>
                     Current Password *
@@ -782,7 +997,7 @@ export const UserProfile: React.FC = () => {
                       onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="Enter your current password"
                       required
-                      className={`w-full px-3 py-2 pr-10 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition`}
+                      className={`w-full px-3 py-2 pr-10 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition`}
                     />
                     <button
                       type="button"
@@ -805,7 +1020,7 @@ export const UserProfile: React.FC = () => {
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="At least 6 characters"
                       required
-                      className={`w-full px-3 py-2 pr-10 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition`}
+                      className={`w-full px-3 py-2 pr-10 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition`}
                     />
                     <button
                       type="button"
@@ -828,7 +1043,7 @@ export const UserProfile: React.FC = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Repeat your new password"
                       required
-                      className={`w-full px-3 py-2 pr-10 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition`}
+                      className={`w-full px-3 py-2 pr-10 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition`}
                     />
                     <button
                       type="button"
@@ -841,20 +1056,28 @@ export const UserProfile: React.FC = () => {
                 </div>
 
                 {/* Password Criteria Hints */}
-                <div className={`p-3 rounded-xl ${fbSubPanel} space-y-1 text-[11px]`}>
+                <div className={`p-3 rounded-xl ${fbSubPanel} space-y-1.5 text-[11px]`}>
                   <div className={`flex items-center gap-2 ${newPassword.length >= 6 ? 'text-emerald-400 font-semibold' : fbTextSecondary}`}>
-                    <CheckOutlined className="text-[10px]" /> At least 6 characters in length
+                    <CheckOutlined className="text-[10px]" /> Minimum 6 characters
                   </div>
                   <div className={`flex items-center gap-2 ${newPassword && newPassword === confirmPassword ? 'text-emerald-400 font-semibold' : fbTextSecondary}`}>
-                    <CheckOutlined className="text-[10px]" /> Both passwords match exactly
+                    <CheckOutlined className="text-[10px]" /> Passwords match
                   </div>
                 </div>
 
-                <div className="pt-2 flex justify-end">
+                <div className="pt-2 flex items-center justify-between">
+                  <Link
+                    to="/admin/security"
+                    className="text-xs text-[#0096c7] font-semibold hover:underline inline-flex items-center gap-1.5"
+                  >
+                    <KeyOutlined />
+                    <span>Manage FIDO2 Passkeys</span>
+                  </Link>
+
                   <button
                     type="submit"
                     disabled={changingPassword}
-                    className="px-5 py-2 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white font-medium text-xs inline-flex items-center gap-2 transition cursor-pointer disabled:opacity-60 shadow-sm"
+                    className="px-6 py-2.5 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white font-semibold text-xs inline-flex items-center gap-2 transition cursor-pointer disabled:opacity-60 shadow-sm"
                   >
                     {changingPassword ? <Spin size="small" /> : <LockOutlined />}
                     <span>{changingPassword ? 'Updating Password...' : 'Update Password'}</span>
@@ -865,7 +1088,173 @@ export const UserProfile: React.FC = () => {
           )}
 
           {/* -------------------------------------------------------------------
-              VIEW 4: CONTACT & ADDRESS (Phone, Shipping Address)
+              VIEW 4: USER ACTIVITY LOGS (Real-time Operations & Audits)
+             ------------------------------------------------------------------- */}
+          {activeTab === 'logs' && (
+            <div className="max-w-4xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
+                    User Activity Logs & History
+                  </h2>
+                  <p className={`text-[11px] ${fbTextSecondary} mt-0.5`}>
+                    Audit trail of your sign-ins, profile changes, and account actions.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={fetchLogs}
+                  disabled={logsLoading}
+                  className="px-3.5 py-1.5 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white text-xs font-semibold inline-flex items-center gap-1.5 transition cursor-pointer disabled:opacity-60 shadow-sm self-start sm:self-auto"
+                >
+                  <SyncOutlined spin={logsLoading} className="text-xs" />
+                  <span>Refresh Logs</span>
+                </button>
+              </div>
+
+              {/* Filter and Search Bar */}
+              <div className={`p-4 rounded-2xl ${fbPanel} flex flex-col sm:flex-row items-center gap-3`}>
+                <div className={`flex-1 flex items-center gap-2 px-3 py-1.5 rounded-xl ${fbSubPanel} w-full`}>
+                  <SearchOutlined className={`text-xs ${fbTextSecondary}`} />
+                  <input
+                    type="text"
+                    placeholder="Search by action, endpoint, or IP address..."
+                    value={logSearch}
+                    onChange={(e) => {
+                      setLogSearch(e.target.value);
+                      setLogsCurrentPage(1);
+                    }}
+                    className={`w-full bg-transparent border-0 outline-none text-xs ${fbTextPrimary} placeholder:${fbTextSecondary} focus:ring-0`}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <span className={`text-[11px] ${fbTextSecondary} whitespace-nowrap`}>Action Filter:</span>
+                  <select
+                    value={logFilterAction}
+                    onChange={(e) => {
+                      setLogFilterAction(e.target.value);
+                      setLogsCurrentPage(1);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 cursor-pointer`}
+                  >
+                    <option value="all">All Actions</option>
+                    <option value="LOGIN">Sign-in & Auth</option>
+                    <option value="UPDATE">Updates & Edits</option>
+                    <option value="PASSWORD">Password Changes</option>
+                    <option value="CREATE">Create Operations</option>
+                    <option value="DELETE">Delete Operations</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Logs Table / List */}
+              <div className={`rounded-2xl ${fbPanel} overflow-hidden shadow-xs`}>
+                {logsLoading ? (
+                  <div className="py-12 flex flex-col items-center justify-center gap-3 text-xs text-[#0096c7]">
+                    <Spin size="default" />
+                    <span>Retrieving activity history...</span>
+                  </div>
+                ) : filteredLogs.length === 0 ? (
+                  <div className="py-12 text-center space-y-2">
+                    <HistoryOutlined className="text-3xl text-slate-500" />
+                    <div className={`text-xs font-semibold ${fbTextPrimary}`}>No activity records found</div>
+                    <p className={`text-[11px] ${fbTextSecondary} max-w-sm mx-auto`}>
+                      {logSearch || logFilterAction !== 'all'
+                        ? 'Try clearing your search query or filter to see more records.'
+                        : 'Your account interactions and sign-in operations will be cataloged here in real-time.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className={`${fbSubPanel} text-[11px] font-semibold ${fbTextSecondary} uppercase tracking-wider`}>
+                        <tr>
+                          <th className="py-3 px-4">Action</th>
+                          <th className="py-3 px-4">Endpoint / Detail</th>
+                          <th className="py-3 px-4">Client IP & Device</th>
+                          <th className="py-3 px-4">Timestamp</th>
+                          <th className="py-3 px-4 text-right">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {paginatedLogs.map((item, idx) => (
+                          <tr key={item._id || item.id || idx} className={`${fbHover} transition-colors`}>
+                            <td className="py-3 px-4 font-mono">
+                              <Tag color={getActionTagColor(item.action)} className="font-semibold text-[10px] m-0">
+                                {item.action || 'SYSTEM_EVENT'}
+                              </Tag>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`font-mono text-[11px] ${fbTextPrimary} truncate max-w-xs block`} title={item.endpoint}>
+                                {item.endpoint || '/ecommerce/activity'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-mono text-[11px]">
+                              <div className="flex items-center gap-1.5 text-slate-600">
+                                <GlobalOutlined className="text-[10px]" />
+                                <span>{item.ipAddress || '127.0.0.1'}</span>
+                              </div>
+                              {item.userAgent && (
+                                <div className={`text-[9px] ${fbTextSecondary} truncate max-w-[160px]`} title={item.userAgent}>
+                                  {item.userAgent}
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-[11px] text-slate-500 whitespace-nowrap">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Recent'}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {item.statusCode || 200} OK
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Pagination Footer */}
+                {filteredLogs.length > 0 && (
+                  <div className="p-4 flex items-center justify-between text-xs">
+                    <span className={fbTextSecondary}>
+                      Showing <strong className={fbTextPrimary}>{(logsCurrentPage - 1) * logsPageSize + 1}</strong> to{' '}
+                      <strong className={fbTextPrimary}>{Math.min(logsCurrentPage * logsPageSize, filteredLogs.length)}</strong> of{' '}
+                      <strong className={fbTextPrimary}>{filteredLogs.length}</strong> events
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={logsCurrentPage === 1}
+                        onClick={() => setLogsCurrentPage((p) => Math.max(1, p - 1))}
+                        className={`px-3 py-1 rounded-lg border-0 ${fbSubPanel} text-xs ${fbTextPrimary} hover:bg-slate-200 disabled:opacity-40 transition cursor-pointer`}
+                      >
+                        Previous
+                      </button>
+                      <span className={`font-mono text-xs ${fbTextSecondary}`}>
+                        {logsCurrentPage} / {totalLogPages}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={logsCurrentPage >= totalLogPages}
+                        onClick={() => setLogsCurrentPage((p) => Math.min(totalLogPages, p + 1))}
+                        className={`px-3 py-1 rounded-lg border-0 ${fbSubPanel} text-xs ${fbTextPrimary} hover:bg-slate-200 disabled:opacity-40 transition cursor-pointer`}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* -------------------------------------------------------------------
+              VIEW 5: CONTACT & ADDRESS
              ------------------------------------------------------------------- */}
           {activeTab === 'contact' && (
             <div className="max-w-2xl space-y-6">
@@ -878,14 +1267,14 @@ export const UserProfile: React.FC = () => {
                 </p>
               </div>
 
-              <form onSubmit={handleSaveProfile} className={`p-5 rounded-2xl ${fbPanel} border ${fbBorder} space-y-4`}>
+              <form onSubmit={handleSaveProfile} className={`p-5 rounded-2xl ${fbPanel} space-y-4`}>
                 <div>
                   <label className={`block text-[11px] font-semibold ${fbTextSecondary} mb-1.5`}>
                     Email Address (Account Identity)
                   </label>
-                  <div className={`w-full px-3 py-2 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextSecondary} flex items-center justify-between`}>
+                  <div className={`w-full px-3 py-2 rounded-xl ${fbSubPanel} text-xs ${fbTextSecondary} flex items-center justify-between`}>
                     <span>{user?.email || 'user@store.com'}</span>
-                    <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
                       <CheckCircleOutlined /> Primary Login
                     </span>
                   </div>
@@ -900,7 +1289,7 @@ export const UserProfile: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+977 980-0000000"
-                    className={`w-full px-3 py-2 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition`}
+                    className={`w-full px-3 py-2 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition`}
                   />
                 </div>
 
@@ -913,7 +1302,7 @@ export const UserProfile: React.FC = () => {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Street, Ward No, Municipality, City, Country..."
-                    className={`w-full px-3 py-2 rounded-xl border ${fbBorder} ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:border-[#0096c7] transition resize-none`}
+                    className={`w-full px-3 py-2 rounded-xl border-0 ${fbSubPanel} text-xs ${fbTextPrimary} outline-none focus:ring-1 focus:ring-[#0096c7]/50 transition resize-none`}
                   />
                 </div>
 
@@ -921,7 +1310,7 @@ export const UserProfile: React.FC = () => {
                   <button
                     type="submit"
                     disabled={savingProfile}
-                    className="px-5 py-2 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white font-medium text-xs inline-flex items-center gap-2 transition cursor-pointer disabled:opacity-60 shadow-sm"
+                    className="px-6 py-2.5 rounded-xl bg-[#0096c7] hover:bg-[#0077b6] text-white font-semibold text-xs inline-flex items-center gap-2 transition cursor-pointer disabled:opacity-60 shadow-sm"
                   >
                     {savingProfile ? <Spin size="small" /> : <SaveOutlined />}
                     <span>{savingProfile ? 'Saving Address...' : 'Save Contact Details'}</span>
@@ -932,7 +1321,7 @@ export const UserProfile: React.FC = () => {
           )}
 
           {/* -------------------------------------------------------------------
-              VIEW 5: LEGAL AGREEMENTS (Reading section & Compliance Status)
+              VIEW 6: LEGAL AGREEMENTS & TERMS
              ------------------------------------------------------------------- */}
           {activeTab === 'legal' && (
             <div className="max-w-3xl space-y-6">
@@ -946,7 +1335,7 @@ export const UserProfile: React.FC = () => {
               </div>
 
               {/* Status Banner */}
-              <div className={`p-4 rounded-2xl ${fbPanel} border ${fbBorder} flex items-center justify-between`}>
+              <div className={`p-4 rounded-2xl ${fbPanel} flex items-center justify-between`}>
                 <div className="flex items-center gap-3">
                   <span className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg ${agreementAccepted ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                     <FileTextOutlined />
@@ -972,7 +1361,7 @@ export const UserProfile: React.FC = () => {
               </div>
 
               {/* Terms Reader Accordion */}
-              <div className={`p-5 rounded-2xl ${fbPanel} border ${fbBorder} space-y-4`}>
+              <div className={`p-5 rounded-2xl ${fbPanel} space-y-4`}>
                 <div className="flex items-center justify-between">
                   <div className={`text-xs font-bold ${fbTextPrimary}`}>
                     Himalaya Marketplace Terms of Service & Merchant Conduct
@@ -991,29 +1380,29 @@ export const UserProfile: React.FC = () => {
                     agreementExpanded ? 'max-h-96' : 'max-h-36'
                   } ${fbTextSecondary}`}
                 >
-                  <p className="font-bold mb-2 text-slate-300">1. PARTIES & SCOPE OF SERVICE</p>
+                  <p className="font-bold mb-2 text-slate-800">1. PARTIES & SCOPE OF SERVICE</p>
                   <p className="mb-3">
                     By accessing or transacting on the Himalaya E-Commerce Platform, you agree to comply with all ethical fair-trade sourcing guidelines, authentic artisan heritage preservation standards, and applicable consumer protection statutes.
                   </p>
 
-                  <p className="font-bold mb-2 text-slate-300">2. ARTISAN INTEGRITY & FAIR SOURCING</p>
+                  <p className="font-bold mb-2 text-slate-800">2. ARTISAN INTEGRITY & FAIR SOURCING</p>
                   <p className="mb-3">
                     All sellers guarantee the provenance of handcrafted artifacts, organic herbs, and hand-woven textiles. Counterfeiting, misattribution of origin, or unauthorized factory replications will incur immediate account termination.
                   </p>
 
-                  <p className="font-bold mb-2 text-slate-300">3. PRIVACY & DATA SAFEGUARDS</p>
+                  <p className="font-bold mb-2 text-slate-800">3. PRIVACY & DATA SAFEGUARDS</p>
                   <p className="mb-3">
                     Personal identity credentials, biometric FIDO2 passkeys, and contact coordinates are encrypted under strict role-based access protocols. Customer contact information must not be stored, exported, or reused outside authorized fulfillment transactions.
                   </p>
 
-                  <p className="font-bold mb-2 text-slate-300">4. DISPUTE RESOLUTION & SETTLEMENT</p>
+                  <p className="font-bold mb-2 text-slate-800">4. DISPUTE RESOLUTION & SETTLEMENT</p>
                   <p>
                     All payments are held in escrow until mutual delivery acknowledgment. Disputed items are reviewed by the arbitration committee under the Nepal Commercial Fair Practices Act.
                   </p>
                 </div>
 
                 {/* Acceptance Checkbox & Save */}
-                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-white/5">
+                <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-slate-100">
                   <label className="inline-flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"

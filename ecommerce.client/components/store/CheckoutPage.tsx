@@ -9,6 +9,8 @@ import {
   CarOutlined,
   LockOutlined,
   CheckOutlined,
+  TagOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import { Radio, Spin, Tag, Divider } from 'antd';
 import { useCart } from '../../context/CartContext';
@@ -37,13 +39,60 @@ export const CheckoutPage: React.FC = () => {
     country: 'Nepal',
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'paypal' | 'stripe' | 'cash_on_delivery'>('credit_card');
+  const [paymentMethod, setPaymentMethod] = useState<
+    'credit_card' | 'paypal' | 'stripe' | 'cash_on_delivery' | 'khalti' | 'esewa'
+  >('khalti');
   const [submitting, setSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState<any>(null);
 
-  const tax = Math.round(cartTotal * 0.08 * 100) / 100;
+  // Discount / Coupon State
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+    description?: string;
+  } | null>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const taxableSubtotal = Math.max(0, cartTotal - discountAmount);
+  const tax = Math.round(taxableSubtotal * 0.08 * 100) / 100;
   const shippingAmount = cartTotal > 150 ? 0 : 15;
-  const grandTotal = Math.round((cartTotal + tax + shippingAmount) * 100) / 100;
+  const grandTotal = Math.round(Math.max(0, taxableSubtotal + tax + shippingAmount) * 100) / 100;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setValidatingCoupon(true);
+    try {
+      const res = await ecommerceService.validateCoupon({
+        code: couponCode.trim(),
+        cartTotal,
+      });
+      if (res.success && res.data) {
+        setAppliedCoupon({
+          code: res.data.code,
+          discountAmount: res.data.discountAmount,
+          description: res.data.description,
+        });
+        showToast(
+          `Promo code "${res.data.code}" applied! You save $${res.data.discountAmount.toFixed(2)}`,
+          'success'
+        );
+      } else {
+        showToast(res.messages?.[0] || 'Invalid coupon code', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.response?.data?.messages?.[0] || 'Failed to apply coupon', 'error');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    showToast('Promo discount removed', 'info');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,8 +121,8 @@ export const CheckoutPage: React.FC = () => {
         shippingAddress: shipping,
         items,
         paymentMethod,
-        paymentStatus: (paymentMethod === 'cash_on_delivery' ? 'pending' : 'paid') as 'pending' | 'paid',
-        orderStatus: 'processing' as const,
+        paymentStatus: (paymentMethod === 'cash_on_delivery' || paymentMethod === 'khalti' || paymentMethod === 'esewa' ? 'pending' : 'paid') as 'pending' | 'paid',
+        orderStatus: 'pending' as const,
         subtotal: cartTotal,
         taxAmount: tax,
         shippingAmount,
@@ -82,10 +131,63 @@ export const CheckoutPage: React.FC = () => {
 
       const res = await ecommerceService.createOrder(payload);
       if (res.success && res.data) {
-        setOrderComplete(res.data);
-        clearCart();
-        setIsCartOpen(false);
-        showToast('Your order has been placed successfully!', 'success');
+        const orderId = (res.data._id || res.data.id || '') as string;
+
+        if (paymentMethod === 'khalti') {
+          showToast('Redirecting to Khalti ePayment gateway...', 'info');
+          const khaltiRes = await ecommerceService.initiateKhalti({
+            orderId,
+            amount: grandTotal,
+            customerInfo: customer,
+            returnUrl: `${window.location.origin}/payment/verify/khalti?orderId=${orderId}`,
+            websiteUrl: window.location.origin,
+          });
+
+          if (khaltiRes.success && khaltiRes.data?.paymentUrl) {
+            clearCart();
+            setIsCartOpen(false);
+            window.location.href = khaltiRes.data.paymentUrl;
+            return;
+          } else {
+            showToast(khaltiRes.messages?.[0] || 'Khalti initiation failed', 'error');
+          }
+        } else if (paymentMethod === 'esewa') {
+          showToast('Redirecting to eSewa payment gateway...', 'info');
+          const esewaRes = await ecommerceService.initiateEsewa({
+            orderId,
+            amount: grandTotal,
+            taxAmount: tax,
+            returnUrl: `${window.location.origin}/payment/verify/esewa?orderId=${orderId}`,
+            failureUrl: `${window.location.origin}/checkout?status=failed&orderId=${orderId}`,
+          });
+
+          if (esewaRes.success && esewaRes.data?.formFields) {
+            clearCart();
+            setIsCartOpen(false);
+
+            // Construct and auto-submit the signed form to eSewa gateway
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = esewaRes.data.gatewayUrl;
+            Object.entries(esewaRes.data.formFields).forEach(([key, val]) => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = key;
+              input.value = val as string;
+              form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+            return;
+          } else {
+            showToast(esewaRes.messages?.[0] || 'eSewa initiation failed', 'error');
+          }
+        } else {
+          setOrderComplete(res.data);
+          clearCart();
+          setIsCartOpen(false);
+          showToast('Your order has been placed successfully!', 'success');
+        }
       }
     } catch (err: any) {
       showToast(err.response?.data?.messages?.[0] || 'Failed to place order', 'error');
@@ -338,6 +440,58 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Khalti Digital Wallet */}
+                <div
+                  onClick={() => setPaymentMethod('khalti')}
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 relative overflow-hidden ${
+                    paymentMethod === 'khalti'
+                      ? 'border-[#5c2d91] bg-purple-50/70 shadow-xs ring-1 ring-[#5c2d91]/30'
+                      : 'border-slate-200 hover:border-purple-300'
+                  }`}
+                >
+                  <Radio checked={paymentMethod === 'khalti'} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-4 h-4 rounded-full bg-[#5c2d91] text-white flex items-center justify-center text-[9px] font-bold">
+                        K
+                      </div>
+                      <span className="text-xs font-bold text-slate-900">Khalti Pay</span>
+                      <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-[#5c2d91] text-white">
+                        Digital Wallet
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      Khalti ID, eBanking, ConnectIPS
+                    </div>
+                  </div>
+                </div>
+
+                {/* eSewa Mobile Wallet */}
+                <div
+                  onClick={() => setPaymentMethod('esewa')}
+                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 relative overflow-hidden ${
+                    paymentMethod === 'esewa'
+                      ? 'border-[#60bb46] bg-emerald-50/70 shadow-xs ring-1 ring-[#60bb46]/30'
+                      : 'border-slate-200 hover:border-emerald-300'
+                  }`}
+                >
+                  <Radio checked={paymentMethod === 'esewa'} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-4 h-4 rounded-full bg-[#60bb46] text-white flex items-center justify-center text-[9px] font-bold">
+                        e
+                      </div>
+                      <span className="text-xs font-bold text-slate-900">eSewa ePay</span>
+                      <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-[#60bb46] text-white">
+                        Fonepay
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
+                      eSewa Wallet, QR scan, Mobile Banking
+                    </div>
+                  </div>
+                </div>
+
                 <div
                   onClick={() => setPaymentMethod('credit_card')}
                   className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
@@ -437,12 +591,71 @@ export const CheckoutPage: React.FC = () => {
                 })}
               </div>
 
+              {/* Promo / Discount Code */}
+              <div className="pt-4 border-t border-slate-100">
+                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <TagOutlined className="text-cyan-600" />
+                  Have a Promo Code?
+                </div>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
+                    <div className="flex items-center gap-2">
+                      <Tag color="success" className="font-mono font-bold tracking-wider">
+                        {appliedCoupon.code}
+                      </Tag>
+                      <span className="text-emerald-700 font-medium">
+                        -${appliedCoupon.discountAmount.toFixed(2)} off
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-slate-400 hover:text-red-500 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                    >
+                      <CloseCircleOutlined /> Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. HIMALAYA20"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleApplyCoupon();
+                        }
+                      }}
+                      className="flex-1 px-3 py-1.5 text-xs uppercase font-mono tracking-wider border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
+                    />
+                    <button
+                      type="button"
+                      disabled={validatingCoupon || !couponCode.trim()}
+                      onClick={handleApplyCoupon}
+                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold rounded-lg cursor-pointer transition-colors"
+                    >
+                      {validatingCoupon ? <Spin size="small" /> : 'Apply'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Price Calculations */}
               <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs">
                 <div className="flex items-center justify-between text-slate-600">
                   <span>Subtotal:</span>
                   <span className="font-semibold text-slate-800">${cartTotal.toFixed(2)}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex items-center justify-between text-emerald-600 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <TagOutlined /> Discount ({appliedCoupon?.code}):
+                    </span>
+                    <span>-${discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-slate-600">
                   <span>Estimated Tax (8%):</span>
                   <span className="font-semibold text-slate-800">${tax.toFixed(2)}</span>
@@ -468,17 +681,37 @@ export const CheckoutPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3 px-4 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor:
+                      paymentMethod === 'khalti'
+                        ? '#5c2d91'
+                        : paymentMethod === 'esewa'
+                        ? '#60bb46'
+                        : '#0284c7',
+                  }}
+                  className="w-full py-3 px-4 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:brightness-105 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
                 >
                   {submitting ? (
                     <>
                       <Spin size="small" />
-                      <span>Securing Order...</span>
+                      <span>
+                        {paymentMethod === 'khalti'
+                          ? 'Connecting Khalti...'
+                          : paymentMethod === 'esewa'
+                          ? 'Connecting eSewa...'
+                          : 'Securing Order...'}
+                      </span>
                     </>
                   ) : (
                     <>
                       <LockOutlined />
-                      <span>Place Order (${grandTotal.toFixed(2)})</span>
+                      <span>
+                        {paymentMethod === 'khalti'
+                          ? `Pay with Khalti ($${grandTotal.toFixed(2)})`
+                          : paymentMethod === 'esewa'
+                          ? `Pay with eSewa ($${grandTotal.toFixed(2)})`
+                          : `Place Order ($${grandTotal.toFixed(2)})`}
+                      </span>
                     </>
                   )}
                 </button>

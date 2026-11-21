@@ -8,6 +8,8 @@ const { Order } = require('./ecommerce.server/models/database/Order');
 const { Role } = require('./ecommerce.server/models/database/Role');
 const { Permission } = require('./ecommerce.server/models/database/Permission');
 const { Menu } = require('./ecommerce.server/models/database/Menu');
+const { Discount } = require('./ecommerce.server/models/database/Discount');
+const { Banner } = require('./ecommerce.server/models/database/Banner');
 
 async function seedData() {
   try {
@@ -21,6 +23,8 @@ async function seedData() {
     await Role.deleteMany({});
     await Permission.deleteMany({});
     await Menu.deleteMany({});
+    await Discount.deleteMany({});
+    await Banner.deleteMany({});
 
     // 1. Seed Permissions
     console.log('Seeding Permissions...');
@@ -127,13 +131,35 @@ async function seedData() {
         isSystem: true,
       },
       {
-        name: 'Customers',
+        name: 'Accounts',
         path: '/admin/customers',
         icon: 'TeamOutlined',
         order: 5,
-        roles: ['admin'],
+        roles: ['admin', 'seller', 'support', 'manager'],
         requiredPermission: 'pages:customers',
         badgeText: '',
+        isActive: true,
+        isSystem: true,
+      },
+      {
+        name: 'Discounts & Coupons',
+        path: '/admin/discounts',
+        icon: 'TagOutlined',
+        order: 5.8,
+        roles: ['admin', 'manager'],
+        requiredPermission: 'pages:discounts',
+        badgeText: 'Promo',
+        isActive: true,
+        isSystem: true,
+      },
+      {
+        name: 'Hero Banners',
+        path: '/admin/banners',
+        icon: 'PictureOutlined',
+        order: 5.9,
+        roles: ['admin', 'manager'],
+        requiredPermission: 'pages:banners',
+        badgeText: 'Live',
         isActive: true,
         isSystem: true,
       },
@@ -724,6 +750,78 @@ async function seedData() {
     ];
 
     await Order.insertMany(dummyOrders);
+
+    // 9. Seed Promotional Discounts
+    console.log('Seeding Promotional Discounts...');
+    const now = new Date();
+    const in60Days = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
+    const in90Days = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+    const defaultDiscounts = [
+      {
+        code: 'HIMALAYA20',
+        description: 'Storewide launch special - 20% off all orders over $50',
+        type: 'percentage',
+        value: 20,
+        minPurchaseAmount: 50,
+        maxDiscountAmount: 100,
+        startDate: now,
+        endDate: in60Days,
+        usageLimit: 500,
+        usedCount: 42,
+        isActive: true,
+      },
+      {
+        code: 'FESTIVE15',
+        description: 'Festive season discount - $15 flat rebate on purchases $100+',
+        type: 'fixed_amount',
+        value: 15,
+        minPurchaseAmount: 100,
+        startDate: now,
+        endDate: in90Days,
+        usageLimit: 250,
+        usedCount: 18,
+        isActive: true,
+      },
+      {
+        code: 'WELCOME10',
+        description: 'New shopper greeting voucher - 10% off your entire first cart',
+        type: 'percentage',
+        value: 10,
+        minPurchaseAmount: 20,
+        maxDiscountAmount: 40,
+        startDate: now,
+        endDate: in90Days,
+        usageLimit: 1000,
+        usedCount: 112,
+        isActive: true,
+      },
+      {
+        code: 'SUPERSALE25',
+        description: 'Premium member weekend flash event - 25% discount',
+        type: 'percentage',
+        value: 25,
+        minPurchaseAmount: 150,
+        maxDiscountAmount: 150,
+        startDate: now,
+        endDate: in60Days,
+        usageLimit: 100,
+        usedCount: 88,
+        isActive: true,
+      },
+      {
+        code: 'VIPBONUS25',
+        description: 'Exclusive VIP loyalty gift - $25 direct price slash on $120+ cart',
+        type: 'fixed_amount',
+        value: 25,
+        minPurchaseAmount: 120,
+        startDate: now,
+        endDate: in90Days,
+        usageLimit: 150,
+        usedCount: 35,
+        isActive: true,
+      },
+    ];
+    await Discount.insertMany(defaultDiscounts);
 
     console.log('Seeding completed successfully with Roles, Permissions, and Dynamic Menus!');
     console.log(`- Permissions: ${permissionsData.length}`);

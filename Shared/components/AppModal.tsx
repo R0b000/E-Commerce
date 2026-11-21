@@ -36,7 +36,7 @@ export const AppModal: React.FC<AppModalProps> = ({
       destroyOnClose
       {...props}
     >
-      <div className="py-2 text-slate-800">{children}</div>
+      <div className="text-slate-800">{children}</div>
     </AntModal>
   );
 };

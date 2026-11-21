@@ -257,9 +257,8 @@ export const ReviewManagement: React.FC = () => {
                         icon={<CheckCircleOutlined />}
                         style={{ backgroundColor: '#10b981' }}
                         onClick={() => handleUpdateStatus(revId, 'approved')}
-                      >
-                        Approve
-                      </AppButton>
+                        title="Approve Review"
+                      />
                     )}
 
                     {isApproved && (
@@ -267,9 +266,8 @@ export const ReviewManagement: React.FC = () => {
                         type="default"
                         icon={<CloseCircleOutlined />}
                         onClick={() => handleUpdateStatus(revId, 'rejected')}
-                      >
-                        Reject
-                      </AppButton>
+                        title="Reject Review"
+                      />
                     )}
 
                     <Popconfirm

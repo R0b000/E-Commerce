@@ -65,7 +65,7 @@ export interface Order {
   customer: CustomerInfo;
   shippingAddress: ShippingAddress;
   items: OrderItem[];
-  paymentMethod: 'credit_card' | 'paypal' | 'stripe' | 'cash_on_delivery';
+  paymentMethod: 'credit_card' | 'paypal' | 'stripe' | 'cash_on_delivery' | 'khalti' | 'esewa';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   orderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   subtotal: number;
@@ -219,4 +219,121 @@ export interface AuditLogItem {
   statusCode: number;
   details?: any;
   createdAt: string;
+}
+
+export interface BillingItem {
+  name: string;
+  description?: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface BillingRecord {
+  _id?: string;
+  id?: string;
+  invoiceNumber: string;
+  order?: any;
+  orderNumber?: string;
+  customer: {
+    userId?: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
+  billingAddress: {
+    street: string;
+    city: string;
+    state?: string;
+    zipCode: string;
+    country: string;
+  };
+  items: BillingItem[];
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  shippingAmount: number;
+  discountAmount: number;
+  totalAmount: number;
+  currency: string;
+  paymentMethod: string;
+  paymentStatus: 'paid' | 'pending' | 'unpaid' | 'overdue' | 'refunded';
+  issuedDate: string;
+  dueDate: string;
+  paidAt?: string | null;
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BillingStats {
+  totalInvoices: number;
+  totalBilled: number;
+  totalRevenue: number;
+  paidCount: number;
+  pendingAmount: number;
+  pendingCount: number;
+  overdueAmount: number;
+  overdueCount: number;
+  totalTaxCollected: number;
+}
+
+export interface DiscountItem {
+  _id: string;
+  id?: string;
+  code: string;
+  description: string;
+  type: 'percentage' | 'fixed_amount';
+  value: number;
+  minPurchaseAmount: number;
+  maxDiscountAmount?: number | null;
+  startDate: string;
+  endDate?: string | null;
+  usageLimit?: number | null;
+  usedCount: number;
+  isActive: boolean;
+  applicableCategory?: { _id: string; name: string; slug: string } | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BannerItem {
+  _id: string;
+  id?: string;
+  title: string;
+  subtitle?: string;
+  badgeText?: string;
+  imageUrl: string;
+  mobileImageUrl?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  secondaryCtaText?: string;
+  secondaryCtaLink?: string;
+  position: 'hero_main' | 'hero_secondary' | 'top_announcement' | 'flash_sale';
+  alignment: 'left' | 'center' | 'right';
+  overlayOpacity: number;
+  textColor?: string;
+  themeColor?: string;
+  scheduleType: 'always' | 'date_range' | 'recurring_daily' | 'recurring_weekly';
+  startDate?: string | null;
+  endDate?: string | null;
+  startHour?: number;
+  endHour?: number;
+  activeDays?: number[];
+  timezone?: string;
+  priority: number;
+  isActive: boolean;
+  impressions: number;
+  clicks: number;
+  computedStatus?: 'active_now' | 'scheduled' | 'expired' | 'inactive';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface BannerStats {
+  activeNowCount: number;
+  scheduledCount: number;
+  totalImpressions: number;
+  totalClicks: number;
+  avgCtr: string;
 }

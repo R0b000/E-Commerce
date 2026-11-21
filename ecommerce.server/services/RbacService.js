@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { Menu } = require('../models/database/Menu');
 const { Permission } = require('../models/database/Permission');
 const { Role } = require('../models/database/Role');
@@ -48,7 +49,10 @@ class RbacService {
           { name: 'Products', path: '/admin/products', icon: 'ShoppingOutlined', order: 2, roles: ['admin', 'seller', 'manager'], isSystem: true, isActive: true },
           { name: 'Categories', path: '/admin/categories', icon: 'AppstoreOutlined', order: 3, roles: ['admin', 'manager'], isSystem: true, isActive: true },
           { name: 'Orders', path: '/admin/orders', icon: 'FileTextOutlined', order: 4, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
-          { name: 'Customers & Sellers', path: '/admin/customers', icon: 'TeamOutlined', order: 5, roles: ['admin', 'support'], isSystem: true, isActive: true },
+          { name: 'Accounts', path: '/admin/customers', icon: 'TeamOutlined', order: 5, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
+          { name: 'Billing', path: '/admin/billing', icon: 'DollarOutlined', order: 5.5, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
+          { name: 'Discounts & Coupons', path: '/admin/discounts', icon: 'TagOutlined', order: 5.8, roles: ['admin', 'manager'], isSystem: true, isActive: true },
+          { name: 'Hero Banners', path: '/admin/banners', icon: 'PictureOutlined', order: 5.9, roles: ['admin', 'manager'], isSystem: true, isActive: true },
           { name: 'Customer Reviews', path: '/admin/reviews', icon: 'StarOutlined', order: 6, roles: ['admin', 'support', 'seller'], isSystem: true, isActive: true },
           { name: 'Audit Logs', path: '/admin/audit-logs', icon: 'HistoryOutlined', order: 7, roles: ['admin'], isSystem: true, isActive: true },
           { name: 'Security Roles', path: '/admin/roles', icon: 'KeyOutlined', order: 8, roles: ['admin'], isSystem: true, isActive: true },
@@ -58,6 +62,20 @@ class RbacService {
         await Menu.insertMany(defaultMenus);
         allMenus = await Menu.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).lean();
       } else {
+        // Remove seller-profile menu and update customer menu to Accounts
+        await Menu.deleteMany({ path: '/admin/seller-profile' });
+        allMenus = allMenus.filter((m) => m.path !== '/admin/seller-profile');
+
+        const customerMenu = allMenus.find((m) => m.path === '/admin/customers');
+        if (customerMenu) {
+          customerMenu.name = 'Accounts';
+          if (!customerMenu.roles.includes('seller')) customerMenu.roles.push('seller');
+          await Menu.updateOne(
+            { path: '/admin/customers' },
+            { $set: { name: 'Accounts', roles: customerMenu.roles } }
+          );
+        }
+
         const hasReviews = allMenus.some((m) => m.path === '/admin/reviews');
         if (!hasReviews) {
           const revMenu = await Menu.create({
@@ -99,20 +117,6 @@ class RbacService {
           allMenus.push(invMenu.toObject ? invMenu.toObject() : invMenu);
         }
 
-        const hasSellerProfile = allMenus.some((m) => m.path === '/admin/seller-profile');
-        if (!hasSellerProfile) {
-          const spMenu = await Menu.create({
-            name: 'Seller Profile',
-            path: '/admin/seller-profile',
-            icon: 'ShopOutlined',
-            order: 11,
-            roles: ['admin', 'seller'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(spMenu.toObject ? spMenu.toObject() : spMenu);
-        }
-
         const hasSecurity = allMenus.some((m) => m.path === '/admin/security');
         if (!hasSecurity) {
           const secMenu = await Menu.create({
@@ -126,6 +130,48 @@ class RbacService {
           });
           allMenus.push(secMenu.toObject ? secMenu.toObject() : secMenu);
         }
+
+        const hasBilling = allMenus.some((m) => m.path === '/admin/billing');
+        if (!hasBilling) {
+          const billMenu = await Menu.create({
+            name: 'Billing',
+            path: '/admin/billing',
+            icon: 'DollarOutlined',
+            order: 5.5,
+            roles: ['admin', 'seller', 'support', 'manager'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(billMenu.toObject ? billMenu.toObject() : billMenu);
+        }
+
+        const hasDiscounts = allMenus.some((m) => m.path === '/admin/discounts');
+        if (!hasDiscounts) {
+          const discMenu = await Menu.create({
+            name: 'Discounts & Coupons',
+            path: '/admin/discounts',
+            icon: 'TagOutlined',
+            order: 5.8,
+            roles: ['admin', 'manager'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(discMenu.toObject ? discMenu.toObject() : discMenu);
+        }
+
+        const hasBanners = allMenus.some((m) => m.path === '/admin/banners');
+        if (!hasBanners) {
+          const bannerMenu = await Menu.create({
+            name: 'Hero Banners',
+            path: '/admin/banners',
+            icon: 'PictureOutlined',
+            order: 5.9,
+            roles: ['admin', 'manager'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(bannerMenu.toObject ? bannerMenu.toObject() : bannerMenu);
+        }
       }
 
       // Filter menus based on user role and permissions
@@ -134,6 +180,19 @@ class RbacService {
       const allowedMenus = allMenus.filter((menu) => {
         if (isAdmin && (!hasConfiguredPermissions || roleDoc.permissions.includes('*'))) return true;
         if (effectivePermissions.has('*')) return true;
+
+        // Dashboard, profile, security, and billing are fundamental account features permitted for all roles
+        if (
+          menu.path === '/admin' ||
+          menu.path === '/admin/profile' ||
+          menu.path === '/admin/security' ||
+          menu.path === '/admin/billing' ||
+          menu.name.toLowerCase() === 'dashboard' ||
+          menu.name.toLowerCase() === 'profile' ||
+          menu.name.toLowerCase() === 'billing'
+        ) {
+          return true;
+        }
 
         // Check required permission
         if (menu.requiredPermission && effectivePermissions.has(menu.requiredPermission)) {
@@ -173,8 +232,13 @@ class RbacService {
 
       allowedMenus.forEach((m) => {
         const item = menuMap.get(m._id.toString());
-        if (m.parentId && menuMap.has(m.parentId.toString())) {
-          menuMap.get(m.parentId.toString()).subItems.push({
+        const parentKey = m.parentId
+          ? m.parentId._id
+            ? m.parentId._id.toString()
+            : m.parentId.toString()
+          : null;
+        if (parentKey && menuMap.has(parentKey)) {
+          menuMap.get(parentKey).subItems.push({
             label: item.name,
             path: item.path,
             id: item.id,
@@ -242,8 +306,14 @@ class RbacService {
         return ApiResponse.fail('Name and Path are required', [], 400);
       }
 
+      const parentId =
+        data.parentId && mongoose.Types.ObjectId.isValid(data.parentId)
+          ? data.parentId
+          : null;
+
       const menu = new Menu({
         ...data,
+        parentId,
         path: data.path.startsWith('/') ? data.path : `/${data.path}`,
         roles: data.roles || ['admin'],
       });
@@ -261,9 +331,17 @@ class RbacService {
    */
   async updateMenu(id, data) {
     try {
+      const updateData = { ...data };
+      if ('parentId' in updateData) {
+        updateData.parentId =
+          updateData.parentId && mongoose.Types.ObjectId.isValid(updateData.parentId)
+            ? updateData.parentId
+            : null;
+      }
+
       const updated = await Menu.findByIdAndUpdate(
         id,
-        { $set: data },
+        { $set: updateData },
         { new: true, runValidators: true }
       );
       if (!updated) {
@@ -403,20 +481,52 @@ class RbacService {
   }
 
   /**
-   * Updates permissions assigned to a role
+   * Updates role details (label, description, permissions)
    */
-  async updateRolePermissions(roleName, permissions) {
+  async updateRole(roleName, data) {
     try {
+      const updateData = {};
+      if (data.label !== undefined) updateData.label = data.label.trim();
+      if (data.description !== undefined) updateData.description = data.description.trim();
+      if (data.permissions !== undefined) updateData.permissions = data.permissions;
+
       const role = await Role.findOneAndUpdate(
         { name: roleName.toLowerCase() },
-        { $set: { permissions } },
+        { $set: updateData },
         { new: true, upsert: true }
       );
       if (!role) {
         return ApiResponse.fail(`Role "${roleName}" not found`, [], 404);
       }
       await redisService.delByPattern('ecommerce:menus:*');
-      return ApiResponse.success(role, [`Updated permissions for ${role.label}`]);
+      return ApiResponse.success(role, [`Role "${role.label || roleName}" updated successfully`]);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 400);
+    }
+  }
+
+  /**
+   * Updates permissions assigned to a role
+   */
+  async updateRolePermissions(roleName, permissions) {
+    return this.updateRole(roleName, { permissions });
+  }
+
+  /**
+   * Deletes a custom non-system role
+   */
+  async deleteRole(roleName) {
+    try {
+      const role = await Role.findOne({ name: roleName.toLowerCase() });
+      if (!role) {
+        return ApiResponse.fail(`Role "${roleName}" not found`, [], 404);
+      }
+      if (role.isSystem) {
+        return ApiResponse.fail('System core roles cannot be deleted', [], 400);
+      }
+      await Role.deleteOne({ _id: role._id });
+      await redisService.delByPattern('ecommerce:menus:*');
+      return ApiResponse.success(null, [`Role "${role.label}" deleted successfully`]);
     } catch (error) {
       return ApiResponse.fail(error.message, [error.message], 400);
     }

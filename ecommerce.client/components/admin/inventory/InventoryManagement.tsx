@@ -423,10 +423,10 @@ export const InventoryManagement: React.FC = () => {
                               setAdjustAmount(10);
                               setAdjustType('add');
                             }}
-                            className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white border border-slate-200 hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-300 font-semibold text-xs text-slate-700 transition-all cursor-pointer shadow-2xs ml-1"
+                            title="Adjust Stock"
+                            className="inline-flex items-center justify-center p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-300 font-semibold text-xs text-slate-700 transition-all cursor-pointer shadow-2xs ml-1"
                           >
                             <EditOutlined className="text-xs" />
-                            <span>Adjust</span>
                           </button>
                         </div>
                       </td>

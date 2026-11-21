@@ -9,10 +9,13 @@ import {
   CloseOutlined,
   CheckCircleOutlined,
   MessageOutlined,
+  LeftOutlined,
+  RightOutlined,
+  ClockCircleOutlined,
 } from '@ant-design/icons';
 import { Tag, Spin, Input, Rate, Form, Select } from 'antd';
 import { ecommerceService } from '../../services/EcommerceAPIService';
-import { Product, Category, ReviewItem } from '../../types/ecommerce.types';
+import { Product, Category, ReviewItem, BannerItem } from '../../types/ecommerce.types';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { AppCard, AppButton, AppModal, CardSkeleton } from 'shared-components';
@@ -25,6 +28,8 @@ export const StoreHomePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [banners, setBanners] = useState<BannerItem[]>([]);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewForm] = Form.useForm();
@@ -47,15 +52,19 @@ export const StoreHomePage: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [prodRes, catRes] = await Promise.all([
+        const [prodRes, catRes, bannerRes] = await Promise.all([
           ecommerceService.getProducts({ limit: 50, status: 'active' }),
           ecommerceService.getCategories(),
+          ecommerceService.getActiveBanners({ position: 'hero_main' }),
         ]);
         if (prodRes.success && prodRes.data) {
           setProducts(prodRes.data.products);
         }
         if (catRes.success && catRes.data) {
           setCategories(catRes.data);
+        }
+        if (bannerRes.success && bannerRes.data) {
+          setBanners(bannerRes.data);
         }
         await loadReviews();
       } catch {
@@ -67,6 +76,34 @@ export const StoreHomePage: React.FC = () => {
 
     fetchData();
   }, []);
+
+  // Auto-cycle through scheduled active banners every 7 seconds
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [banners.length]);
+
+  const handleBannerCtaClick = (banner: BannerItem, link?: string) => {
+    ecommerceService.recordBannerClick(banner._id).catch(() => {});
+    if (link) {
+      if (link.startsWith('http')) {
+        window.open(link, '_blank');
+      } else if (link.startsWith('/#')) {
+        const elementId = link.replace('/#', '');
+        const elem = document.getElementById(elementId);
+        if (elem) {
+          elem.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.location.hash = elementId;
+        }
+      } else {
+        window.location.href = link;
+      }
+    }
+  };
 
   const handleSubmitReview = async () => {
     try {
@@ -117,111 +154,215 @@ export const StoreHomePage: React.FC = () => {
 
   return (
     <div className="space-y-14 pb-16">
-      {/* Hero Banner Section */}
-      <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0369a1] via-[#0096c7] to-[#0284c7] text-white p-8 md:p-12 lg:p-16 shadow-xl border border-sky-400/20">
-        {/* Ambient decorative glowing orbs */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/15 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-sky-300/10 rounded-full blur-2xl pointer-events-none" />
+      {/* Hero Banner Section (Dynamic Auto-Scheduled Banners) */}
+      {(() => {
+        const currentBanner = banners.length > 0 ? banners[currentBannerIndex] : null;
 
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Column: Heading & CTAs */}
-          <div className="lg:col-span-7 space-y-5">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-amber-200 border border-white/25 shadow-xs">
-              <ThunderboltFilled className="text-amber-300" />
-              <span>Handcrafted in Nepal • Ethically Sourced</span>
-            </div>
+        return (
+          <section className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0369a1] via-[#0096c7] to-[#0284c7] text-white p-8 md:p-12 lg:p-16 shadow-xl border border-sky-400/20 transition-all duration-700">
+            {/* Background Image & Overlay for dynamic scheduled banner */}
+            {currentBanner?.imageUrl && (
+              <>
+                <img
+                  src={currentBanner.imageUrl}
+                  alt={currentBanner.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+                />
+                <div
+                  className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-900/75 to-slate-900/50"
+                  style={{ opacity: Math.max(0.65, (currentBanner.overlayOpacity ?? 45) / 100) }}
+                />
+              </>
+            )}
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
-              Authentic Himalayan Craftsmanship, Direct to Your Door
-            </h1>
+            {/* Ambient decorative glowing orbs */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400/20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/15 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+            <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-sky-300/10 rounded-full blur-2xl pointer-events-none" />
 
-            <p className="text-sky-100 text-sm md:text-base leading-relaxed max-w-xl font-normal">
-              Explore authentic hand-hammered singing bowls, organic high-altitude teas, pure pashmina shawls, and artisan crafts certified for ethical fair trade.
-            </p>
-
-            <div className="pt-2 flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => setSelectedCategory('all')}
-                className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] font-bold text-xs uppercase tracking-wider text-slate-950 transition-all shadow-lg shadow-amber-500/25 cursor-pointer flex items-center gap-2"
-              >
-                <span>Shop All Catalog</span>
-                <span className="text-sm">→</span>
-              </button>
-              <a
-                href="#featured"
-                className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all border border-white/30 cursor-pointer"
-              >
-                Featured Items
-              </a>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="pt-4 border-t border-white/15 flex flex-wrap items-center gap-6 text-xs text-sky-100">
-              <div className="flex items-center gap-2">
-                <CheckCircleOutlined className="text-amber-300" />
-                <span>100% Artisan Made</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <StarFilled className="text-amber-300" />
-                <span>4.9 / 5 Customer Rating</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span>Fast Nationwide Delivery</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Featured Product Spotlight Card */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            {featuredProduct ? (
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column: Heading & CTAs */}
               <div
-                onClick={() => setQuickViewProduct(featuredProduct)}
-                className="w-full max-w-sm bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl p-4 shadow-2xl hover:bg-white/20 transition-all duration-300 cursor-pointer group"
+                className={`lg:col-span-7 space-y-5 ${
+                  currentBanner?.alignment === 'center'
+                    ? 'text-center mx-auto'
+                    : currentBanner?.alignment === 'right'
+                    ? 'text-right ml-auto'
+                    : 'text-left'
+                }`}
               >
-                <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-white/20 mb-3.5">
-                  <img
-                    src={featuredProduct.images?.[0] || 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80'}
-                    alt={featuredProduct.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow-sm">
-                    Staff Spotlight
-                  </div>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-bold text-amber-200 border border-white/25 shadow-xs">
+                  <ThunderboltFilled className="text-amber-300" />
+                  <span>
+                    {currentBanner?.badgeText || 'Handcrafted in Nepal • Ethically Sourced'}
+                  </span>
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <h4 className="text-white font-bold text-base truncate group-hover:text-amber-200 transition-colors">
-                      {featuredProduct.name}
-                    </h4>
-                    <span className="text-amber-300 font-extrabold text-base whitespace-nowrap">
-                      ${(featuredProduct.salePrice ?? featuredProduct.price).toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-sky-100 text-xs line-clamp-2 leading-relaxed">
-                    {featuredProduct.description}
-                  </p>
-                  <div className="pt-1 flex items-center justify-between">
-                    <span className="text-[11px] text-sky-200">Click to view details</span>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
+                  {currentBanner?.title || 'Authentic Himalayan Craftsmanship, Direct to Your Door'}
+                </h1>
+
+                <p className="text-sky-100 text-sm md:text-base leading-relaxed max-w-xl font-normal">
+                  {currentBanner?.subtitle ||
+                    'Explore authentic hand-hammered singing bowls, organic high-altitude teas, pure pashmina shawls, and artisan crafts certified for ethical fair trade.'}
+                </p>
+
+                <div
+                  className={`pt-2 flex flex-wrap items-center gap-3 ${
+                    currentBanner?.alignment === 'center'
+                      ? 'justify-center'
+                      : currentBanner?.alignment === 'right'
+                      ? 'justify-end'
+                      : ''
+                  }`}
+                >
+                  <button
+                    onClick={() =>
+                      currentBanner
+                        ? handleBannerCtaClick(currentBanner, currentBanner.ctaLink)
+                        : setSelectedCategory('all')
+                    }
+                    className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.98] font-bold text-xs uppercase tracking-wider text-slate-950 transition-all shadow-lg shadow-amber-500/25 cursor-pointer flex items-center gap-2"
+                  >
+                    <span>{currentBanner?.ctaText || 'Shop All Catalog'}</span>
+                    <span className="text-sm">→</span>
+                  </button>
+
+                  {(currentBanner?.secondaryCtaText || !currentBanner) && (
                     <button
-                      onClick={(e) => handleAddToCart(featuredProduct, e)}
-                      className="px-3 py-1.5 rounded-lg bg-white text-[#0096C7] hover:bg-amber-400 hover:text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                      onClick={() =>
+                        currentBanner
+                          ? handleBannerCtaClick(currentBanner, currentBanner.secondaryCtaLink)
+                          : handleBannerCtaClick({ _id: '' } as any, '/#featured')
+                      }
+                      className="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md transition-all border border-white/30 cursor-pointer"
                     >
-                      <ShoppingOutlined /> Add to Bag
+                      {currentBanner?.secondaryCtaText || 'Featured Items'}
                     </button>
+                  )}
+                </div>
+
+                {/* Trust Badges */}
+                <div
+                  className={`pt-4 border-t border-white/15 flex flex-wrap items-center gap-6 text-xs text-sky-100 ${
+                    currentBanner?.alignment === 'center'
+                      ? 'justify-center'
+                      : currentBanner?.alignment === 'right'
+                      ? 'justify-end'
+                      : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircleOutlined className="text-amber-300" />
+                    <span>100% Artisan Made</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <StarFilled className="text-amber-300" />
+                    <span>4.9 / 5 Customer Rating</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>Fast Nationwide Delivery</span>
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="w-full max-w-sm aspect-4/3 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/60">
-                <ShoppingOutlined className="text-4xl text-white/40" />
+
+              {/* Right Column: Featured Product Spotlight Card */}
+              <div className="lg:col-span-5 flex justify-center lg:justify-end">
+                {featuredProduct ? (
+                  <div
+                    onClick={() => setQuickViewProduct(featuredProduct)}
+                    className="w-full max-w-sm bg-white/15 backdrop-blur-md border border-white/25 rounded-3xl p-4 shadow-2xl hover:bg-white/20 transition-all duration-300 cursor-pointer group"
+                  >
+                    <div className="relative aspect-4/3 rounded-2xl overflow-hidden bg-white/20 mb-3.5">
+                      <img
+                        src={
+                          featuredProduct.images?.[0] ||
+                          'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&q=80'
+                        }
+                        alt={featuredProduct.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider shadow-sm">
+                        Staff Spotlight
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-white font-bold text-base truncate group-hover:text-amber-200 transition-colors">
+                          {featuredProduct.name}
+                        </h4>
+                        <span className="text-amber-300 font-extrabold text-base whitespace-nowrap">
+                          ${(featuredProduct.salePrice ?? featuredProduct.price).toFixed(2)}
+                        </span>
+                      </div>
+                      <p className="text-sky-100 text-xs line-clamp-2 leading-relaxed">
+                        {featuredProduct.description}
+                      </p>
+                      <div className="pt-1 flex items-center justify-between">
+                        <span className="text-[11px] text-sky-200">Click to view details</span>
+                        <button
+                          onClick={(e) => handleAddToCart(featuredProduct, e)}
+                          className="px-3 py-1.5 rounded-lg bg-white text-[#0096C7] hover:bg-amber-400 hover:text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                        >
+                          <ShoppingOutlined /> Add to Bag
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full max-w-sm aspect-4/3 rounded-3xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white/60">
+                    <ShoppingOutlined className="text-4xl text-white/40" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Carousel Navigation Dots & Controls (When multiple banners active) */}
+            {banners.length > 1 && (
+              <div className="relative z-20 mt-6 pt-4 border-t border-white/15 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {banners.map((b, idx) => (
+                    <button
+                      key={b._id || idx}
+                      onClick={() => setCurrentBannerIndex(idx)}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        idx === currentBannerIndex
+                          ? 'w-8 bg-amber-400 shadow-sm'
+                          : 'w-2 bg-white/40 hover:bg-white/70'
+                      }`}
+                      title={b.title}
+                    />
+                  ))}
+                  <span className="ml-2 text-[11px] text-white/70 font-medium">
+                    Scheduled Promo {currentBannerIndex + 1} of {banners.length}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() =>
+                      setCurrentBannerIndex((prev) => (prev - 1 + banners.length) % banners.length)
+                    }
+                    className="p-1.5 rounded-full bg-white/15 hover:bg-white/30 text-white text-xs transition-colors cursor-pointer"
+                    title="Previous banner"
+                  >
+                    <LeftOutlined />
+                  </button>
+                  <button
+                    onClick={() => setCurrentBannerIndex((prev) => (prev + 1) % banners.length)}
+                    className="p-1.5 rounded-full bg-white/15 hover:bg-white/30 text-white text-xs transition-colors cursor-pointer"
+                    title="Next banner"
+                  >
+                    <RightOutlined />
+                  </button>
+                </div>
               </div>
             )}
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       {/* Category Strip */}
       <section className="space-y-4">

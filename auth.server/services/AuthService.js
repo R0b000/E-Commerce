@@ -124,6 +124,7 @@ class AuthService {
       agreementVersion: user.agreementVersion || '1.0',
       lastLoginIp: user.lastLoginIp || null,
       lastPasswordChange: user.lastPasswordChange || null,
+      createdAt: user.createdAt || null,
       tokenExpiresAt,
       expiresAt: tokenExpiresAt,
       expiresIn,

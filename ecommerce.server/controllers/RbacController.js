@@ -48,10 +48,15 @@ rbacRouter.post('/roles', authenticateToken, requireRole('admin'), async (req, r
   res.status(result.statusCode || 201).json(result);
 });
 
-// Admin: Update role permissions
+// Admin: Update role (details or permissions)
 rbacRouter.put('/roles/:roleName', authenticateToken, requireRole('admin'), async (req, res) => {
-  const { permissions } = req.body;
-  const result = await rbacService.updateRolePermissions(req.params.roleName, permissions);
+  const result = await rbacService.updateRole(req.params.roleName, req.body);
+  res.status(result.statusCode || 200).json(result);
+});
+
+// Admin: Delete custom role
+rbacRouter.delete('/roles/:roleName', authenticateToken, requireRole('admin'), async (req, res) => {
+  const result = await rbacService.deleteRole(req.params.roleName);
   res.status(result.statusCode || 200).json(result);
 });
 

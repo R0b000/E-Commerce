@@ -71,7 +71,7 @@ export const SellerProfile: React.FC = () => {
       <PageHeader
         title="Seller & Vendor Profile"
         description="Manage your storefront branding, verified business identity, artisan certifications, and dual-persona shopper settings."
-        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Seller Profile' }]}
+        breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Accounts', path: '/admin/customers' }, { label: 'Seller Profile' }]}
       />
 
       {/* Dual Persona Customer Privileges Notice */}
@@ -226,7 +226,7 @@ export const SellerProfile: React.FC = () => {
         {/* Right Column: Live Storefront Card Preview (4 Columns) */}
         <div className="lg:col-span-4 space-y-4">
           <AppCard className="border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden p-0 bg-white">
-            <div className="h-28 w-full bg-slate-900 relative overflow-hidden">
+            <div className="h-28 w-full bg-gradient-to-r from-sky-600 via-[#0096c7] to-cyan-500 relative overflow-hidden">
               <img
                 src={vendorData.documentUrl || 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=600'}
                 alt="Banner"
