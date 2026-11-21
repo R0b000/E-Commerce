@@ -14,7 +14,6 @@ import {
   EyeInvisibleOutlined,
   SaveOutlined,
   KeyOutlined,
-  ShopOutlined,
   SearchOutlined,
   RightOutlined,
   ArrowLeftOutlined,
@@ -510,10 +509,10 @@ export const UserProfile: React.FC = () => {
               </div>
             </div>
 
-            {/* Section: Preferences */}
+            {/* Section: System Security */}
             <div>
               <div className={`text-[11px] font-semibold uppercase tracking-wider ${fbTextSecondary} px-2 mb-1`}>
-                Security & Store
+                System Security
               </div>
 
               <div className="space-y-0.5">
@@ -526,19 +525,6 @@ export const UserProfile: React.FC = () => {
                       <KeyOutlined />
                     </span>
                     <span className="text-xs font-medium">Security & Passkeys</span>
-                  </div>
-                  <RightOutlined className={`text-[9px] ${fbTextSecondary}`} />
-                </Link>
-
-                <Link
-                  to="/admin/profile/vendor"
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left cursor-pointer transition ${fbHover} ${fbTextPrimary}`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-7 h-7 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center text-xs">
-                      <ShopOutlined />
-                    </span>
-                    <span className="text-xs font-medium">Seller & Vendor Profile</span>
                   </div>
                   <RightOutlined className={`text-[9px] ${fbTextSecondary}`} />
                 </Link>
@@ -577,9 +563,9 @@ export const UserProfile: React.FC = () => {
               VIEW 1: OVERVIEW HUB (Profile summary, stats, quick access & recent logs)
              ------------------------------------------------------------------- */}
           {activeTab === 'overview' && (
-            <div className="space-y-6 max-w-4xl">
+            <div className="w-full space-y-6">
               {/* User Profile Identity Banner */}
-              <div className={`p-6 rounded-2xl ${fbPanel} shadow-sm relative overflow-hidden`}>
+              <div className={`p-6 rounded-2xl ${fbPanel} shadow-xs relative overflow-hidden border border-slate-100/80`}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-tr from-[#0096c7] to-cyan-400 text-white flex items-center justify-center font-bold text-2xl shrink-0 border-2 border-[#0096c7]/50 shadow-md">
@@ -593,7 +579,7 @@ export const UserProfile: React.FC = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <h2 className={`text-base font-bold ${fbTextPrimary}`}>{displayName}</h2>
                         <Tag color="cyan" className="font-semibold text-[10px] uppercase rounded-full">
-                          {user?.role || 'CUSTOMER'}
+                          {user?.role || 'ADMINISTRATOR'}
                         </Tag>
                         <Tag color="green" className="font-semibold text-[10px] rounded-full">
                           <CheckCircleOutlined /> ACTIVE
@@ -601,7 +587,7 @@ export const UserProfile: React.FC = () => {
                       </div>
                       <p className={`text-xs ${fbTextSecondary} mt-0.5`}>{user?.email}</p>
                       {bio && (
-                        <p className={`text-xs text-slate-700 italic mt-1.5 line-clamp-2 max-w-xl bg-slate-100/70 px-2.5 py-1 rounded-lg`}>
+                        <p className={`text-xs text-slate-700 italic mt-1.5 line-clamp-2 max-w-2xl bg-slate-100/70 px-2.5 py-1 rounded-lg`}>
                           "{bio}"
                         </p>
                       )}
@@ -619,18 +605,18 @@ export const UserProfile: React.FC = () => {
                 </div>
 
                 {/* Account Details Badges Strip */}
-                <div className="mt-5 pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div>
+                <div className="mt-5 pt-4 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs border-t border-slate-100">
+                  <div className="p-3 rounded-xl bg-slate-50/80">
                     <div className={fbTextSecondary}>Account ID</div>
                     <div className="flex items-center gap-1.5 font-mono text-[11px] font-semibold mt-0.5">
-                      <span className={`${fbTextPrimary} truncate max-w-[90px]`} title={user?.id || 'N/A'}>
-                        {user?.id ? `${user.id.slice(0, 8)}...` : 'N/A'}
+                      <span className={`${fbTextPrimary} truncate`} title={user?.id || 'N/A'}>
+                        {user?.id ? `${user.id.slice(0, 10)}...` : 'N/A'}
                       </span>
                       {user?.id && (
                         <button
                           type="button"
                           onClick={() => copyToClipboard(user.id, 'Account ID')}
-                          className="text-[#0096c7] hover:opacity-80"
+                          className="text-[#0096c7] hover:opacity-80 cursor-pointer"
                           title="Copy Account ID"
                         >
                           <CopyOutlined className="text-[11px]" />
@@ -639,22 +625,22 @@ export const UserProfile: React.FC = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="p-3 rounded-xl bg-slate-50/80">
                     <div className={fbTextSecondary}>Member Since</div>
                     <div className={`font-semibold mt-0.5 ${fbTextPrimary}`}>
                       {user?.createdAt ? new Date(user.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'Active Member'}
                     </div>
                   </div>
 
-                  <div>
+                  <div className="p-3 rounded-xl bg-slate-50/80">
                     <div className={fbTextSecondary}>Security Health</div>
-                    <div className="flex items-center gap-1 text-emerald-400 font-semibold mt-0.5">
+                    <div className="flex items-center gap-1 text-emerald-600 font-semibold mt-0.5">
                       <SafetyCertificateOutlined />
                       <span>{user?.hasPasskey ? 'FIDO2 Protected' : 'Password Protected'}</span>
                     </div>
                   </div>
 
-                  <div>
+                  <div className="p-3 rounded-xl bg-slate-50/80">
                     <div className={fbTextSecondary}>Activity Records</div>
                     <div className={`font-semibold mt-0.5 ${fbTextPrimary} flex items-center gap-1`}>
                       <HistoryOutlined className="text-[#0096c7]" />
@@ -664,19 +650,19 @@ export const UserProfile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Quick Setting Navigation Cards */}
+              {/* Quick Setting Navigation Cards (Full Width 4-Column Responsive Grid) */}
               <div>
                 <h3 className={`text-xs font-bold ${fbTextPrimary} tracking-tight mb-3`}>
                   Quick account shortcuts
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Card 1: Personal Details & Bio */}
                   <div
                     onClick={() => setActiveTab('personal')}
-                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[160px] group`}
+                    className={`${fbPanel} hover:bg-slate-50 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[150px] group border border-slate-100/80`}
                   >
-                    <div className="w-11 h-11 rounded-full bg-amber-400/20 text-amber-400 flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
                       <UserOutlined />
                     </div>
                     <div>
@@ -684,7 +670,7 @@ export const UserProfile: React.FC = () => {
                         Profile & Bio
                       </div>
                       <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
-                        Update your public photo, display name, and marketplace biography.
+                        Update display name, avatar photograph, and administrative bio.
                       </p>
                     </div>
                   </div>
@@ -692,9 +678,9 @@ export const UserProfile: React.FC = () => {
                   {/* Card 2: Password & Security */}
                   <div
                     onClick={() => setActiveTab('security')}
-                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[160px] group`}
+                    className={`${fbPanel} hover:bg-slate-50 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[150px] group border border-slate-100/80`}
                   >
-                    <div className="w-11 h-11 rounded-full bg-rose-400/20 text-rose-400 flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
                       <LockOutlined />
                     </div>
                     <div>
@@ -702,7 +688,7 @@ export const UserProfile: React.FC = () => {
                         Password & Security
                       </div>
                       <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
-                        Change your credentials and view active session validity.
+                        Change credentials and view active session credentials.
                       </p>
                     </div>
                   </div>
@@ -710,9 +696,9 @@ export const UserProfile: React.FC = () => {
                   {/* Card 3: Activity Logs */}
                   <div
                     onClick={() => setActiveTab('logs')}
-                    className={`${fbPanel} hover:${fbSubPanel} p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[160px] group`}
+                    className={`${fbPanel} hover:bg-slate-50 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[150px] group border border-slate-100/80`}
                   >
-                    <div className="w-11 h-11 rounded-full bg-cyan-400/20 text-[#0096c7] flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-[#0096c7] flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
                       <HistoryOutlined />
                     </div>
                     <div>
@@ -720,60 +706,167 @@ export const UserProfile: React.FC = () => {
                         Activity Logs & Audits
                       </div>
                       <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
-                        View your real-time sign-ins, IP addresses, and platform operations.
+                        View audit trail of sign-ins and system administrative actions.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Address & Contact */}
+                  <div
+                    onClick={() => setActiveTab('contact')}
+                    className={`${fbPanel} hover:bg-slate-50 p-5 rounded-2xl cursor-pointer transition-all hover:scale-[1.01] hover:shadow-md flex flex-col justify-between min-h-[150px] group border border-slate-100/80`}
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center text-lg mb-3 group-hover:scale-110 transition-transform">
+                      <EnvironmentOutlined />
+                    </div>
+                    <div>
+                      <div className={`text-xs font-bold ${fbTextPrimary} group-hover:text-[#0096c7] transition-colors`}>
+                        Address & Contact
+                      </div>
+                      <p className={`text-[11px] ${fbTextSecondary} mt-1 leading-normal`}>
+                        Manage emergency contact details and physical address.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Recent Activity Snapshot */}
-              <div className={`p-5 rounded-2xl ${fbPanel}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <HistoryOutlined className="text-[#0096c7] text-sm" />
-                    <h3 className={`text-xs font-bold ${fbTextPrimary}`}>
-                      Recent Activity Preview
-                    </h3>
+              {/* Lower Full-Width Grid: Recent Activity Preview (2 Cols) & Role & Access Info (1 Col) */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left (col-span-2): Recent Activity Snapshot */}
+                <div className={`lg:col-span-2 p-5 rounded-2xl ${fbPanel} border border-slate-100/80 flex flex-col justify-between`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <HistoryOutlined className="text-[#0096c7] text-sm" />
+                        <h3 className={`text-xs font-bold ${fbTextPrimary}`}>
+                          Recent Activity Preview
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-normal">
+                          ({logs.length} logged operations)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('logs')}
+                        className="text-xs text-[#0096c7] font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>View All Activity</span>
+                        <RightOutlined className="text-[9px]" />
+                      </button>
+                    </div>
+
+                    {logsLoading ? (
+                      <div className="py-10 flex items-center justify-center gap-2 text-xs text-[#0096c7]">
+                        <Spin size="small" />
+                        <span>Loading recent operations...</span>
+                      </div>
+                    ) : logs.length === 0 ? (
+                      <div className={`py-10 text-center text-xs ${fbTextSecondary}`}>
+                        No recent activity records found. Actions you perform will be listed here.
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100">
+                        {logs.slice(0, 5).map((item, idx) => (
+                          <div key={item._id || item.id || idx} className="py-2.5 px-2 flex items-center justify-between text-xs hover:bg-slate-50 rounded-lg transition">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <Tag color={getActionTagColor(item.action)} className="font-mono text-[10px] m-0 shrink-0">
+                                {item.action || 'ACTIVITY'}
+                              </Tag>
+                              <span className={`font-medium ${fbTextPrimary} truncate`} title={item.endpoint}>
+                                {item.endpoint || 'Platform interaction'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0 ml-3">
+                              {item.ipAddress && (
+                                <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+                                  {item.ipAddress}
+                                </span>
+                              )}
+                              <span className={`text-[11px] ${fbTextSecondary} font-mono whitespace-nowrap`}>
+                                {item.createdAt ? new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Recently'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('logs')}
-                    className="text-xs text-[#0096c7] font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>View All Activity</span>
-                    <RightOutlined className="text-[9px]" />
-                  </button>
+
+                  <div className="pt-3 mt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Audit trail records are logged securely in real-time</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('logs')}
+                      className="text-[#0096c7] font-semibold hover:underline cursor-pointer"
+                    >
+                      Open Full Audit Trail &rarr;
+                    </button>
+                  </div>
                 </div>
 
-                {logsLoading ? (
-                  <div className="py-6 flex items-center justify-center gap-2 text-xs text-[#0096c7]">
-                    <Spin size="small" />
-                    <span>Loading recent operations...</span>
-                  </div>
-                ) : logs.length === 0 ? (
-                  <div className={`py-6 text-center text-xs ${fbTextSecondary}`}>
-                    No recent activity records found. Actions you perform will be listed here.
-                  </div>
-                ) : (
-                  <div className="divide-y divide-white/5 space-y-1">
-                    {logs.slice(0, 3).map((item, idx) => (
-                      <div key={item._id || item.id || idx} className="py-2.5 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3">
-                          <Tag color={getActionTagColor(item.action)} className="font-mono text-[10px] m-0">
-                            {item.action || 'ACTIVITY'}
-                          </Tag>
-                          <span className={`font-medium ${fbTextPrimary} truncate max-w-xs`}>
-                            {item.endpoint || 'Platform interaction'}
-                          </span>
-                        </div>
-                        <div className={`text-[11px] ${fbTextSecondary} font-mono shrink-0`}>
-                          {item.createdAt ? new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : 'Recently'}
-                        </div>
+                {/* Right (col-span-1): Administrative Role & Scope Panel */}
+                <div className="space-y-4">
+                  <div className={`p-5 rounded-2xl ${fbPanel} border border-slate-100/80`}>
+                    <h3 className={`text-xs font-bold ${fbTextPrimary} mb-3 flex items-center gap-2`}>
+                      <SafetyCertificateOutlined className="text-emerald-500" />
+                      <span>Administrative Role & Scope</span>
+                    </h3>
+
+                    <div className="space-y-2.5 text-xs">
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50">
+                        <span className={fbTextSecondary}>Assigned Role</span>
+                        <Tag color="cyan" className="font-semibold text-[10px] uppercase m-0">
+                          {user?.role || 'ADMINISTRATOR'}
+                        </Tag>
                       </div>
-                    ))}
+
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50">
+                        <span className={fbTextSecondary}>Access Scope</span>
+                        <span className={`font-semibold text-[11px] ${fbTextPrimary}`}>
+                          {user?.role === 'admin'
+                            ? 'Full System Administrator'
+                            : user?.role === 'support'
+                            ? 'Customer Care & Support'
+                            : user?.role === 'manager'
+                            ? 'Store Operations Manager'
+                            : 'Staff Account'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50">
+                        <span className={fbTextSecondary}>Session Status</span>
+                        <span className="font-mono text-emerald-600 font-semibold text-[11px] flex items-center gap-1">
+                          <CheckCircleOutlined className="text-[10px]" /> Active (24h)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100">
+                      <Link
+                        to="/admin/security"
+                        className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold flex items-center justify-center gap-2 transition"
+                      >
+                        <KeyOutlined className="text-purple-500 text-xs" />
+                        <span>Security & Passkeys Manager</span>
+                      </Link>
+                    </div>
                   </div>
-                )}
+
+                  <div className={`p-4 rounded-2xl ${fbPanel} border border-slate-100/80`}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-sky-50 text-sky-500 flex items-center justify-center text-sm shrink-0">
+                        <InfoCircleOutlined />
+                      </div>
+                      <div>
+                        <div className={`text-xs font-bold ${fbTextPrimary}`}>Admin & Support Hub</div>
+                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                          This portal profile is dedicated to administrators, customer care representatives, and store managers.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -782,13 +875,13 @@ export const UserProfile: React.FC = () => {
               VIEW 2: PROFILE & BIO (Photo Upload, Names, Bio, Live Preview)
              ------------------------------------------------------------------- */}
           {activeTab === 'personal' && (
-            <div className="max-w-3xl space-y-6">
+            <div className="w-full space-y-6">
               <div>
                 <h2 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
                   Personal Profile & Biography
                 </h2>
                 <p className={`text-[11px] ${fbTextSecondary} mt-0.5`}>
-                  Manage your display name, public profile photograph, and personal bio visible to shoppers and artisans.
+                  Manage your display name, public profile photograph, and personal bio visible to administrators and team members.
                 </p>
               </div>
 
@@ -963,7 +1056,7 @@ export const UserProfile: React.FC = () => {
               VIEW 3: PASSWORD & SECURITY
              ------------------------------------------------------------------- */}
           {activeTab === 'security' && (
-            <div className="max-w-2xl space-y-6">
+            <div className="w-full space-y-6">
               <div>
                 <h2 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
                   Password & Security Settings
@@ -1091,7 +1184,7 @@ export const UserProfile: React.FC = () => {
               VIEW 4: USER ACTIVITY LOGS (Real-time Operations & Audits)
              ------------------------------------------------------------------- */}
           {activeTab === 'logs' && (
-            <div className="max-w-4xl space-y-5">
+            <div className="w-full space-y-5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
@@ -1187,7 +1280,7 @@ export const UserProfile: React.FC = () => {
                               </Tag>
                             </td>
                             <td className="py-3 px-4">
-                              <span className={`font-mono text-[11px] ${fbTextPrimary} truncate max-w-xs block`} title={item.endpoint}>
+                              <span className={`font-mono text-[11px] ${fbTextPrimary} truncate max-w-md lg:max-w-xl block`} title={item.endpoint}>
                                 {item.endpoint || '/ecommerce/activity'}
                               </span>
                             </td>
@@ -1257,7 +1350,7 @@ export const UserProfile: React.FC = () => {
               VIEW 5: CONTACT & ADDRESS
              ------------------------------------------------------------------- */}
           {activeTab === 'contact' && (
-            <div className="max-w-2xl space-y-6">
+            <div className="w-full space-y-6">
               <div>
                 <h2 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
                   Contact & Shipping Address
@@ -1324,7 +1417,7 @@ export const UserProfile: React.FC = () => {
               VIEW 6: LEGAL AGREEMENTS & TERMS
              ------------------------------------------------------------------- */}
           {activeTab === 'legal' && (
-            <div className="max-w-3xl space-y-6">
+            <div className="w-full space-y-6">
               <div>
                 <h2 className={`text-base font-bold ${fbTextPrimary} tracking-tight`}>
                   Platform Legal Agreements & Terms
@@ -1387,7 +1480,7 @@ export const UserProfile: React.FC = () => {
 
                   <p className="font-bold mb-2 text-slate-800">2. ARTISAN INTEGRITY & FAIR SOURCING</p>
                   <p className="mb-3">
-                    All sellers guarantee the provenance of handcrafted artifacts, organic herbs, and hand-woven textiles. Counterfeiting, misattribution of origin, or unauthorized factory replications will incur immediate account termination.
+                    All platform administrators, care agents, and merchants uphold the highest integrity for handcrafted artifacts, organic herbs, and hand-woven textiles. Misattribution of origin or counterfeit goods will incur immediate revocation of platform privileges.
                   </p>
 
                   <p className="font-bold mb-2 text-slate-800">3. PRIVACY & DATA SAFEGUARDS</p>
