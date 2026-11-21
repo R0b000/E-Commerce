@@ -272,27 +272,46 @@ class RbacService {
       const roots = [];
 
       allowedMenus.forEach((m) => {
-        menuMap.set(m._id.toString(), {
+        const idStr = m._id ? m._id.toString() : String(m.id || m.menuId);
+        const itemObj = {
           ...m,
-          id: m._id.toString(),
+          id: idStr,
           subItems: [],
-        });
+        };
+        menuMap.set(idStr, itemObj);
+        if (m.menuId !== undefined && m.menuId !== null) {
+          menuMap.set(String(m.menuId), itemObj);
+        }
       });
 
       allowedMenus.forEach((m) => {
-        const item = menuMap.get(m._id.toString());
-        const parentKey = m.parentId
-          ? m.parentId._id
-            ? m.parentId._id.toString()
-            : m.parentId.toString()
-          : null;
-        if (parentKey && menuMap.has(parentKey)) {
-          menuMap.get(parentKey).subItems.push({
-            label: item.name,
-            path: item.path,
-            id: item.id,
-            order: item.order || 0,
-          });
+        const idStr = m._id ? m._id.toString() : String(m.id || m.menuId);
+        const item = menuMap.get(idStr);
+        let parentKey = null;
+
+        if (m.parentId !== null && m.parentId !== undefined && m.parentId !== '' && m.parentId !== 'none') {
+          if (typeof m.parentId === 'object' && m.parentId) {
+            parentKey = (m.parentId._id || m.parentId.id || m.parentId.menuId || '').toString();
+          } else {
+            parentKey = String(m.parentId);
+          }
+        }
+
+        if (parentKey && menuMap.has(parentKey) && menuMap.get(parentKey) !== item) {
+          const parent = menuMap.get(parentKey);
+          if (!parent.subItems.some((s) => s.id === item.id || s.path === item.path)) {
+            parent.subItems.push({
+              label: item.name,
+              nameNepali: item.menuNameNepali || '',
+              path: item.path,
+              id: item.id,
+              menuId: item.menuId,
+              order: item.order || 0,
+              icon: item.icon,
+              isSinglePage: item.isSinglePage,
+              isPrimary: item.isPrimary,
+            });
+          }
         } else {
           roots.push(item);
         }
@@ -334,8 +353,7 @@ class RbacService {
   async getAllMenus() {
     try {
       const menus = await Menu.find()
-        .populate('parentId', 'name path')
-        .sort({ order: 1, createdAt: 1 })
+        .sort({ order: 1, menuId: 1, createdAt: 1 })
         .lean();
 
       return ApiResponse.success(
@@ -355,14 +373,38 @@ class RbacService {
         return ApiResponse.fail('Name and Path are required', [], 400);
       }
 
-      const parentId =
-        data.parentId && mongoose.Types.ObjectId.isValid(data.parentId)
-          ? data.parentId
-          : null;
+      let menuId = data.menuId;
+      if (menuId === undefined || menuId === null || menuId === '') {
+        const maxMenu = await Menu.findOne({ menuId: { $ne: null } })
+          .sort({ menuId: -1 })
+          .lean();
+        menuId = (maxMenu?.menuId || 70) + 1;
+      } else {
+        menuId = Number(menuId);
+      }
+
+      let parentId = null;
+      if (data.parentId !== undefined && data.parentId !== null && data.parentId !== '' && data.parentId !== 'none') {
+        parentId = data.parentId;
+      }
+
+      let childId = null;
+      if (data.childId !== undefined && data.childId !== null && data.childId !== '' && data.childId !== 'none') {
+        childId = data.childId;
+      }
 
       const menu = new Menu({
         ...data,
+        menuId,
         parentId,
+        childId,
+        menuNameNepali: data.menuNameNepali || '',
+        isSinglePage: Boolean(data.isSinglePage),
+        isPrimary: Boolean(data.isPrimary),
+        isChild: Boolean(data.isChild),
+        isNotParent: data.isNotParent !== undefined ? Boolean(data.isNotParent) : true,
+        isNotChild: data.isNotChild !== undefined ? Boolean(data.isNotChild) : true,
+        menuCode: data.menuCode || '',
         path: data.path.startsWith('/') ? data.path : `/${data.path}`,
         roles: data.roles || ['admin'],
       });
@@ -382,11 +424,31 @@ class RbacService {
     try {
       const updateData = { ...data };
       if ('parentId' in updateData) {
-        updateData.parentId =
-          updateData.parentId && mongoose.Types.ObjectId.isValid(updateData.parentId)
-            ? updateData.parentId
-            : null;
+        if (
+          updateData.parentId === '' ||
+          updateData.parentId === 'none' ||
+          updateData.parentId === null
+        ) {
+          updateData.parentId = null;
+        }
       }
+      if ('childId' in updateData) {
+        if (
+          updateData.childId === '' ||
+          updateData.childId === 'none' ||
+          updateData.childId === null
+        ) {
+          updateData.childId = null;
+        }
+      }
+      if ('menuId' in updateData && updateData.menuId !== null && updateData.menuId !== undefined) {
+        updateData.menuId = Number(updateData.menuId);
+      }
+      if ('isSinglePage' in updateData) updateData.isSinglePage = Boolean(updateData.isSinglePage);
+      if ('isPrimary' in updateData) updateData.isPrimary = Boolean(updateData.isPrimary);
+      if ('isChild' in updateData) updateData.isChild = Boolean(updateData.isChild);
+      if ('isNotParent' in updateData) updateData.isNotParent = Boolean(updateData.isNotParent);
+      if ('isNotChild' in updateData) updateData.isNotChild = Boolean(updateData.isNotChild);
 
       const updated = await Menu.findByIdAndUpdate(
         id,

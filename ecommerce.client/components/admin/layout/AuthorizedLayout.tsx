@@ -30,6 +30,12 @@ import {
   LockOutlined,
   ClockCircleOutlined,
   PictureOutlined,
+  FolderOutlined,
+  BranchesOutlined,
+  InboxOutlined,
+  CompassOutlined,
+  DollarOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, MenuProps, Tooltip, Result, Spin, Popover } from 'antd';
 import { io, Socket } from 'socket.io-client';
@@ -42,45 +48,137 @@ import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem } from '../../../types/ecommerce.types';
 import { RoleSwitcherSelect } from './RoleSwitcherSelect';
 
-// Helper to map icon names to Ant Design icons
+// Helper to map icon names (Ant Design + Material icon names) to Ant Design icons
 const renderMenuIcon = (iconName: string) => {
-  switch (iconName) {
-    case 'DashboardOutlined':
+  const normalized = (iconName || '').toLowerCase().replace(/outlined$/, '');
+  switch (normalized) {
+    case 'dashboard':
+    case 'dashboardoutlined':
       return <DashboardOutlined />;
-    case 'ShoppingOutlined':
+    case 'shopping':
+    case 'shoppingoutlined':
+    case 'shopping_cart':
+    case 'shopping_cart_checkout':
+    case 'add_shopping_cart':
       return <ShoppingOutlined />;
-    case 'AppstoreOutlined':
+    case 'appstore':
+    case 'appstoreoutlined':
+    case 'table_restaurant':
+    case 'grid_view':
+    case 'category':
       return <AppstoreOutlined />;
-    case 'FileTextOutlined':
+    case 'filetext':
+    case 'filetextoutlined':
+    case 'menu_book':
+    case 'list_alt':
+    case 'receipt_long':
+    case 'receipt':
+    case 'note_add':
+    case 'list':
       return <FileTextOutlined />;
-    case 'TeamOutlined':
+    case 'team':
+    case 'teamoutlined':
+    case 'person':
+    case 'group':
+    case 'groups':
+    case 'badge':
+    case 'person_search':
+    case 'person_add':
       return <TeamOutlined />;
-    case 'SafetyCertificateOutlined':
+    case 'safetycertificate':
+    case 'safetycertificateoutlined':
+    case 'admin_panel_settings':
+    case 'shield':
       return <SafetyCertificateOutlined />;
-    case 'KeyOutlined':
+    case 'key':
+    case 'keyoutlined':
       return <KeyOutlined />;
-    case 'MenuOutlined':
+    case 'menu':
+    case 'menuoutlined':
       return <MenuOutlined />;
-    case 'LineChartOutlined':
+    case 'linechart':
+    case 'linechartoutlined':
+    case 'assessment':
+    case 'analytics':
       return <LineChartOutlined />;
-    case 'RocketOutlined':
+    case 'rocket':
+    case 'rocketoutlined':
       return <RocketOutlined />;
-    case 'SettingOutlined':
+    case 'setting':
+    case 'settingoutlined':
+    case 'settings':
+    case 'tune':
       return <SettingOutlined />;
-    case 'ShopOutlined':
+    case 'shop':
+    case 'shopoutlined':
+    case 'restaurant':
+    case 'restaurant_menu':
+    case 'local_bar':
+    case 'business':
+    case 'business_center':
+    case 'corporate_fare':
       return <ShopOutlined />;
-    case 'BellOutlined':
+    case 'bell':
+    case 'belloutlined':
       return <BellOutlined />;
-    case 'TagOutlined':
+    case 'tag':
+    case 'tagoutlined':
       return <TagOutlined />;
-    case 'StarOutlined':
+    case 'star':
+    case 'staroutlined':
       return <StarOutlined />;
-    case 'HistoryOutlined':
+    case 'history':
+    case 'historyoutlined':
       return <HistoryOutlined />;
-    case 'LockOutlined':
+    case 'lock':
+    case 'lockoutlined':
       return <LockOutlined />;
-    case 'PictureOutlined':
+    case 'picture':
+    case 'pictureoutlined':
+    case 'photo_camera':
       return <PictureOutlined />;
+    case 'folder':
+    case 'folderoutlined':
+    case 'inventory_2':
+      return <FolderOutlined />;
+    case 'branches':
+    case 'branchesoutlined':
+    case 'account_tree':
+      return <BranchesOutlined />;
+    case 'inbox':
+    case 'inboxoutlined':
+    case 'move_to_inbox':
+      return <InboxOutlined />;
+    case 'compass':
+    case 'compassoutlined':
+    case 'map':
+      return <CompassOutlined />;
+    case 'dollar':
+    case 'dollaroutlined':
+    case 'request_quote':
+    case 'account_balance_wallet':
+    case 'invoicing':
+      return <DollarOutlined />;
+    case 'calendar':
+    case 'calendaroutlined':
+    case 'calendar_month':
+    case 'beach_access':
+    case 'schedule':
+    case 'event_available':
+    case 'event_busy':
+    case 'edit_calendar':
+      return <CalendarOutlined />;
+    case 'checkcircle':
+    case 'checkcircleoutlined':
+    case 'approval':
+    case 'fact_check':
+    case 'verified':
+    case 'task_alt':
+      return <CheckCircleOutlined />;
+    case 'clockcircle':
+    case 'clockcircleoutlined':
+    case 'pending_actions':
+      return <ClockCircleOutlined />;
     default:
       return <AppstoreOutlined />;
   }

@@ -139,17 +139,36 @@ export interface Customer {
 export interface MenuItem {
   _id: string;
   id?: string;
+  menuId?: number | null;
   name: string;
+  menuNameNepali?: string;
   path: string;
   icon: string;
   order: number;
   roles: string[];
   requiredPermission?: string;
   parentId?: any;
+  childId?: any;
+  isSinglePage?: boolean;
+  isPrimary?: boolean;
+  isChild?: boolean;
+  isNotParent?: boolean;
+  isNotChild?: boolean;
+  menuCode?: string;
   badgeText?: string;
   isActive: boolean;
   isSystem?: boolean;
-  subItems?: Array<{ label: string; path: string; id?: string }>;
+  subItems?: Array<{
+    label: string;
+    nameNepali?: string;
+    path: string;
+    id?: string;
+    menuId?: number | null;
+    order?: number;
+    icon?: string;
+    isSinglePage?: boolean;
+    isPrimary?: boolean;
+  }>;
 }
 
 export interface PermissionItem {
