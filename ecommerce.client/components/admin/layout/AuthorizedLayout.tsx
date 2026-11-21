@@ -881,30 +881,32 @@ export const AuthorizedLayout: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleItemClick}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer shadow-2xs text-left ${
-                        active
-                          ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm border-l-4 border-l-[#f97316]'
-                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-orange-200 hover:text-[#f97316] hover:bg-slate-50'
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer text-left ${
+                        isOpen
+                          ? 'bg-white text-slate-800 border-amber-400 shadow-xs ring-1 ring-amber-400/20'
+                          : active
+                          ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm'
+                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-amber-300 hover:text-amber-600 hover:bg-slate-50 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <span
                           className={`text-base shrink-0 ${
-                            active
+                            active && !isOpen
                               ? 'text-white'
-                              : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
+                              : 'text-[#0284c7]'
                           }`}
                         >
                           {renderMenuIcon(item.icon)}
                         </span>
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
+                          <span className={`truncate ${active && !isOpen ? 'text-white' : 'text-slate-800'}`}>
                             {item.name}
                           </span>
                           {item.menuNameNepali && (
                             <span
                               className={`text-[10px] font-normal truncate ${
-                                active ? 'text-white/80' : 'text-slate-400'
+                                active && !isOpen ? 'text-white/80' : 'text-slate-400'
                               }`}
                             >
                               ({item.menuNameNepali})
@@ -918,17 +920,17 @@ export const AuthorizedLayout: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Icon '>' is ONLY visible if menu has submenu */}
+                      {/* Small orange chevron down/up matching Image 4 */}
                       <span
-                        className={`text-xs font-bold transition-transform duration-200 shrink-0 ml-1.5 ${
+                        className={`text-[10px] font-bold transition-transform duration-200 shrink-0 ml-1.5 ${
                           isOpen
-                            ? 'rotate-90 text-[#f97316]'
+                            ? 'text-amber-500 rotate-180'
                             : active
-                            ? 'text-[#f97316]'
-                            : 'text-slate-400 group-hover/menuitem:text-[#f97316]'
+                            ? 'text-white'
+                            : 'text-amber-500'
                         }`}
                       >
-                        ›
+                        ▼
                       </span>
                     </button>
                   ) : (
@@ -938,7 +940,7 @@ export const AuthorizedLayout: React.FC = () => {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer shadow-2xs ${
                         active
                           ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm border-l-4 border-l-[#f97316]'
-                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-orange-200 hover:text-[#f97316] hover:bg-slate-50'
+                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-amber-300 hover:text-amber-600 hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
@@ -976,7 +978,7 @@ export const AuthorizedLayout: React.FC = () => {
 
                   {/* Inline Collapsible Submenu Accordion */}
                   {hasSub && isOpen && (
-                    <div className="mt-1 ml-3 pl-3 border-l-2 border-orange-200/80 space-y-1 py-1">
+                    <div className="mt-1.5 ml-4 pl-4 border-l-2 border-amber-400 space-y-1.5 py-1.5">
                       {/* Direct access to parent route if defined and marked as Single Page */}
                       {item.path &&
                         item.path !== '#' &&
@@ -985,10 +987,10 @@ export const AuthorizedLayout: React.FC = () => {
                           <Link
                             to={item.path}
                             onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                               location.pathname === item.path
-                                ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
-                                : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
+                                ? 'bg-sky-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
+                                : 'text-slate-600 hover:text-amber-600 hover:bg-slate-50'
                             }`}
                           >
                             <span className="text-xs text-slate-400 shrink-0">
@@ -1010,13 +1012,13 @@ export const AuthorizedLayout: React.FC = () => {
                               key={sub.path || sub.label}
                               to={sub.path}
                               onClick={() => setSidebarOpen(false)}
-                              className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                              className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                                 subActive
-                                  ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
-                                  : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
+                                  ? 'bg-sky-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
+                                  : 'text-slate-600 hover:text-amber-600 hover:bg-slate-50'
                               }`}
                             >
-                              <div className="flex items-center gap-2 min-w-0 truncate">
+                              <div className="flex items-center gap-2.5 min-w-0 truncate">
                                 <span
                                   className={`text-xs shrink-0 ${
                                     subActive ? 'text-[#0284c7]' : 'text-slate-400'

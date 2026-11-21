@@ -86,21 +86,40 @@ async function seedData() {
     // 3. Seed Dynamic Menus
     console.log('Seeding Dynamic Navigation Menus...');
     const menusData = [
-      { menuId: 1, name: 'Dashboard', path: '/admin', icon: 'dashboard', order: 1, parentId: null, isSinglePage: true, isPrimary: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-      { menuId: 2, name: 'Products', path: '/admin/products', icon: 'shopping_cart', order: 2, parentId: null, isSinglePage: true, isPrimary: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-      { menuId: 3, name: 'Categories', path: '/admin/categories', icon: 'category', order: 3, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
-      { menuId: 4, name: 'Orders', path: '/admin/orders', icon: 'receipt_long', order: 4, parentId: null, isSinglePage: true, isPrimary: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-      { menuId: 5, name: 'Inventory & Stock', path: '/admin/inventory', icon: 'inventory_2', order: 5, parentId: null, isSinglePage: true, roles: ['admin', 'seller', 'manager'], isActive: true },
-      { menuId: 6, name: 'Accounts', path: '/admin/customers', icon: 'groups', order: 6, parentId: null, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-      { menuId: 7, name: 'Billing', path: '/admin/billing', icon: 'receipt', order: 7, parentId: null, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
-      { menuId: 8, name: 'Discounts & Coupons', path: '/admin/discounts', icon: 'tune', order: 8, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
-      { menuId: 9, name: 'Hero Banners', path: '/admin/banners', icon: 'photo_camera', order: 9, parentId: null, isSinglePage: true, roles: ['admin', 'manager'], isActive: true },
-      { menuId: 10, name: 'Customer Reviews', path: '/admin/reviews', icon: 'star', order: 10, parentId: null, isSinglePage: true, roles: ['admin', 'support', 'seller'], isActive: true },
-      { menuId: 11, name: 'Roles', path: '/admin/roles', icon: 'shield', order: 11, parentId: null, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 12, name: 'Permissions', path: '/admin/permissions', icon: 'admin_panel_settings', order: 12, parentId: null, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 13, name: 'Menu Setup', path: '/admin/menus', icon: 'menu', order: 13, parentId: null, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 14, name: 'Audit Logs', path: '/admin/audit-logs', icon: 'analytics', order: 14, parentId: null, isSinglePage: true, roles: ['admin'], isActive: true },
-      { menuId: 15, name: 'Security & Devices', path: '/admin/security', icon: 'lock', order: 15, parentId: null, isSinglePage: true, roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'], isActive: true },
+      // 1. Dashboard (Single Page Root)
+      { menuId: 1, name: 'Dashboard', menuNameNepali: 'ड्यासबोर्ड', path: '/admin', icon: 'dashboard', order: 1, parentId: null, isSinglePage: true, isPrimary: true, isNotParent: true, isNotChild: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
+
+      // 2. Products (Parent Menu)
+      { menuId: 2, name: 'Products', menuNameNepali: 'उत्पादनहरू', path: '/admin/products', icon: 'shopping_cart', order: 2, parentId: null, isSinglePage: false, isPrimary: true, isNotParent: false, isNotChild: true, roles: ['admin', 'seller', 'manager'], isActive: true },
+      { menuId: 21, name: 'All Products', menuNameNepali: 'सबै उत्पादनहरू', path: '/admin/products', icon: 'shopping_cart', order: 1, parentId: 2, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'seller', 'manager'], isActive: true },
+      { menuId: 22, name: 'Categories', menuNameNepali: 'कोटिहरू', path: '/admin/categories', icon: 'category', order: 2, parentId: 2, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager'], isActive: true },
+      { menuId: 23, name: 'Stock & Inventory', menuNameNepali: 'मौज्दात तथा भण्डारण', path: '/admin/inventory', icon: 'inventory_2', order: 3, parentId: 2, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'seller', 'manager'], isActive: true },
+
+      // 3. Order (Parent Menu)
+      { menuId: 11, name: 'Order', menuNameNepali: 'अर्डर', path: '/admin/orders', icon: 'receipt_long', order: 3, parentId: null, isSinglePage: false, isPrimary: true, isNotParent: false, isNotChild: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
+      { menuId: 12, name: 'Orders', menuNameNepali: 'अर्डर सूची', path: '/admin/orders', icon: 'receipt_long', order: 1, parentId: 11, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
+      { menuId: 13, name: 'Billing', menuNameNepali: 'बिलिङ', path: '/admin/billing', icon: 'receipt', order: 2, parentId: 11, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
+      { menuId: 14, name: 'Customer Reviews', menuNameNepali: 'ग्राहक समीक्षाहरू', path: '/admin/reviews', icon: 'star', order: 3, parentId: 11, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'support', 'seller'], isActive: true },
+
+      // 4. Marketing (Parent Menu)
+      { menuId: 4, name: 'Marketing', menuNameNepali: 'बजार व्यवस्थापन', path: '/admin/discounts', icon: 'tune', order: 4, parentId: null, isSinglePage: false, isPrimary: false, isNotParent: false, isNotChild: true, roles: ['admin', 'manager'], isActive: true },
+      { menuId: 41, name: 'Discounts & Coupons', menuNameNepali: 'छुट र कुपन', path: '/admin/discounts', icon: 'tune', order: 1, parentId: 4, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager'], isActive: true },
+      { menuId: 42, name: 'Hero Banners', menuNameNepali: 'ब्यानरहरू', path: '/admin/banners', icon: 'photo_camera', order: 2, parentId: 4, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager'], isActive: true },
+
+      // 5. Accounts (Single Page)
+      { menuId: 5, name: 'Accounts', menuNameNepali: 'खाताहरू', path: '/admin/customers', icon: 'groups', order: 5, parentId: null, isSinglePage: true, isPrimary: false, isNotParent: true, isNotChild: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
+
+      // 6. Auth (Parent Menu)
+      { menuId: 10, name: 'Auth', menuNameNepali: 'प्रमाणीकरण', path: '/admin/auth', icon: 'shield', order: 6, parentId: null, isSinglePage: false, isPrimary: false, isNotParent: false, isNotChild: true, roles: ['admin'], isActive: true },
+      { menuId: 101, name: 'Menu Setup', menuNameNepali: 'मेनु सेटअप', path: '/admin/menus', icon: 'menu', order: 1, parentId: 10, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin'], isActive: true },
+      { menuId: 102, name: 'Menu Role Setup', menuNameNepali: 'मेनु भूमिका सेटअप', path: '/admin/roles', icon: 'admin_panel_settings', order: 2, parentId: 10, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin'], isActive: true },
+      { menuId: 103, name: 'User Setup', menuNameNepali: 'प्रयोगकर्ता सेटअप', path: '/admin/customers', icon: 'person', order: 3, parentId: 10, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin'], isActive: true },
+      { menuId: 104, name: 'User Role', menuNameNepali: 'प्रयोगकर्ता भूमिका', path: '/admin/permissions', icon: 'group', order: 4, parentId: 10, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin'], isActive: true },
+
+      // 7. Security & System (Parent Menu)
+      { menuId: 60, name: 'Security & System', menuNameNepali: 'सुरक्षा र प्रणाली', path: '/admin/security', icon: 'lock', order: 7, parentId: null, isSinglePage: false, isPrimary: false, isNotParent: false, isNotChild: true, roles: ['admin'], isActive: true },
+      { menuId: 61, name: 'Security & Devices', menuNameNepali: 'सुरक्षा र उपकरणहरू', path: '/admin/security', icon: 'lock', order: 1, parentId: 60, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'], isActive: true },
+      { menuId: 62, name: 'Audit Logs', menuNameNepali: 'अडिट लगहरू', path: '/admin/audit-logs', icon: 'analytics', order: 2, parentId: 60, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin'], isActive: true },
     ];
     await Menu.insertMany(menusData);
 
