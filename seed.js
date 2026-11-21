@@ -77,7 +77,7 @@ async function seedData() {
         name: 'admin',
         label: 'System Administrator',
         description: 'Super administrator with full access to all pages, role permissions, and dynamic menus.',
-        permissions: permissionsData.map((p) => p.code),
+        permissions: ['*', ...permissionsData.map((p) => p.code)],
         isSystem: true,
       },
     ];

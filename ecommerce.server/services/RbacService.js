@@ -76,6 +76,20 @@ class RbacService {
           );
         }
 
+        const hasOrders = allMenus.some((m) => m.path === '/admin/orders');
+        if (!hasOrders) {
+          const ordMenu = await Menu.create({
+            name: 'Orders',
+            path: '/admin/orders',
+            icon: 'FileTextOutlined',
+            order: 4,
+            roles: ['admin', 'seller', 'support', 'manager'],
+            isSystem: true,
+            isActive: true,
+          });
+          allMenus.push(ordMenu.toObject ? ordMenu.toObject() : ordMenu);
+        }
+
         const hasReviews = allMenus.some((m) => m.path === '/admin/reviews');
         if (!hasReviews) {
           const revMenu = await Menu.create({
@@ -172,13 +186,48 @@ class RbacService {
           });
           allMenus.push(bannerMenu.toObject ? bannerMenu.toObject() : bannerMenu);
         }
+
+        // Ensure core functional pages are always independent top-level root menus and active
+        const coreRootPaths = [
+          '/admin/orders',
+          '/admin/billing',
+          '/admin/reviews',
+          '/admin/products',
+          '/admin/categories',
+          '/admin/customers',
+          '/admin/inventory',
+          '/admin/discounts',
+          '/admin/banners',
+          '/admin/audit-logs',
+          '/admin/roles',
+          '/admin/permissions',
+          '/admin/menus',
+          '/admin/security',
+        ];
+
+        await Menu.updateMany(
+          { path: { $in: coreRootPaths } },
+          { $set: { parentId: null, isActive: true } }
+        );
+
+        allMenus.forEach((m) => {
+          if (coreRootPaths.includes(m.path)) {
+            m.parentId = null;
+            m.isActive = true;
+          }
+        });
+      }
+
+      // If user is super admin, always ensure full wildcard access
+      if (isAdmin || userRole === 'admin') {
+        effectivePermissions.add('*');
       }
 
       // Filter menus based on user role and permissions
       const hasConfiguredPermissions = roleDoc && Array.isArray(roleDoc.permissions);
 
       const allowedMenus = allMenus.filter((menu) => {
-        if (isAdmin && (!hasConfiguredPermissions || roleDoc.permissions.includes('*'))) return true;
+        if (isAdmin || userRole === 'admin') return true;
         if (effectivePermissions.has('*')) return true;
 
         // Dashboard, profile, security, and billing are fundamental account features permitted for all roles

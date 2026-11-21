@@ -506,6 +506,7 @@ export const AuthorizedLayout: React.FC = () => {
   const filteredMenus = [...dynamicMenus]
     .filter((m) => {
       if (!m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (isAdmin || userRole === 'admin') return true;
       // Direct path check if no subItems
       const hasSub = Array.isArray(m.subItems) && m.subItems.length > 0;
       if (!hasSub && m.path && !canAccessPage(m.path)) return false;
@@ -818,6 +819,20 @@ export const AuthorizedLayout: React.FC = () => {
                   {/* Inline Collapsible Submenu Accordion */}
                   {hasSub && isOpen && (
                     <div className="mt-1 ml-3 pl-3 border-l-2 border-orange-200/80 space-y-1 py-1">
+                      {/* Direct access to parent route if defined */}
+                      {item.path && item.path !== '#' && (
+                        <Link
+                          to={item.path}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                            location.pathname === item.path
+                              ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
+                              : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
+                          }`}
+                        >
+                          <span className="truncate">All {item.name}</span>
+                        </Link>
+                      )}
                       {item.subItems!.filter((sub) => canAccessPage(sub.path)).map((sub) => {
                         const subActive =
                           location.pathname === sub.path ||
