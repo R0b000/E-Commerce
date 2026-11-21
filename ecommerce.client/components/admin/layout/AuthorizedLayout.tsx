@@ -346,8 +346,11 @@ export const AuthorizedLayout: React.FC = () => {
   };
 
   const isActive = (itemPath: string) => {
-    if (itemPath === '/admin') return location.pathname === '/admin';
-    return location.pathname.startsWith(itemPath);
+    if (!itemPath || itemPath === '#') return false;
+    if (itemPath === '/admin' || itemPath === '/dashboard') {
+      return location.pathname === '/admin' || location.pathname === '/dashboard';
+    }
+    return location.pathname === itemPath || (itemPath !== '/' && location.pathname.startsWith(itemPath));
   };
 
   const handleLogout = () => {
@@ -603,7 +606,21 @@ export const AuthorizedLayout: React.FC = () => {
   // Filter and sort menus by display order & permission
   const filteredMenus = [...dynamicMenus]
     .filter((m) => {
-      if (!m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      const q = searchQuery.toLowerCase().trim();
+      if (q) {
+        const matchName = m.name.toLowerCase().includes(q);
+        const matchNepali = (m.menuNameNepali || '').toLowerCase().includes(q);
+        const matchPath = (m.path || '').toLowerCase().includes(q);
+        const matchSub =
+          Array.isArray(m.subItems) &&
+          m.subItems.some(
+            (s) =>
+              s.label.toLowerCase().includes(q) ||
+              (s.nameNepali || '').toLowerCase().includes(q) ||
+              (s.path || '').toLowerCase().includes(q)
+          );
+        if (!matchName && !matchNepali && !matchPath && !matchSub) return false;
+      }
       if (isAdmin || userRole === 'admin') return true;
       // Direct path check if no subItems
       const hasSub = Array.isArray(m.subItems) && m.subItems.length > 0;
@@ -860,7 +877,7 @@ export const AuthorizedLayout: React.FC = () => {
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <span
-                          className={`text-base ${
+                          className={`text-base shrink-0 ${
                             active
                               ? 'text-white'
                               : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
@@ -868,14 +885,30 @@ export const AuthorizedLayout: React.FC = () => {
                         >
                           {renderMenuIcon(item.icon)}
                         </span>
-                        <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
-                          {item.name}
-                        </span>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
+                            {item.name}
+                          </span>
+                          {item.menuNameNepali && (
+                            <span
+                              className={`text-[10px] font-normal truncate ${
+                                active ? 'text-white/80' : 'text-slate-400'
+                              }`}
+                            >
+                              ({item.menuNameNepali})
+                            </span>
+                          )}
+                          {item.isPrimary && (
+                            <span className="px-1 py-0.2 rounded text-[8px] font-bold uppercase bg-amber-400 text-slate-900 ml-0.5">
+                              Primary
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Icon '>' is ONLY visible if menu has submenu */}
                       <span
-                        className={`text-xs font-bold transition-transform duration-200 ${
+                        className={`text-xs font-bold transition-transform duration-200 shrink-0 ml-1.5 ${
                           isOpen
                             ? 'rotate-90 text-[#f97316]'
                             : active
@@ -898,7 +931,7 @@ export const AuthorizedLayout: React.FC = () => {
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <span
-                          className={`text-base ${
+                          className={`text-base shrink-0 ${
                             active
                               ? 'text-white'
                               : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
@@ -906,50 +939,89 @@ export const AuthorizedLayout: React.FC = () => {
                         >
                           {renderMenuIcon(item.icon)}
                         </span>
-                        <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
-                          {item.name}
-                        </span>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
+                            {item.name}
+                          </span>
+                          {item.menuNameNepali && (
+                            <span
+                              className={`text-[10px] font-normal truncate ${
+                                active ? 'text-white/80' : 'text-slate-400'
+                              }`}
+                            >
+                              ({item.menuNameNepali})
+                            </span>
+                          )}
+                          {item.isPrimary && (
+                            <span className="px-1 py-0.2 rounded text-[8px] font-bold uppercase bg-amber-400 text-slate-900 ml-0.5">
+                              Primary
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      {/* NO '>' icon when menu has no submenu */}
                     </Link>
                   )}
 
                   {/* Inline Collapsible Submenu Accordion */}
                   {hasSub && isOpen && (
                     <div className="mt-1 ml-3 pl-3 border-l-2 border-orange-200/80 space-y-1 py-1">
-                      {/* Direct access to parent route if defined */}
-                      {item.path && item.path !== '#' && (
-                        <Link
-                          to={item.path}
-                          onClick={() => setSidebarOpen(false)}
-                          className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                            location.pathname === item.path
-                              ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
-                              : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
-                          }`}
-                        >
-                          <span className="truncate">All {item.name}</span>
-                        </Link>
-                      )}
-                      {item.subItems!.filter((sub) => canAccessPage(sub.path)).map((sub) => {
-                        const subActive =
-                          location.pathname === sub.path ||
-                          (sub.path !== '/admin' && location.pathname.startsWith(sub.path));
-                        return (
+                      {/* Direct access to parent route if defined and marked as Single Page */}
+                      {item.path &&
+                        item.path !== '#' &&
+                        item.isSinglePage &&
+                        !item.subItems!.some((s) => s.path === item.path) && (
                           <Link
-                            key={sub.path || sub.label}
-                            to={sub.path}
+                            to={item.path}
                             onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                              subActive
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                              location.pathname === item.path
                                 ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
                                 : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
                             }`}
                           >
-                            <span className="truncate">{sub.label}</span>
+                            <span className="text-xs text-slate-400 shrink-0">
+                              {renderMenuIcon(item.icon)}
+                            </span>
+                            <span className="truncate">{item.name} Overview</span>
                           </Link>
-                        );
-                      })}
+                        )}
+                      {item.subItems!
+                        .filter((sub) => isAdmin || userRole === 'admin' || canAccessPage(sub.path))
+                        .map((sub) => {
+                          const subActive =
+                            location.pathname === sub.path ||
+                            (sub.path !== '/admin' &&
+                              sub.path !== '/dashboard' &&
+                              location.pathname.startsWith(sub.path));
+                          return (
+                            <Link
+                              key={sub.path || sub.label}
+                              to={sub.path}
+                              onClick={() => setSidebarOpen(false)}
+                              className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                subActive
+                                  ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
+                                  : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 min-w-0 truncate">
+                                <span
+                                  className={`text-xs shrink-0 ${
+                                    subActive ? 'text-[#0284c7]' : 'text-slate-400'
+                                  }`}
+                                >
+                                  {renderMenuIcon(sub.icon || 'FileTextOutlined')}
+                                </span>
+                                <span className="truncate">{sub.label}</span>
+                                {sub.nameNepali && (
+                                  <span className="text-[10px] text-slate-400 font-normal truncate">
+                                    ({sub.nameNepali})
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
                     </div>
                   )}
                 </div>
