@@ -226,11 +226,6 @@ export const OrderManagement: React.FC = () => {
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               {isSeller ? 'My Store Orders & Fulfillment' : 'Customer Orders & Fulfillment'}
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              {isSeller
-                ? 'Review customer orders containing your products, update tracking numbers, and manage dispatch.'
-                : 'Review platform-wide customer transactions, update tracking numbers, and manage dispatch.'}
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">

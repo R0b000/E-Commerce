@@ -460,14 +460,11 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         {/* Left Column: Brand & Tag Directory Table */}
         <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
           {/* Header Toolbar: Title + Search + Status Filter */}
-          <div className="px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white shrink-0">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+          <div className="px-5 py-3.5 flex items-center justify-between gap-3 bg-white shrink-0">
+            <div className="shrink-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
                 Brands
               </h3>
-              <p className="text-xs text-slate-600 mt-0.5 font-medium">
-                Manage product brands and link catalog items.
-              </p>
             </div>
 
             <div className="flex items-center gap-2.5 w-full sm:w-auto">

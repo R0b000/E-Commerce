@@ -499,9 +499,6 @@ export const MenuManagement: React.FC = () => {
                 Menu Management
               </Tag>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Configure parent menus, submenus, paths, icons, order, and single page settings.
-            </p>
           </div>
 
           {/* Action Toolbar on Right */}

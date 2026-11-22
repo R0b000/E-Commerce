@@ -105,9 +105,6 @@ export const AuditLogManagement: React.FC = () => {
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               User Activity & Security Audit Logs
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Tamper-evident trail of user actions, login IPs, MAC/device telemetry, and administrative mutations.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
