@@ -193,56 +193,18 @@ export const InventoryManagement: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-              {/* Health Filter */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHealthFilter('all');
+              {/* Search Input */}
+              <div className="w-full sm:w-[200px]">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  placeholder="Search inventory..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                    healthFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  All
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHealthFilter('healthy');
-                    setCurrentPage(1);
-                  }}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                    healthFilter === 'healthy' ? 'bg-white text-emerald-700 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  In Stock (&gt;10)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHealthFilter('low');
-                    setCurrentPage(1);
-                  }}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                    healthFilter === 'low' ? 'bg-white text-[#f97316] shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  Low (1-10)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHealthFilter('out');
-                    setCurrentPage(1);
-                  }}
-                  className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                    healthFilter === 'out' ? 'bg-white text-rose-600 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                  }`}
-                >
-                  Out
-                </button>
+                  allowClear
+                />
               </div>
 
               {/* Category Dropdown */}
@@ -266,17 +228,20 @@ export const InventoryManagement: React.FC = () => {
                 />
               </div>
 
-              {/* Search Input */}
-              <div className="w-full sm:w-[200px] shrink-0">
-                <AppInput
-                  prefix={<SearchOutlined className="text-slate-400" />}
-                  placeholder="Search inventory..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
+              {/* Stock Health / Level Filter Dropdown */}
+              <div className="w-full sm:w-[150px] shrink-0">
+                <AppSelect
+                  value={healthFilter}
+                  onChange={(val) => {
+                    setHealthFilter(val as 'all' | 'healthy' | 'low' | 'out');
                     setCurrentPage(1);
                   }}
-                  allowClear
+                  options={[
+                    { label: 'All Stock Levels', value: 'all' },
+                    { label: 'In Stock (>10)', value: 'healthy' },
+                    { label: 'Low Stock (1-10)', value: 'low' },
+                    { label: 'Out of Stock (0)', value: 'out' },
+                  ]}
                 />
               </div>
             </div>
