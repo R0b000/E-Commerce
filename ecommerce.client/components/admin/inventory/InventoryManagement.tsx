@@ -182,7 +182,7 @@ export const InventoryManagement: React.FC = () => {
         {/* Left Column: Warehouse Stock Ledger Table */}
         <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
           {/* Header Toolbar: Title + Health Filter + Category + Search (Single-line Compact) */}
-          <div className="px-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
+          <div className="pl-0 pr-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
             <div className="shrink-0">
               <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
                 Warehouse Stock Ledger

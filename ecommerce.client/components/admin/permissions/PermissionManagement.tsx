@@ -534,7 +534,7 @@ export const PermissionManagement: React.FC = () => {
       {/* Main Permissions Matrix Card with Integrated Header */}
       <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
         {/* Table Top Controls & Integrated Header */}
-        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+        <div className="pl-0 pr-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex flex-col min-w-0">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Role Permissions & Access Matrix
