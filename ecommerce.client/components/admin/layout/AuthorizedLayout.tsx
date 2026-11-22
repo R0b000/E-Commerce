@@ -707,6 +707,13 @@ export const AuthorizedLayout: React.FC = () => {
     </div>
   );
 
+  const isFullHeightPage =
+    location.pathname.startsWith('/admin/profile') ||
+    location.pathname.startsWith('/admin/brands') ||
+    location.pathname.startsWith('/admin/products') ||
+    location.pathname.startsWith('/admin/categories') ||
+    location.pathname.startsWith('/admin/inventory');
+
   return (
     <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Poppins','Inter',sans-serif] antialiased overflow-hidden">
       {/* =========================================================================
@@ -1017,14 +1024,14 @@ export const AuthorizedLayout: React.FC = () => {
          ========================================================================= */}
       <main
         className={`flex-1 w-full relative bg-white ${
-          location.pathname.startsWith('/admin/profile') || location.pathname.startsWith('/admin/brands')
+          isFullHeightPage
             ? 'overflow-hidden flex flex-col h-[calc(100vh-4rem)]'
             : 'overflow-y-auto'
         }`}
       >
         <div
           className={`w-full ${
-            location.pathname.startsWith('/admin/profile') || location.pathname.startsWith('/admin/brands')
+            isFullHeightPage
               ? 'h-full p-2 sm:p-3 flex flex-col overflow-hidden min-h-0'
               : 'p-4'
           }`}
