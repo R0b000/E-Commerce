@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import {
   PlusOutlined,
@@ -48,9 +48,29 @@ export const ProductManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedBrand, setSelectedBrand] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const POPULAR_BRANDS = [
+    'AeroPulse Audio',
+    'Apex Tech',
+    'Chronos',
+    'ErgoDynamic',
+    'Vanguard EDC',
+    'CraftHimalaya',
+    'SummitGear',
+    'AlpineMerino',
+    'Himalaya Herbals',
+    'Kama Botanicals',
+  ];
+
+  const allAvailableBrands = useMemo(() => {
+    const fromProducts = products.map((p) => (p.brand || '').trim()).filter(Boolean) as string[];
+    const set = new Set<string>([...POPULAR_BRANDS, ...fromProducts]);
+    return Array.from(set).sort();
+  }, [products]);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -144,6 +164,7 @@ export const ProductManagement: React.FC = () => {
         ecommerceService.getProducts({
           search: searchQuery,
           category: selectedCategory !== 'all' ? selectedCategory : undefined,
+          brand: selectedBrand !== 'all' ? selectedBrand : undefined,
           status: statusFilter !== 'all' ? statusFilter : undefined,
           limit: 100,
         }),
@@ -166,9 +187,17 @@ export const ProductManagement: React.FC = () => {
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory, statusFilter]);
+  }, [selectedCategory, selectedBrand, statusFilter]);
 
   useEffect(() => {
+    const brandParam = searchParams.get('brand');
+    if (brandParam) {
+      setSelectedBrand(brandParam);
+    }
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
     if (searchParams.get('action') === 'new') {
       openAddModal();
       searchParams.delete('action');
@@ -368,7 +397,7 @@ export const ProductManagement: React.FC = () => {
             </form>
 
             {/* Department Dropdown */}
-            <div className="w-full sm:w-[160px] shrink-0">
+            <div className="w-full sm:w-[150px] shrink-0">
               <AppSelect
                 value={selectedCategory}
                 onChange={(val) => setSelectedCategory(val as string)}
@@ -377,6 +406,21 @@ export const ProductManagement: React.FC = () => {
                   ...categories.map((c) => ({
                     label: c.name,
                     value: c._id || c.id || '',
+                  })),
+                ]}
+              />
+            </div>
+
+            {/* Brand Filter Dropdown */}
+            <div className="w-full sm:w-[150px] shrink-0">
+              <AppSelect
+                value={selectedBrand}
+                onChange={(val) => setSelectedBrand(val as string)}
+                options={[
+                  { label: 'All Brands', value: 'all' },
+                  ...allAvailableBrands.map((b) => ({
+                    label: b,
+                    value: b,
                   })),
                 ]}
               />
@@ -684,6 +728,27 @@ export const ProductManagement: React.FC = () => {
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                 placeholder="e.g. Himalaya Herbals, The Ordinary, CeraVe"
               />
+              {formData.brand.trim() && (
+                <div className="mt-1 flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400">Tag product by brand:</span>
+                  <button
+                    type="button"
+                    onClick={() => handleAddTag(formData.brand.trim())}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer ${
+                      formData.tags.some((t) => t.toLowerCase() === formData.brand.trim().toLowerCase())
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                    }`}
+                  >
+                    <span>🏷️</span>
+                    <span>
+                      {formData.tags.some((t) => t.toLowerCase() === formData.brand.trim().toLowerCase())
+                        ? `Tagged as #${formData.brand.trim()} ✓`
+                        : `+ Add #${formData.brand.trim()} as Tag`}
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
 
             <div>
@@ -857,6 +922,36 @@ export const ProductManagement: React.FC = () => {
                   ))}
                 </div>
               )}
+
+              {/* Quick Tag by Brand */}
+              <div className="pt-2 border-t border-slate-200/80">
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                  <span>🏷️ Quick Tag by Brand (Click to assign brand tag):</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Click to toggle tag</span>
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {allAvailableBrands.map((brandName) => {
+                    const isSelected = formData.tags.some(
+                      (t) => t.toLowerCase() === brandName.toLowerCase()
+                    );
+                    return (
+                      <button
+                        key={brandName}
+                        type="button"
+                        onClick={() => handleTogglePresetTag(brandName)}
+                        className={`text-[11px] px-2.5 py-0.5 rounded-full border transition cursor-pointer font-medium ${
+                          isSelected
+                            ? 'bg-amber-500 border-amber-500 text-white shadow-xs'
+                            : 'bg-amber-50/70 border-amber-200 text-amber-800 hover:border-amber-400 hover:bg-amber-100'
+                        }`}
+                      >
+                        {isSelected ? '✓ #' : '+ #'}
+                        {brandName}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               {/* Quick Presets / Suggestions */}
               <div className="pt-2 border-t border-slate-200/80">
