@@ -623,7 +623,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         )}
 
         {/* Table Footer: Total Count on Left, Pagination Controls on Right */}
-        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-none flex items-center justify-between text-[11px] shadow-inner select-none mt-auto">
+        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-[2px] flex items-center justify-between text-[11px] shadow-inner select-none mt-auto">
           {/* Left Side: Brand Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Brands:</span>
