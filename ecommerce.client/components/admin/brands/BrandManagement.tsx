@@ -648,20 +648,17 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       </div>
 
         {/* Right Column: Add Brand Card + Catalog Summary Metrics (Independent Scroll Area) */}
-        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-4 pr-1">
-          {/* Card 1: Add New Brand */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4">
+        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
+          {/* Card 1: Add New Brand (Height matched with Search & Status, no description) */}
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-xs px-4 py-3 flex items-center">
             <button
               type="button"
               onClick={openAddModal}
-              className="w-full h-10 flex items-center justify-center gap-2 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+              className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
             >
               <PlusOutlined className="text-xs" />
               <span>Add New Brand</span>
             </button>
-            <p className="text-[11px] text-slate-400 mt-2.5 leading-relaxed text-center sm:text-left">
-              Register a new brand, attach its logo, and assign its searchable catalog product tag.
-            </p>
           </div>
 
           {/* Card 2: Catalog Summary (Collapsible) */}
@@ -689,9 +686,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               </div>
             </div>
           ) : (
-            /* Expanded View (Full Proportions) */
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 space-y-3.5">
-              <div className="flex items-center justify-between">
+            /* Expanded View: Borderless, non-faded, vibrant clean metrics */
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsSummaryCollapsed(true)}
@@ -706,51 +703,57 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                 </span>
               </div>
 
-              <div className="space-y-2.5">
+              <div className="divide-y divide-slate-100">
                 {/* Metric 1: Total Brands */}
-                <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
+                <div className="py-2.5 flex items-center justify-between">
                   <div>
-                    <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
                       Total Brands
                     </span>
-                    <span className="text-xl font-extrabold text-slate-900 leading-tight block">
+                    <span className="text-2xl font-black text-slate-900 leading-tight block">
                       {allBrands.length}
                     </span>
-                    <span className="text-[10px] text-slate-400">Available for catalog</span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Available for catalog
+                    </span>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0 border border-sky-100/60">
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0">
                     <ShopOutlined />
                   </div>
                 </div>
 
                 {/* Metric 2: Products Tagged */}
-                <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
+                <div className="py-2.5 flex items-center justify-between">
                   <div>
-                    <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
                       Products Tagged
                     </span>
-                    <span className="text-xl font-extrabold text-amber-600 leading-tight block">
+                    <span className="text-2xl font-black text-amber-600 leading-tight block">
                       {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
                     </span>
-                    <span className="text-[10px] text-slate-400">Active in store</span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Active in store
+                    </span>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg shrink-0 border border-amber-100/60">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
                     <TagOutlined />
                   </div>
                 </div>
 
                 {/* Metric 3: Active Tags */}
-                <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
+                <div className="py-2.5 flex items-center justify-between">
                   <div>
-                    <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
                       Active Tags
                     </span>
-                    <span className="text-xl font-extrabold text-emerald-600 leading-tight block">
+                    <span className="text-2xl font-black text-emerald-600 leading-tight block">
                       {allBrands.filter((b) => b.isActive).length}
                     </span>
-                    <span className="text-[10px] text-slate-400">Ready for product tagging</span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Ready for product tagging
+                    </span>
                   </div>
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg shrink-0 border border-emerald-100/60">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
                     <CheckCircleOutlined />
                   </div>
                 </div>
