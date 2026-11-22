@@ -9,7 +9,6 @@ import {
   ShopOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
-  InfoCircleOutlined,
 } from '@ant-design/icons';
 import { Popconfirm, Breadcrumb, Switch } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -530,24 +529,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             </div>
           </div>
 
-          {/* Info & Tagging Shortcut Helper Card */}
-          <div className="bg-gradient-to-br from-sky-50/80 to-blue-50/30 p-4 rounded-2xl border border-sky-100/80 shadow-xs space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-sky-950">
-              <InfoCircleOutlined className="text-[#0284c7]" />
-              <span>How Brand Tags Work</span>
-            </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              Assigning a brand automatically enables <strong>#BrandName</strong> product tags. Customers and admins can instantly filter products by clicking their brand tag.
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate('/admin/products')}
-              className="text-[11px] text-[#0284c7] font-bold hover:underline flex items-center gap-1 pt-1 cursor-pointer"
-            >
-              <span>Manage Products & Inventory</span>
-              <ArrowRightOutlined className="text-[9px]" />
-            </button>
-          </div>
+
         </div>
       </div>
 
