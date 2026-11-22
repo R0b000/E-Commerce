@@ -810,25 +810,68 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         </div>
       </div>
 
-      {/* Add / Edit Brand Modal using Ant Design Upload Component */}
+      {/* Add / Edit Brand Modal - Wider width, no inline scroll */}
       <AppModal
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         title={editingBrand ? `Edit Brand: ${editingBrand.name}` : 'Add Brand & Tag'}
         onOk={handleSaveBrand}
         okText={editingBrand ? 'Save Changes' : 'Create Brand'}
+        width={700}
       >
-        <form onSubmit={handleSaveBrand} className="space-y-4 pt-2">
-          {/* Ant Design Image Upload Section */}
+        <form onSubmit={handleSaveBrand} className="space-y-3.5 pt-1">
+          {/* Row 1: Brand Name & Brand Slug Name (Side by Side) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Brand Name <span className="text-rose-500">*</span>
+              </label>
+              <AppInput
+                placeholder="e.g. AeroPulse Audio"
+                value={formData.name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Brand Slug Name <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">#</span>
+                <input
+                  type="text"
+                  placeholder="e.g. AeroPulse Audio"
+                  value={formData.tag}
+                  onChange={(e) => setFormData({ ...formData, tag: e.target.value.replace(/^#+/, '') })}
+                  className="w-full pl-7 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 2: Description */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Brand Logo / Icon
-            </label>
-            <div className="flex items-center gap-3.5 p-3 bg-slate-50 border border-slate-200/90 rounded-xl">
+            <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+            <textarea
+              rows={2}
+              placeholder="Brief description about the brand, product line, or origin..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none resize-none"
+            />
+          </div>
+
+          {/* Row 3: Image Upload & Preview */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Image</label>
+            <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
               <Upload
                 name="brandLogo"
                 listType="picture-card"
-                className="brand-logo-uploader [&_.ant-upload]:!w-20 [&_.ant-upload]:!h-20 [&_.ant-upload]:!rounded-xl [&_.ant-upload]:!border-dashed [&_.ant-upload]:!border-slate-300 [&_.ant-upload]:!bg-white"
+                className="brand-logo-uploader shrink-0 [&_.ant-upload]:!w-16 [&_.ant-upload]:!h-16 [&_.ant-upload]:!rounded-xl [&_.ant-upload]:!border-dashed [&_.ant-upload]:!border-slate-300 [&_.ant-upload]:!bg-white [&_.ant-upload]:!m-0"
                 showUploadList={false}
                 beforeUpload={(file) => {
                   handleImageUpload(file);
@@ -847,8 +890,8 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                         (e.target as HTMLImageElement).src = getBrandInitialSvg(formData.name || 'Brand');
                       }}
                     />
-                    <div className="absolute inset-0 bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-semibold">
-                      <UploadOutlined className="text-sm mb-0.5" />
+                    <div className="absolute inset-0 bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[9px] font-semibold">
+                      <UploadOutlined className="text-xs mb-0.5" />
                       <span>Change</span>
                     </div>
                   </div>
@@ -859,121 +902,63 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                       alt="Generated Brand Logo"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-black/45 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-semibold">
-                      <UploadOutlined className="text-sm mb-0.5" />
-                      <span>Upload Logo</span>
+                    <div className="absolute inset-0 bg-black/45 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[9px] font-semibold">
+                      <UploadOutlined className="text-xs mb-0.5" />
+                      <span>Upload</span>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center text-slate-400 p-1">
                     {uploadingImage ? (
                       <>
-                        <LoadingOutlined className="text-base text-[#0096C7] mb-1" spin />
-                        <span className="text-[9px] text-slate-500 font-medium">Uploading...</span>
+                        <LoadingOutlined className="text-sm text-[#0096C7] mb-0.5" spin />
+                        <span className="text-[8px] text-slate-500 font-medium">Uploading</span>
                       </>
                     ) : (
                       <>
-                        <PlusOutlined className="text-base text-slate-400 mb-0.5" />
-                        <span className="text-[10px] text-slate-600 font-semibold">Upload</span>
-                        <span className="text-[8px] text-slate-400">PNG / JPG</span>
+                        <PlusOutlined className="text-sm text-slate-400 mb-0.5" />
+                        <span className="text-[9px] text-slate-600 font-semibold leading-none">Upload</span>
                       </>
                     )}
                   </div>
                 )}
               </Upload>
 
-              <div className="flex-1 space-y-1 min-w-0">
-                <span className="text-xs font-bold text-slate-800 block">
-                  {formData.logo ? 'Brand Logo Attached' : 'Attach Official Logo'}
-                </span>
-                <p className="text-[11px] text-slate-500 leading-tight">
-                  Click the box to upload from your computer, or paste a direct logo image URL below.
-                </p>
-                {formData.logo && (
-                  <button
-                    type="button"
-                    onClick={() => setFormData((prev) => ({ ...prev, logo: '' }))}
-                    className="text-[10px] text-rose-600 hover:text-rose-700 font-semibold cursor-pointer transition-colors block"
-                  >
-                    ✕ Remove Logo
-                  </button>
-                )}
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-700">
+                    {formData.logo ? 'Brand Logo Uploaded' : 'Upload logo image or enter image URL'}
+                  </span>
+                  {formData.logo && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, logo: '' }))}
+                      className="text-[10px] text-rose-600 hover:text-rose-700 font-semibold cursor-pointer transition-colors"
+                    >
+                      ✕ Remove
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Paste image URL (https://...)"
+                  value={formData.logo}
+                  onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+                  className="w-full px-2.5 py-1 bg-white border border-slate-200 rounded-md text-xs text-slate-700 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
+                />
               </div>
             </div>
-
-            {/* Optional URL input for direct web images */}
-            <div className="mt-1.5">
-              <input
-                type="text"
-                placeholder="Or paste direct image URL (https://...)"
-                value={formData.logo}
-                onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-700 focus:ring-1 focus:ring-[#0096C7] outline-none"
-              />
-            </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Brand Name <span className="text-rose-500">*</span>
-            </label>
-            <AppInput
-              placeholder="e.g. Himalaya Herbals, Apple, Nike"
-              value={formData.name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Brand Tag (Searchable product tag) <span className="text-rose-500">*</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">#</span>
-              <input
-                type="text"
-                placeholder="Brand tag name"
-                value={formData.tag}
-                onChange={(e) => setFormData({ ...formData, tag: e.target.value.replace(/^#+/, '') })}
-                className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
-                required
-              />
-            </div>
-            <span className="text-[10px] text-slate-400 mt-1 block">
-              This tag will be automatically available to tag any product by this brand.
-            </span>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Description / Brand Story</label>
-            <textarea
-              rows={3}
-              placeholder="Brief description about the brand, its origin, or product lines..."
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Website URL (Optional)</label>
-            <AppInput
-              placeholder="https://brandname.com"
-              value={formData.website}
-              onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-            />
-          </div>
-
+          {/* Row 4: Status */}
           <div className="flex items-center justify-between pt-2 border-t border-slate-100">
             <div>
-              <span className="text-xs font-bold text-slate-800 block">Brand Status</span>
-              <span className="text-[10px] text-slate-400 block">Enable or disable brand for public tagging</span>
+              <span className="text-xs font-bold text-slate-800 block">Status</span>
+              <span className="text-[10px] text-slate-400 block">Enable or disable brand for public catalog tagging</span>
             </div>
             <Switch
               checked={formData.isActive}
               onChange={(checked) => setFormData({ ...formData, isActive: checked })}
-              className="bg-slate-300"
             />
           </div>
         </form>
