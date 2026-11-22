@@ -20,7 +20,6 @@ import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
-  AppTable,
   AppInput,
   AppSelect,
   AppModal,
@@ -106,6 +105,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Collapsible Catalog Summary State
+  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -446,19 +448,31 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               <p className="text-xs text-slate-400 mt-1">Try adjusting your search criteria or add a new brand.</p>
             </div>
           ) : (
-            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto brand-table-scroll">
-              <AppTable>
-              <thead>
-                <tr>
-                  <th className="py-2.5 px-6 font-medium text-[12px]">Brand & Logo</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Brand Tag</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Catalog Products</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Departments</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Status</th>
-                  <th className="py-2.5 px-6 font-medium text-[12px] text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto brand-table-scroll relative">
+              <table className="kiran-role-table app-table w-full border-collapse">
+                <thead className="sticky top-0 z-20 shadow-xs">
+                  <tr className="bg-[#0096C7]">
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-6 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Brand & Logo
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Brand Tag
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Catalog Products
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Departments
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Status
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-6 font-semibold text-[12px] text-right whitespace-nowrap shadow-xs">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
                 {paginatedBrands.map((b) => {
                   const initial = b.name ? b.name.charAt(0).toUpperCase() : 'B';
                   return (
@@ -567,7 +581,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   );
                 })}
               </tbody>
-            </AppTable>
+            </table>
           </div>
         )}
 
@@ -634,83 +648,117 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       </div>
 
         {/* Right Column: Add Brand Card + Catalog Summary Metrics (Independent Scroll Area) */}
-        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
-        {/* Card 1: Add New Brand */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4">
-          <button
-            type="button"
-            onClick={openAddModal}
-            className="w-full h-10 flex items-center justify-center gap-2 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
-          >
-            <PlusOutlined className="text-xs" />
-            <span>Add New Brand</span>
-          </button>
-          <p className="text-[11px] text-slate-400 mt-2.5 leading-relaxed text-center sm:text-left">
-            Register a new brand, attach its logo, and assign its searchable catalog product tag.
-          </p>
-        </div>
-
-        {/* Card 2: Catalog Summary */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 space-y-3.5">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-slate-900 tracking-tight">Catalog Summary</h4>
-            <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full">
-              Live Metrics
-            </span>
+        <div className="w-full lg:w-[260px] xl:w-[290px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-2.5 pr-1">
+          {/* Card 1: Add New Brand (Compact) */}
+          <div className="bg-white rounded-xl border border-slate-100 shadow-xs p-3">
+            <button
+              type="button"
+              onClick={openAddModal}
+              className="w-full h-8.5 flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-lg shadow-xs transition-colors cursor-pointer"
+            >
+              <PlusOutlined className="text-xs" />
+              <span>Add New Brand</span>
+            </button>
+            <p className="text-[10px] text-slate-400 mt-1.5 leading-snug text-center sm:text-left">
+              Register a brand, upload logo & assign tag.
+            </p>
           </div>
 
-          <div className="space-y-2.5">
-            {/* Metric 1: Total Brands */}
-            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
-              <div>
-                <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                  Total Brands
+          {/* Card 2: Catalog Summary (Collapsible + Compact) */}
+          {isSummaryCollapsed ? (
+            /* Collapsed View styled like Image 3 (Dark, sleek, compact) */
+            <div
+              onClick={() => setIsSummaryCollapsed(false)}
+              className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl p-3 shadow-md border border-slate-800 cursor-pointer transition-all space-y-1.5 select-none group"
+              title="Click to expand Catalog Summary"
+            >
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 text-slate-200 group-hover:text-sky-300 transition-colors">
+                  <span className="font-bold text-xs">Catalog Summary</span>
+                  <DownOutlined className="text-[9px] text-slate-400 group-hover:text-sky-300 -rotate-90 transition-transform" />
+                </div>
+                <span className="text-[9px] font-bold text-sky-300 bg-sky-950/80 border border-sky-800/80 px-1.5 py-0.5 rounded-full">
+                  {allBrands.length} Brands
                 </span>
-                <span className="text-xl font-extrabold text-slate-900 leading-tight block">
-                  {allBrands.length}
-                </span>
-                <span className="text-[10px] text-slate-400">Available for catalog</span>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0 border border-sky-100/60">
-                <ShopOutlined />
+              <div className="flex items-center gap-2 text-xs text-slate-300 font-medium pt-0.5">
+                <ShopOutlined className="text-[#0096C7] text-sm shrink-0" />
+                <span className="truncate tracking-tight font-mono text-[11px] text-slate-300">
+                  {allBrands.length} Brands · {allBrands.reduce((acc, b) => acc + b.productCount, 0)} Items · {allBrands.filter((b) => b.isActive).length} Active
+                </span>
               </div>
             </div>
+          ) : (
+            /* Expanded Compact View */
+            <div className="bg-white rounded-xl border border-slate-100 shadow-xs p-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setIsSummaryCollapsed(true)}
+                  className="flex items-center gap-1.5 text-xs font-bold text-slate-800 hover:text-[#0096C7] transition-colors cursor-pointer group"
+                  title="Click to collapse Catalog Summary"
+                >
+                  <span>Catalog Summary</span>
+                  <DownOutlined className="text-[9px] text-slate-400 group-hover:text-[#0096C7] transition-transform" />
+                </button>
+                <span className="text-[9px] font-bold text-[#0096C7] bg-sky-50 border border-sky-100 px-1.5 py-0.5 rounded-full">
+                  Live Metrics
+                </span>
+              </div>
 
-            {/* Metric 2: Products Tagged */}
-            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
-              <div>
-                <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                  Products Tagged
-                </span>
-                <span className="text-xl font-extrabold text-amber-600 leading-tight block">
-                  {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
-                </span>
-                <span className="text-[10px] text-slate-400">Active in store</span>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg shrink-0 border border-amber-100/60">
-                <TagOutlined />
-              </div>
-            </div>
+              <div className="space-y-1.5">
+                {/* Metric 1: Total Brands */}
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-50/80 border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[8px] font-bold tracking-wider text-slate-400 uppercase">
+                      Total Brands
+                    </span>
+                    <span className="text-base font-extrabold text-slate-900 leading-tight block">
+                      {allBrands.length}
+                    </span>
+                    <span className="text-[9px] text-slate-400">Available for catalog</span>
+                  </div>
+                  <div className="w-7 h-7 rounded-lg bg-sky-50 text-[#0096C7] flex items-center justify-center text-sm shrink-0 border border-sky-100/60">
+                    <ShopOutlined />
+                  </div>
+                </div>
 
-            {/* Metric 3: Active Tags */}
-            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
-              <div>
-                <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
-                  Active Tags
-                </span>
-                <span className="text-xl font-extrabold text-emerald-600 leading-tight block">
-                  {allBrands.filter((b) => b.isActive).length}
-                </span>
-                <span className="text-[10px] text-slate-400">Ready for product tagging</span>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg shrink-0 border border-emerald-100/60">
-                <CheckCircleOutlined />
+                {/* Metric 2: Products Tagged */}
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-50/80 border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[8px] font-bold tracking-wider text-slate-400 uppercase">
+                      Products Tagged
+                    </span>
+                    <span className="text-base font-extrabold text-amber-600 leading-tight block">
+                      {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
+                    </span>
+                    <span className="text-[9px] text-slate-400">Active in store</span>
+                  </div>
+                  <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center text-sm shrink-0 border border-amber-100/60">
+                    <TagOutlined />
+                  </div>
+                </div>
+
+                {/* Metric 3: Active Tags */}
+                <div className="p-2 sm:p-2.5 rounded-lg bg-slate-50/80 border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[8px] font-bold tracking-wider text-slate-400 uppercase">
+                      Active Tags
+                    </span>
+                    <span className="text-base font-extrabold text-emerald-600 leading-tight block">
+                      {allBrands.filter((b) => b.isActive).length}
+                    </span>
+                    <span className="text-[9px] text-slate-400">Ready for product tagging</span>
+                  </div>
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center text-sm shrink-0 border border-emerald-100/60">
+                    <CheckCircleOutlined />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
-    </div>
 
       {/* Add / Edit Brand Modal using Ant Design Upload Component */}
       <AppModal
