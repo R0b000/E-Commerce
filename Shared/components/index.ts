@@ -22,6 +22,8 @@ export type { AppSelectProps } from './AppSelect';
 export { AppImageUpload } from './AppImageUpload';
 export type { AppImageUploadProps } from './AppImageUpload';
 
+export { sanitizeSlug, generateUniqueSlug } from './slugUtils';
+
 export { AutoCompleteSelect } from '../UI/components/AutoCompleteSelect/AutoCompleteSelect';
 export type { AutoCompleteSelectProps, AutoCompleteSelectOption } from '../UI/components/AutoCompleteSelect/AutoCompleteSelect.types';
 

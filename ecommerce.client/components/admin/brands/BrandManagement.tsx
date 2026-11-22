@@ -25,6 +25,8 @@ import {
   AppModal,
   TableSkeleton,
   AppImageUpload,
+  generateUniqueSlug,
+  sanitizeSlug,
 } from 'shared-components';
 import { BrandItem, BrandManagementProps } from './BrandManagement.types';
 
@@ -329,11 +331,21 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   };
 
   const handleNameChange = (val: string) => {
-    const updated = { ...formData, name: val };
-    if (!formData.tag || formData.tag === formData.name) {
-      updated.tag = val;
-    }
-    setFormData(updated);
+    const existingSlugs = allBrands.map((b) => b.tag);
+    const ignoreSlug = editingBrand ? editingBrand.tag : undefined;
+    const autoSlug = generateUniqueSlug(val, existingSlugs, ignoreSlug);
+
+    setFormData((prev) => ({
+      ...prev,
+      name: val,
+      tag: autoSlug,
+    }));
+  };
+
+  const handleSlugChange = (val: string) => {
+    // Sanitize manually entered slug: lowercase, space-free alphanumeric
+    const clean = sanitizeSlug(val);
+    setFormData((prev) => ({ ...prev, tag: clean }));
   };
 
   // Image Upload integration (Uploads to HimalayaOnlineShop/Temporary staging with unique ID)
@@ -385,7 +397,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       }
     }
 
-    const cleanTag = (formData.tag.trim() || cleanName).replace(/^#+/, '');
+    const existingSlugs = allBrands.map((b) => b.tag);
+    const ignoreSlug = editingBrand ? editingBrand.tag : undefined;
+    const cleanTag = sanitizeSlug(formData.tag) || generateUniqueSlug(cleanName, existingSlugs, ignoreSlug);
+
     const updatedList = customBrands.filter(
       (b) => b.name.toLowerCase() !== (editingBrand ? editingBrand.name.toLowerCase() : cleanName.toLowerCase())
     );
@@ -860,17 +875,18 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Brand Slug Name <span className="text-rose-500">*</span>
+              <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                <span>Brand Slug Name <span className="text-rose-500">*</span></span>
+                <span className="text-[10px] text-slate-400 font-normal">Auto-generated for routing</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">#</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">/</span>
                 <input
                   type="text"
-                  placeholder="e.g. AeroPulse Audio"
+                  placeholder="e.g. sonypsp"
                   value={formData.tag}
-                  onChange={(e) => setFormData({ ...formData, tag: e.target.value.replace(/^#+/, '') })}
-                  className="w-full pl-7 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
+                  onChange={(e) => handleSlugChange(e.target.value)}
+                  className="w-full pl-6 pr-3 py-1.5 border border-slate-200 rounded-lg text-xs font-mono text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
                   required
                 />
               </div>
