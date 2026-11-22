@@ -30,6 +30,12 @@ import {
   LockOutlined,
   ClockCircleOutlined,
   PictureOutlined,
+  FolderOutlined,
+  BranchesOutlined,
+  InboxOutlined,
+  CompassOutlined,
+  DollarOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, MenuProps, Tooltip, Result, Spin, Popover } from 'antd';
 import { io, Socket } from 'socket.io-client';
@@ -42,45 +48,137 @@ import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem } from '../../../types/ecommerce.types';
 import { RoleSwitcherSelect } from './RoleSwitcherSelect';
 
-// Helper to map icon names to Ant Design icons
+// Helper to map icon names (Ant Design + Material icon names) to Ant Design icons
 const renderMenuIcon = (iconName: string) => {
-  switch (iconName) {
-    case 'DashboardOutlined':
+  const normalized = (iconName || '').toLowerCase().replace(/outlined$/, '');
+  switch (normalized) {
+    case 'dashboard':
+    case 'dashboardoutlined':
       return <DashboardOutlined />;
-    case 'ShoppingOutlined':
+    case 'shopping':
+    case 'shoppingoutlined':
+    case 'shopping_cart':
+    case 'shopping_cart_checkout':
+    case 'add_shopping_cart':
       return <ShoppingOutlined />;
-    case 'AppstoreOutlined':
+    case 'appstore':
+    case 'appstoreoutlined':
+    case 'table_restaurant':
+    case 'grid_view':
+    case 'category':
       return <AppstoreOutlined />;
-    case 'FileTextOutlined':
+    case 'filetext':
+    case 'filetextoutlined':
+    case 'menu_book':
+    case 'list_alt':
+    case 'receipt_long':
+    case 'receipt':
+    case 'note_add':
+    case 'list':
       return <FileTextOutlined />;
-    case 'TeamOutlined':
+    case 'team':
+    case 'teamoutlined':
+    case 'person':
+    case 'group':
+    case 'groups':
+    case 'badge':
+    case 'person_search':
+    case 'person_add':
       return <TeamOutlined />;
-    case 'SafetyCertificateOutlined':
+    case 'safetycertificate':
+    case 'safetycertificateoutlined':
+    case 'admin_panel_settings':
+    case 'shield':
       return <SafetyCertificateOutlined />;
-    case 'KeyOutlined':
+    case 'key':
+    case 'keyoutlined':
       return <KeyOutlined />;
-    case 'MenuOutlined':
+    case 'menu':
+    case 'menuoutlined':
       return <MenuOutlined />;
-    case 'LineChartOutlined':
+    case 'linechart':
+    case 'linechartoutlined':
+    case 'assessment':
+    case 'analytics':
       return <LineChartOutlined />;
-    case 'RocketOutlined':
+    case 'rocket':
+    case 'rocketoutlined':
       return <RocketOutlined />;
-    case 'SettingOutlined':
+    case 'setting':
+    case 'settingoutlined':
+    case 'settings':
+    case 'tune':
       return <SettingOutlined />;
-    case 'ShopOutlined':
+    case 'shop':
+    case 'shopoutlined':
+    case 'restaurant':
+    case 'restaurant_menu':
+    case 'local_bar':
+    case 'business':
+    case 'business_center':
+    case 'corporate_fare':
       return <ShopOutlined />;
-    case 'BellOutlined':
+    case 'bell':
+    case 'belloutlined':
       return <BellOutlined />;
-    case 'TagOutlined':
+    case 'tag':
+    case 'tagoutlined':
       return <TagOutlined />;
-    case 'StarOutlined':
+    case 'star':
+    case 'staroutlined':
       return <StarOutlined />;
-    case 'HistoryOutlined':
+    case 'history':
+    case 'historyoutlined':
       return <HistoryOutlined />;
-    case 'LockOutlined':
+    case 'lock':
+    case 'lockoutlined':
       return <LockOutlined />;
-    case 'PictureOutlined':
+    case 'picture':
+    case 'pictureoutlined':
+    case 'photo_camera':
       return <PictureOutlined />;
+    case 'folder':
+    case 'folderoutlined':
+    case 'inventory_2':
+      return <FolderOutlined />;
+    case 'branches':
+    case 'branchesoutlined':
+    case 'account_tree':
+      return <BranchesOutlined />;
+    case 'inbox':
+    case 'inboxoutlined':
+    case 'move_to_inbox':
+      return <InboxOutlined />;
+    case 'compass':
+    case 'compassoutlined':
+    case 'map':
+      return <CompassOutlined />;
+    case 'dollar':
+    case 'dollaroutlined':
+    case 'request_quote':
+    case 'account_balance_wallet':
+    case 'invoicing':
+      return <DollarOutlined />;
+    case 'calendar':
+    case 'calendaroutlined':
+    case 'calendar_month':
+    case 'beach_access':
+    case 'schedule':
+    case 'event_available':
+    case 'event_busy':
+    case 'edit_calendar':
+      return <CalendarOutlined />;
+    case 'checkcircle':
+    case 'checkcircleoutlined':
+    case 'approval':
+    case 'fact_check':
+    case 'verified':
+    case 'task_alt':
+      return <CheckCircleOutlined />;
+    case 'clockcircle':
+    case 'clockcircleoutlined':
+    case 'pending_actions':
+      return <ClockCircleOutlined />;
     default:
       return <AppstoreOutlined />;
   }
@@ -248,8 +346,11 @@ export const AuthorizedLayout: React.FC = () => {
   };
 
   const isActive = (itemPath: string) => {
-    if (itemPath === '/admin') return location.pathname === '/admin';
-    return location.pathname.startsWith(itemPath);
+    if (!itemPath || itemPath === '#') return false;
+    if (itemPath === '/admin' || itemPath === '/dashboard') {
+      return location.pathname === '/admin' || location.pathname === '/dashboard';
+    }
+    return location.pathname === itemPath || (itemPath !== '/' && location.pathname.startsWith(itemPath));
   };
 
   const handleLogout = () => {
@@ -505,7 +606,34 @@ export const AuthorizedLayout: React.FC = () => {
   // Filter and sort menus by display order & permission
   const filteredMenus = [...dynamicMenus]
     .filter((m) => {
-      if (!m.name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      const q = searchQuery.toLowerCase().trim();
+      if (q) {
+        const matchName = m.name.toLowerCase().includes(q);
+        const matchNepali = (m.menuNameNepali || '').toLowerCase().includes(q);
+        const matchPath = (m.path || '').toLowerCase().includes(q);
+        const matchSub =
+          Array.isArray(m.subItems) &&
+          m.subItems.some(
+            (s) =>
+              s.label.toLowerCase().includes(q) ||
+              (s.nameNepali || '').toLowerCase().includes(q) ||
+              (s.path || '').toLowerCase().includes(q)
+          );
+        if (!matchName && !matchNepali && !matchPath && !matchSub) return false;
+      }
+      // Strictly filter to legitimate E-Commerce platform pages only
+      if (m.path && !m.path.startsWith('/admin') && m.path !== '#') {
+        return false;
+      }
+
+      // Filter subItems to only valid E-Commerce platform paths
+      if (Array.isArray(m.subItems)) {
+        m.subItems = m.subItems.filter(
+          (s) => s.path && (s.path.startsWith('/admin') || s.path === '#')
+        );
+      }
+
+      if (isAdmin || userRole === 'admin') return true;
       // Direct path check if no subItems
       const hasSub = Array.isArray(m.subItems) && m.subItems.length > 0;
       if (!hasSub && m.path && !canAccessPage(m.path)) return false;
@@ -753,38 +881,40 @@ export const AuthorizedLayout: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleItemClick}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer shadow-2xs text-left ${
-                        active
-                          ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm border-l-4 border-l-[#f97316]'
-                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-orange-200 hover:text-[#f97316] hover:bg-slate-50'
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer text-left ${
+                        isOpen
+                          ? 'bg-white text-slate-800 border-amber-400 shadow-xs ring-1 ring-amber-400/20'
+                          : active
+                          ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm'
+                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-amber-300 hover:text-amber-600 hover:bg-slate-50 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <span
-                          className={`text-base ${
-                            active
+                          className={`text-base shrink-0 ${
+                            active && !isOpen
                               ? 'text-white'
-                              : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
+                              : 'text-[#0284c7]'
                           }`}
                         >
                           {renderMenuIcon(item.icon)}
                         </span>
-                        <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
+                        <span className={`truncate ${active && !isOpen ? 'text-white' : 'text-slate-800'}`}>
                           {item.name}
                         </span>
                       </div>
 
-                      {/* Icon '>' is ONLY visible if menu has submenu */}
+                      {/* Small orange chevron down/up matching Image 4 */}
                       <span
-                        className={`text-xs font-bold transition-transform duration-200 ${
+                        className={`text-[10px] font-bold transition-transform duration-200 shrink-0 ml-1.5 ${
                           isOpen
-                            ? 'rotate-90 text-[#f97316]'
+                            ? 'text-amber-500 rotate-180'
                             : active
-                            ? 'text-[#f97316]'
-                            : 'text-slate-400 group-hover/menuitem:text-[#f97316]'
+                            ? 'text-white'
+                            : 'text-amber-500'
                         }`}
                       >
-                        ›
+                        ▼
                       </span>
                     </button>
                   ) : (
@@ -794,12 +924,12 @@ export const AuthorizedLayout: React.FC = () => {
                       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer shadow-2xs ${
                         active
                           ? 'bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white border-[#0284c7] shadow-sm border-l-4 border-l-[#f97316]'
-                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-orange-200 hover:text-[#f97316] hover:bg-slate-50'
+                          : 'bg-white text-slate-700 border-slate-100/90 hover:border-amber-300 hover:text-amber-600 hover:bg-slate-50'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 truncate">
                         <span
-                          className={`text-base ${
+                          className={`text-base shrink-0 ${
                             active
                               ? 'text-white'
                               : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
@@ -811,32 +941,64 @@ export const AuthorizedLayout: React.FC = () => {
                           {item.name}
                         </span>
                       </div>
-                      {/* NO '>' icon when menu has no submenu */}
                     </Link>
                   )}
 
                   {/* Inline Collapsible Submenu Accordion */}
                   {hasSub && isOpen && (
-                    <div className="mt-1 ml-3 pl-3 border-l-2 border-orange-200/80 space-y-1 py-1">
-                      {item.subItems!.filter((sub) => canAccessPage(sub.path)).map((sub) => {
-                        const subActive =
-                          location.pathname === sub.path ||
-                          (sub.path !== '/admin' && location.pathname.startsWith(sub.path));
-                        return (
+                    <div className="mt-1.5 ml-4 pl-4 border-l-2 border-amber-400 space-y-1.5 py-1.5">
+                      {/* Direct access to parent route if defined and marked as Single Page */}
+                      {item.path &&
+                        item.path !== '#' &&
+                        item.isSinglePage &&
+                        !item.subItems!.some((s) => s.path === item.path) && (
                           <Link
-                            key={sub.path || sub.label}
-                            to={sub.path}
+                            to={item.path}
                             onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-                              subActive
-                                ? 'bg-blue-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
-                                : 'text-slate-600 hover:text-[#f97316] hover:bg-orange-50/50'
+                            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                              location.pathname === item.path
+                                ? 'bg-sky-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
+                                : 'text-slate-600 hover:text-amber-600 hover:bg-slate-50'
                             }`}
                           >
-                            <span className="truncate">{sub.label}</span>
+                            <span className="text-xs text-slate-400 shrink-0">
+                              {renderMenuIcon(item.icon)}
+                            </span>
+                            <span className="truncate">{item.name} Overview</span>
                           </Link>
-                        );
-                      })}
+                        )}
+                      {item.subItems!
+                        .filter((sub) => isAdmin || userRole === 'admin' || canAccessPage(sub.path))
+                        .map((sub) => {
+                          const subActive =
+                            location.pathname === sub.path ||
+                            (sub.path !== '/admin' &&
+                              sub.path !== '/dashboard' &&
+                              location.pathname.startsWith(sub.path));
+                          return (
+                            <Link
+                              key={sub.path || sub.label}
+                              to={sub.path}
+                              onClick={() => setSidebarOpen(false)}
+                              className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                subActive
+                                  ? 'bg-sky-50 text-[#0284c7] border-l-2 border-l-[#f97316] shadow-2xs font-bold'
+                                  : 'text-slate-600 hover:text-amber-600 hover:bg-slate-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0 truncate">
+                                <span
+                                  className={`text-xs shrink-0 ${
+                                    subActive ? 'text-[#0284c7]' : 'text-slate-400'
+                                  }`}
+                                >
+                                  {renderMenuIcon(sub.icon || 'FileTextOutlined')}
+                                </span>
+                                <span className="truncate">{sub.label}</span>
+                              </div>
+                            </Link>
+                          );
+                        })}
                     </div>
                   )}
                 </div>

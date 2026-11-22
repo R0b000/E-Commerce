@@ -78,6 +78,11 @@ const ProductSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    brand: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     tags: {
       type: [String],
       default: [],
@@ -88,7 +93,7 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-ProductSchema.index({ name: 'text', description: 'text', sku: 'text' });
+ProductSchema.index({ name: 'text', description: 'text', sku: 'text', brand: 'text', tags: 'text' });
 
 const Product = mongoose.models.Product || mongoose.model('Product', ProductSchema);
 

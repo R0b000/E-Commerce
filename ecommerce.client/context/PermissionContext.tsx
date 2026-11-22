@@ -54,9 +54,9 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
       const res = await ecommerceService.getUserMenus(roleToFetch);
       if (res.success && res.data) {
         let perms = res.data.effectivePermissions || [];
-        // If super admin and no explicit perms or wildcard, retain wildcard
-        if (roleToFetch === 'admin' && (perms.length === 0 || perms.includes('*'))) {
-          perms = ['*'];
+        // Super admin ALWAYS has wildcard full access
+        if (roleToFetch === 'admin' || currentRole === 'admin') {
+          perms = ['*', ...perms];
         }
         setPermissions(perms);
       }
@@ -117,7 +117,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
   // Direct code check
   const hasPermission = useCallback((code: string): boolean => {
     if (!code) return true;
-    if (permissions.includes('*')) return true;
+    if (currentRole === 'admin' || permissions.includes('*')) return true;
     // Core pages accessible to all authenticated users from the start
     if (
       code === 'pages:dashboard' ||
@@ -142,7 +142,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // High-level action and module checker
   const can = useCallback((action: PermissionAction, module: string): boolean => {
-    if (permissions.includes('*')) return true;
+    if (currentRole === 'admin' || permissions.includes('*')) return true;
 
     const mod = normalizeModuleName(module);
     // Profile and Dashboard actions are granted to every authenticated user from the start
@@ -207,7 +207,7 @@ export const PermissionProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Route access verification
   const canAccessPage = useCallback((path: string): boolean => {
-    if (permissions.includes('*')) return true;
+    if (currentRole === 'admin' || permissions.includes('*')) return true;
 
     const cleanPath = path.toLowerCase().replace(/\/$/, '');
 

@@ -2,9 +2,19 @@ const mongoose = require('mongoose');
 
 const MenuSchema = new mongoose.Schema(
   {
+    menuId: {
+      type: Number,
+      default: null,
+      index: true,
+    },
     name: {
       type: String,
       required: true,
+      trim: true,
+    },
+    menuNameNepali: {
+      type: String,
+      default: '',
       trim: true,
     },
     path: {
@@ -29,9 +39,36 @@ const MenuSchema = new mongoose.Schema(
       default: '',
     },
     parentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Menu',
+      type: mongoose.Schema.Types.Mixed,
       default: null,
+    },
+    isSinglePage: {
+      type: Boolean,
+      default: false,
+    },
+    isPrimary: {
+      type: Boolean,
+      default: false,
+    },
+    isChild: {
+      type: Boolean,
+      default: false,
+    },
+    isNotParent: {
+      type: Boolean,
+      default: true,
+    },
+    isNotChild: {
+      type: Boolean,
+      default: true,
+    },
+    childId: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+    menuCode: {
+      type: String,
+      default: '',
     },
     badgeText: {
       type: String,
@@ -52,6 +89,7 @@ const MenuSchema = new mongoose.Schema(
 );
 
 MenuSchema.index({ order: 1, isActive: 1 });
+MenuSchema.index({ menuId: 1 });
 
 const Menu = mongoose.models.Menu || mongoose.model('Menu', MenuSchema);
 

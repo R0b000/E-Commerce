@@ -8,6 +8,426 @@ const { redisService } = require('./RedisService');
 
 class RbacService {
   /**
+   * Synchronizes standard E-Commerce menus and completely purges any non-ecommerce / reference menus
+   */
+  async syncStandardMenus() {
+    try {
+      // 1. Permanently remove all restaurant, HRM, and non-ecommerce menus
+      const nonEcommerceNames = [
+        'Restro Setup', 'Dining Tables', 'Restro Menu Categories', 'Restro Menu Items',
+        'Floor Plan Editor', 'Live Floor Plan', 'Menu Selection Types', 'Restro',
+        'Purchase', 'Purchase Requisition', 'Purchase Order', 'Receive Goods', 'Vendors', 'Bill Of Material',
+        'Staff', 'Staff Setup', 'Staff Details', 'Staff Profile Picture', 'Staff Profile Picture Review',
+        'Setting', 'Settings', 'Main Setup Layout', 'General Setup', 'Office Setup', 'Company Setup',
+        'Department Branch Setup', 'Department Setup', 'Level Designation',
+        'Holiday', 'Holiday Calendar', 'Holiday Setup', 'Holiday Lists',
+        'Duty Roster', 'Duty Overview', 'Manage Duty',
+        'Leave', 'Leave Setup', 'Leave Position Setup', 'Leave Request', 'Leave Approval',
+        'Leave Request HR', 'Leave Request By HR', 'Leave Cancel HR', 'Leave Balance',
+        'Attendance', 'Manual Attendance', 'Manual Attendance By HR', 'Manual Attendance Direct Approval',
+        'Pending Attendance', 'Attendance Pending View HR',
+        'Report', 'Order Report', 'Menu Items Report', 'Order Appraisal Report',
+        'KOT', 'BOT', 'Auth', 'Create Order', 'Order Dashboard'
+      ];
+
+      const nonEcommercePaths = [
+        /^\/restro/,
+        /^\/tables/,
+        /^\/menuitems/,
+        /^\/floorplan/,
+        /^\/dutyroster/,
+        /^\/Leave/,
+        /^\/Holiday/,
+        /^\/ManualAttendance/,
+        /^\/Attedance/,
+        /^\/PendingAttendance/,
+        /^\/hrm/,
+        /^\/settings/,
+        /^\/menuselectiontypes/,
+        /^\/report/,
+        /^\/orderitemdetails/,
+        /^\/purchase/,
+        /^\/auth$/,
+        /^\/categories$/,
+      ];
+
+      const validMenuIds = [1, 2, 21, 22, 23, 11, 12, 13, 14, 4, 41, 42, 5, 10, 101, 102, 103, 104, 60, 61, 62];
+
+      await Menu.deleteMany({
+        $or: [
+          { name: { $in: nonEcommerceNames } },
+          { path: { $in: ['/tables', '/categories', '/menuitems', '/floorplan/edit', '/floorplan/view', '/menuselectiontypes', '/restro/kot', '/restro/bot', '/restro/order-report', '/purchase', '/hrm', '/auth', '/settings'] } },
+          ...nonEcommercePaths.map((regex) => ({ path: regex })),
+          { menuId: { $nin: validMenuIds } },
+        ],
+      });
+
+      // 2. Legitimate E-Commerce Platform Menus (Parents & Nested Submenus)
+      const ecommerceMenus = [
+        // 1. Dashboard (Single Page Root)
+        {
+          menuId: 1,
+          name: 'Dashboard',
+          menuNameNepali: 'ड्यासबोर्ड',
+          path: '/admin',
+          icon: 'dashboard',
+          order: 1,
+          parentId: null,
+          isSinglePage: true,
+          isPrimary: true,
+          isNotParent: true,
+          isNotChild: true,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+
+        // 2. Products (Parent Menu)
+        {
+          menuId: 2,
+          name: 'Products',
+          menuNameNepali: 'उत्पादनहरू',
+          path: '/admin/products',
+          icon: 'shopping_cart',
+          order: 2,
+          parentId: null,
+          isSinglePage: false,
+          isPrimary: true,
+          isNotParent: false,
+          isNotChild: true,
+          roles: ['admin', 'seller', 'manager'],
+          isActive: true,
+        },
+        // 2.1 Products Submenus
+        {
+          menuId: 21,
+          name: 'All Products',
+          menuNameNepali: 'सबै उत्पादनहरू',
+          path: '/admin/products',
+          icon: 'shopping_cart',
+          order: 1,
+          parentId: 2,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'seller', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 22,
+          name: 'Categories',
+          menuNameNepali: 'कोटिहरू',
+          path: '/admin/categories',
+          icon: 'category',
+          order: 2,
+          parentId: 2,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 23,
+          name: 'Stock & Inventory',
+          menuNameNepali: 'मौज्दात तथा भण्डारण',
+          path: '/admin/inventory',
+          icon: 'inventory_2',
+          order: 3,
+          parentId: 2,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'seller', 'manager'],
+          isActive: true,
+        },
+
+        // 3. Order (Parent Menu)
+        {
+          menuId: 11,
+          name: 'Order',
+          menuNameNepali: 'अर्डर',
+          path: '/admin/orders',
+          icon: 'receipt_long',
+          order: 3,
+          parentId: null,
+          isSinglePage: false,
+          isPrimary: true,
+          isNotParent: false,
+          isNotChild: true,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+        // 3.1 Order Submenus
+        {
+          menuId: 12,
+          name: 'Orders',
+          menuNameNepali: 'अर्डर सूची',
+          path: '/admin/orders',
+          icon: 'receipt_long',
+          order: 1,
+          parentId: 11,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 13,
+          name: 'Billing',
+          menuNameNepali: 'बिलिङ',
+          path: '/admin/billing',
+          icon: 'receipt',
+          order: 2,
+          parentId: 11,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 14,
+          name: 'Customer Reviews',
+          menuNameNepali: 'ग्राहक समीक्षाहरू',
+          path: '/admin/reviews',
+          icon: 'star',
+          order: 3,
+          parentId: 11,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'support', 'seller'],
+          isActive: true,
+        },
+
+        // 4. Marketing (Parent Menu)
+        {
+          menuId: 4,
+          name: 'Marketing',
+          menuNameNepali: 'बजार व्यवस्थापन',
+          path: '/admin/discounts',
+          icon: 'tune',
+          order: 4,
+          parentId: null,
+          isSinglePage: false,
+          isPrimary: false,
+          isNotParent: false,
+          isNotChild: true,
+          roles: ['admin', 'manager'],
+          isActive: true,
+        },
+        // 4.1 Marketing Submenus
+        {
+          menuId: 41,
+          name: 'Discounts & Coupons',
+          menuNameNepali: 'छुट र कुपन',
+          path: '/admin/discounts',
+          icon: 'tune',
+          order: 1,
+          parentId: 4,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'manager'],
+          isActive: true,
+        },
+        {
+          menuId: 42,
+          name: 'Hero Banners',
+          menuNameNepali: 'ब्यानरहरू',
+          path: '/admin/banners',
+          icon: 'photo_camera',
+          order: 2,
+          parentId: 4,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'manager'],
+          isActive: true,
+        },
+
+        // 5. Accounts (Single Page)
+        {
+          menuId: 5,
+          name: 'Accounts',
+          menuNameNepali: 'खाताहरू',
+          path: '/admin/customers',
+          icon: 'groups',
+          order: 5,
+          parentId: null,
+          isSinglePage: true,
+          isPrimary: false,
+          isNotParent: true,
+          isNotChild: true,
+          roles: ['admin', 'seller', 'support', 'manager'],
+          isActive: true,
+        },
+
+        // 6. Auth (Parent Menu)
+        {
+          menuId: 10,
+          name: 'Auth',
+          menuNameNepali: 'प्रमाणीकरण',
+          path: '/admin/auth',
+          icon: 'shield',
+          order: 6,
+          parentId: null,
+          isSinglePage: false,
+          isPrimary: false,
+          isNotParent: false,
+          isNotChild: true,
+          roles: ['admin'],
+          isActive: true,
+        },
+        // 6.1 Auth Submenus
+        {
+          menuId: 101,
+          name: 'Menu Setup',
+          menuNameNepali: 'मेनु सेटअप',
+          path: '/admin/menus',
+          icon: 'menu',
+          order: 1,
+          parentId: 10,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 102,
+          name: 'Menu Role Setup',
+          menuNameNepali: 'मेनु भूमिका सेटअप',
+          path: '/admin/roles',
+          icon: 'admin_panel_settings',
+          order: 2,
+          parentId: 10,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 103,
+          name: 'User Setup',
+          menuNameNepali: 'प्रयोगकर्ता सेटअप',
+          path: '/admin/customers',
+          icon: 'person',
+          order: 3,
+          parentId: 10,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 104,
+          name: 'User Role',
+          menuNameNepali: 'प्रयोगकर्ता भूमिका',
+          path: '/admin/permissions',
+          icon: 'group',
+          order: 4,
+          parentId: 10,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin'],
+          isActive: true,
+        },
+
+        // 7. Security & System (Parent Menu)
+        {
+          menuId: 60,
+          name: 'Security & System',
+          menuNameNepali: 'सुरक्षा र प्रणाली',
+          path: '/admin/security',
+          icon: 'lock',
+          order: 7,
+          parentId: null,
+          isSinglePage: false,
+          isPrimary: false,
+          isNotParent: false,
+          isNotChild: true,
+          roles: ['admin'],
+          isActive: true,
+        },
+        // 7.1 Security Submenus
+        {
+          menuId: 61,
+          name: 'Security & Devices',
+          menuNameNepali: 'सुरक्षा र उपकरणहरू',
+          path: '/admin/security',
+          icon: 'lock',
+          order: 1,
+          parentId: 60,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'],
+          isActive: true,
+        },
+        {
+          menuId: 62,
+          name: 'Audit Logs',
+          menuNameNepali: 'अडिट लगहरू',
+          path: '/admin/audit-logs',
+          icon: 'analytics',
+          order: 2,
+          parentId: 60,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin'],
+          isActive: true,
+        },
+      ];
+
+      for (const m of ecommerceMenus) {
+        await Menu.findOneAndUpdate(
+          { menuId: m.menuId },
+          { $set: m },
+          { upsert: true, new: true }
+        );
+      }
+
+      await redisService.delByPattern('ecommerce:menus:*');
+    } catch (err) {
+      console.error('syncStandardMenus error:', err);
+    }
+  }
+
+  /**
    * Returns dynamic navigation menus available to the logged in user
    * - Admin sees all menus
    * - Seller / Customer sees menus matching their role or granted via customPermissions
@@ -24,6 +444,9 @@ class RbacService {
         return ApiResponse.success(cached);
       }
 
+      // Ensure standard hierarchical menu dataset is seeded
+      await this.syncStandardMenus();
+
       // Load user custom permissions if user exists
       let userCustomPermissions = [];
       if (user?.id) {
@@ -38,147 +461,25 @@ class RbacService {
       const rolePermissions = roleDoc?.permissions || [];
       const effectivePermissions = new Set([...rolePermissions, ...userCustomPermissions]);
 
-      // Fetch all active menus sorted by display order
-      let allMenus = await Menu.find({ isActive: true })
+      // Fetch all active menus sorted by display order (excluding removed Setting menu)
+      const allMenus = await Menu.find({
+        isActive: true,
+        name: { $nin: ['Setting', 'Settings', 'Main Setup Layout', 'General Setup', 'Office Setup', 'Company Setup', 'Department Branch Setup', 'Department Setup', 'Level Designation'] },
+        path: { $not: /^\/settings/ },
+      })
         .sort({ order: 1, createdAt: 1 })
         .lean();
 
-      if (!allMenus || allMenus.length === 0) {
-        const defaultMenus = [
-          { name: 'Dashboard', path: '/admin', icon: 'DashboardOutlined', order: 1, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
-          { name: 'Products', path: '/admin/products', icon: 'ShoppingOutlined', order: 2, roles: ['admin', 'seller', 'manager'], isSystem: true, isActive: true },
-          { name: 'Categories', path: '/admin/categories', icon: 'AppstoreOutlined', order: 3, roles: ['admin', 'manager'], isSystem: true, isActive: true },
-          { name: 'Orders', path: '/admin/orders', icon: 'FileTextOutlined', order: 4, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
-          { name: 'Accounts', path: '/admin/customers', icon: 'TeamOutlined', order: 5, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
-          { name: 'Billing', path: '/admin/billing', icon: 'DollarOutlined', order: 5.5, roles: ['admin', 'seller', 'support', 'manager'], isSystem: true, isActive: true },
-          { name: 'Discounts & Coupons', path: '/admin/discounts', icon: 'TagOutlined', order: 5.8, roles: ['admin', 'manager'], isSystem: true, isActive: true },
-          { name: 'Hero Banners', path: '/admin/banners', icon: 'PictureOutlined', order: 5.9, roles: ['admin', 'manager'], isSystem: true, isActive: true },
-          { name: 'Customer Reviews', path: '/admin/reviews', icon: 'StarOutlined', order: 6, roles: ['admin', 'support', 'seller'], isSystem: true, isActive: true },
-          { name: 'Audit Logs', path: '/admin/audit-logs', icon: 'HistoryOutlined', order: 7, roles: ['admin'], isSystem: true, isActive: true },
-          { name: 'Security Roles', path: '/admin/roles', icon: 'KeyOutlined', order: 8, roles: ['admin'], isSystem: true, isActive: true },
-          { name: 'Permissions', path: '/admin/permissions', icon: 'SafetyCertificateOutlined', order: 9, roles: ['admin'], isSystem: true, isActive: true },
-          { name: 'Menu Pages', path: '/admin/menus', icon: 'MenuOutlined', order: 10, roles: ['admin'], isSystem: true, isActive: true },
-        ];
-        await Menu.insertMany(defaultMenus);
-        allMenus = await Menu.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).lean();
-      } else {
-        // Remove seller-profile menu and update customer menu to Accounts
-        await Menu.deleteMany({ path: '/admin/seller-profile' });
-        allMenus = allMenus.filter((m) => m.path !== '/admin/seller-profile');
-
-        const customerMenu = allMenus.find((m) => m.path === '/admin/customers');
-        if (customerMenu) {
-          customerMenu.name = 'Accounts';
-          if (!customerMenu.roles.includes('seller')) customerMenu.roles.push('seller');
-          await Menu.updateOne(
-            { path: '/admin/customers' },
-            { $set: { name: 'Accounts', roles: customerMenu.roles } }
-          );
-        }
-
-        const hasReviews = allMenus.some((m) => m.path === '/admin/reviews');
-        if (!hasReviews) {
-          const revMenu = await Menu.create({
-            name: 'Customer Reviews',
-            path: '/admin/reviews',
-            icon: 'StarOutlined',
-            order: 6,
-            roles: ['admin', 'support', 'seller'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(revMenu.toObject ? revMenu.toObject() : revMenu);
-        }
-        const hasAudit = allMenus.some((m) => m.path === '/admin/audit-logs');
-        if (!hasAudit) {
-          const auditMenu = await Menu.create({
-            name: 'Audit Logs',
-            path: '/admin/audit-logs',
-            icon: 'HistoryOutlined',
-            order: 7,
-            roles: ['admin'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(auditMenu.toObject ? auditMenu.toObject() : auditMenu);
-        }
-
-        const hasInventory = allMenus.some((m) => m.path === '/admin/inventory');
-        if (!hasInventory) {
-          const invMenu = await Menu.create({
-            name: 'Inventory & Stock',
-            path: '/admin/inventory',
-            icon: 'AppstoreOutlined',
-            order: 3,
-            roles: ['admin', 'seller', 'manager'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(invMenu.toObject ? invMenu.toObject() : invMenu);
-        }
-
-        const hasSecurity = allMenus.some((m) => m.path === '/admin/security');
-        if (!hasSecurity) {
-          const secMenu = await Menu.create({
-            name: 'Security & Devices',
-            path: '/admin/security',
-            icon: 'LockOutlined',
-            order: 12,
-            roles: ['admin', 'seller', 'support', 'manager', 'customer', 'user'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(secMenu.toObject ? secMenu.toObject() : secMenu);
-        }
-
-        const hasBilling = allMenus.some((m) => m.path === '/admin/billing');
-        if (!hasBilling) {
-          const billMenu = await Menu.create({
-            name: 'Billing',
-            path: '/admin/billing',
-            icon: 'DollarOutlined',
-            order: 5.5,
-            roles: ['admin', 'seller', 'support', 'manager'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(billMenu.toObject ? billMenu.toObject() : billMenu);
-        }
-
-        const hasDiscounts = allMenus.some((m) => m.path === '/admin/discounts');
-        if (!hasDiscounts) {
-          const discMenu = await Menu.create({
-            name: 'Discounts & Coupons',
-            path: '/admin/discounts',
-            icon: 'TagOutlined',
-            order: 5.8,
-            roles: ['admin', 'manager'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(discMenu.toObject ? discMenu.toObject() : discMenu);
-        }
-
-        const hasBanners = allMenus.some((m) => m.path === '/admin/banners');
-        if (!hasBanners) {
-          const bannerMenu = await Menu.create({
-            name: 'Hero Banners',
-            path: '/admin/banners',
-            icon: 'PictureOutlined',
-            order: 5.9,
-            roles: ['admin', 'manager'],
-            isSystem: true,
-            isActive: true,
-          });
-          allMenus.push(bannerMenu.toObject ? bannerMenu.toObject() : bannerMenu);
-        }
+      // If user is super admin, always ensure full wildcard access
+      if (isAdmin || userRole === 'admin') {
+        effectivePermissions.add('*');
       }
 
       // Filter menus based on user role and permissions
       const hasConfiguredPermissions = roleDoc && Array.isArray(roleDoc.permissions);
 
       const allowedMenus = allMenus.filter((menu) => {
-        if (isAdmin && (!hasConfiguredPermissions || roleDoc.permissions.includes('*'))) return true;
+        if (isAdmin || userRole === 'admin') return true;
         if (effectivePermissions.has('*')) return true;
 
         // Dashboard, profile, security, and billing are fundamental account features permitted for all roles
@@ -223,27 +524,46 @@ class RbacService {
       const roots = [];
 
       allowedMenus.forEach((m) => {
-        menuMap.set(m._id.toString(), {
+        const idStr = m._id ? m._id.toString() : String(m.id || m.menuId);
+        const itemObj = {
           ...m,
-          id: m._id.toString(),
+          id: idStr,
           subItems: [],
-        });
+        };
+        menuMap.set(idStr, itemObj);
+        if (m.menuId !== undefined && m.menuId !== null) {
+          menuMap.set(String(m.menuId), itemObj);
+        }
       });
 
       allowedMenus.forEach((m) => {
-        const item = menuMap.get(m._id.toString());
-        const parentKey = m.parentId
-          ? m.parentId._id
-            ? m.parentId._id.toString()
-            : m.parentId.toString()
-          : null;
-        if (parentKey && menuMap.has(parentKey)) {
-          menuMap.get(parentKey).subItems.push({
-            label: item.name,
-            path: item.path,
-            id: item.id,
-            order: item.order || 0,
-          });
+        const idStr = m._id ? m._id.toString() : String(m.id || m.menuId);
+        const item = menuMap.get(idStr);
+        let parentKey = null;
+
+        if (m.parentId !== null && m.parentId !== undefined && m.parentId !== '' && m.parentId !== 'none') {
+          if (typeof m.parentId === 'object' && m.parentId) {
+            parentKey = (m.parentId._id || m.parentId.id || m.parentId.menuId || '').toString();
+          } else {
+            parentKey = String(m.parentId);
+          }
+        }
+
+        if (parentKey && menuMap.has(parentKey) && menuMap.get(parentKey) !== item) {
+          const parent = menuMap.get(parentKey);
+          if (!parent.subItems.some((s) => s.id === item.id || (s.menuId && s.menuId === item.menuId) || s.label === item.name)) {
+            parent.subItems.push({
+              label: item.name,
+              nameNepali: item.menuNameNepali || '',
+              path: item.path,
+              id: item.id,
+              menuId: item.menuId,
+              order: item.order || 0,
+              icon: item.icon,
+              isSinglePage: item.isSinglePage,
+              isPrimary: item.isPrimary,
+            });
+          }
         } else {
           roots.push(item);
         }
@@ -284,9 +604,11 @@ class RbacService {
    */
   async getAllMenus() {
     try {
-      const menus = await Menu.find()
-        .populate('parentId', 'name path')
-        .sort({ order: 1, createdAt: 1 })
+      const menus = await Menu.find({
+        name: { $nin: ['Setting', 'Settings', 'Main Setup Layout', 'General Setup', 'Office Setup', 'Company Setup', 'Department Branch Setup', 'Department Setup', 'Level Designation'] },
+        path: { $not: /^\/settings/ },
+      })
+        .sort({ order: 1, menuId: 1, createdAt: 1 })
         .lean();
 
       return ApiResponse.success(
@@ -306,14 +628,38 @@ class RbacService {
         return ApiResponse.fail('Name and Path are required', [], 400);
       }
 
-      const parentId =
-        data.parentId && mongoose.Types.ObjectId.isValid(data.parentId)
-          ? data.parentId
-          : null;
+      let menuId = data.menuId;
+      if (menuId === undefined || menuId === null || menuId === '') {
+        const maxMenu = await Menu.findOne({ menuId: { $ne: null } })
+          .sort({ menuId: -1 })
+          .lean();
+        menuId = (maxMenu?.menuId || 70) + 1;
+      } else {
+        menuId = Number(menuId);
+      }
+
+      let parentId = null;
+      if (data.parentId !== undefined && data.parentId !== null && data.parentId !== '' && data.parentId !== 'none') {
+        parentId = data.parentId;
+      }
+
+      let childId = null;
+      if (data.childId !== undefined && data.childId !== null && data.childId !== '' && data.childId !== 'none') {
+        childId = data.childId;
+      }
 
       const menu = new Menu({
         ...data,
+        menuId,
         parentId,
+        childId,
+        menuNameNepali: data.menuNameNepali || '',
+        isSinglePage: Boolean(data.isSinglePage),
+        isPrimary: Boolean(data.isPrimary),
+        isChild: Boolean(data.isChild),
+        isNotParent: data.isNotParent !== undefined ? Boolean(data.isNotParent) : true,
+        isNotChild: data.isNotChild !== undefined ? Boolean(data.isNotChild) : true,
+        menuCode: data.menuCode || '',
         path: data.path.startsWith('/') ? data.path : `/${data.path}`,
         roles: data.roles || ['admin'],
       });
@@ -333,11 +679,31 @@ class RbacService {
     try {
       const updateData = { ...data };
       if ('parentId' in updateData) {
-        updateData.parentId =
-          updateData.parentId && mongoose.Types.ObjectId.isValid(updateData.parentId)
-            ? updateData.parentId
-            : null;
+        if (
+          updateData.parentId === '' ||
+          updateData.parentId === 'none' ||
+          updateData.parentId === null
+        ) {
+          updateData.parentId = null;
+        }
       }
+      if ('childId' in updateData) {
+        if (
+          updateData.childId === '' ||
+          updateData.childId === 'none' ||
+          updateData.childId === null
+        ) {
+          updateData.childId = null;
+        }
+      }
+      if ('menuId' in updateData && updateData.menuId !== null && updateData.menuId !== undefined) {
+        updateData.menuId = Number(updateData.menuId);
+      }
+      if ('isSinglePage' in updateData) updateData.isSinglePage = Boolean(updateData.isSinglePage);
+      if ('isPrimary' in updateData) updateData.isPrimary = Boolean(updateData.isPrimary);
+      if ('isChild' in updateData) updateData.isChild = Boolean(updateData.isChild);
+      if ('isNotParent' in updateData) updateData.isNotParent = Boolean(updateData.isNotParent);
+      if ('isNotChild' in updateData) updateData.isNotChild = Boolean(updateData.isNotChild);
 
       const updated = await Menu.findByIdAndUpdate(
         id,
