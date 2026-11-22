@@ -10,6 +10,7 @@ import { AuthorizedLayout } from '../components/admin/layout/AuthorizedLayout';
 import DashboardOverview from '../components/admin/dashboard/DashboardOverview';
 import ProductManagement from '../components/admin/products/ProductManagement';
 import CategoryManagement from '../components/admin/categories/CategoryManagement';
+import BrandManagement from '../components/admin/brands/BrandManagement';
 import OrderManagement from '../components/admin/orders/OrderManagement';
 import CustomerManagement from '../components/admin/customers/CustomerManagement';
 import RoleManagement from '../components/admin/roles/RoleManagement';
@@ -49,6 +50,7 @@ export const EcommerceRoutes: RouteConfig = {
         { index: true, element: DashboardOverview },
         { path: 'products', element: ProductManagement },
         { path: 'categories', element: CategoryManagement },
+        { path: 'brands', element: BrandManagement },
         { path: 'orders', element: OrderManagement },
         { path: 'customers', element: CustomerManagement },
         { path: 'accounts', element: CustomerManagement },
