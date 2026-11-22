@@ -90,6 +90,38 @@ const INITIAL_POPULAR_BRANDS = [
   },
 ];
 
+const BRAND_AVATAR_COLORS = [
+  { bg: '#0096C7', text: '#ffffff' }, // Himalaya Cyan
+  { bg: '#2563EB', text: '#ffffff' }, // Blue
+  { bg: '#7C3AED', text: '#ffffff' }, // Purple
+  { bg: '#D97706', text: '#ffffff' }, // Amber
+  { bg: '#059669', text: '#ffffff' }, // Emerald
+  { bg: '#DC2626', text: '#ffffff' }, // Red
+  { bg: '#DB2777', text: '#ffffff' }, // Pink
+  { bg: '#0891B2', text: '#ffffff' }, // Teal
+  { bg: '#EA580C', text: '#ffffff' }, // Orange
+  { bg: '#4F46E5', text: '#ffffff' }, // Indigo
+];
+
+export const getBrandColorByName = (name: string) => {
+  let hash = 0;
+  for (let i = 0; i < (name || '').length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % BRAND_AVATAR_COLORS.length;
+  return BRAND_AVATAR_COLORS[index];
+};
+
+export const getBrandInitialSvg = (name: string) => {
+  const initial = name && name.trim() ? name.trim().charAt(0).toUpperCase() : 'B';
+  const { bg, text } = getBrandColorByName(name);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+    <rect width="120" height="120" rx="28" fill="${bg}"/>
+    <text x="60" y="66" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="54" font-weight="800" fill="${text}" text-anchor="middle" dominant-baseline="middle">${initial}</text>
+  </svg>`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+};
+
 export const BrandManagement: React.FC<BrandManagementProps> = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -338,7 +370,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       tag: cleanTag,
       description: formData.description.trim(),
       website: formData.website.trim(),
-      logo: formData.logo,
+      logo: formData.logo.trim() || getBrandInitialSvg(cleanName),
       isActive: formData.isActive,
     });
 
@@ -475,24 +507,24 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                 <tbody>
                 {paginatedBrands.map((b) => {
                   const initial = b.name ? b.name.charAt(0).toUpperCase() : 'B';
+                  const brandColor = getBrandColorByName(b.name);
+                  const initialSvg = getBrandInitialSvg(b.name);
+                  const logoUrl = b.logo && b.logo.trim() ? b.logo.trim() : initialSvg;
                   return (
                     <tr key={b.id} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100">
                       <td className="py-3 px-6">
                         <div className="flex items-center gap-3">
-                          {b.logo ? (
-                            <img
-                              src={b.logo}
-                              alt={b.name}
-                              className="w-10 h-10 rounded-xl object-cover border border-slate-200/90 bg-white shadow-2xs shrink-0 p-0.5"
-                              onError={(e) => {
-                                (e.target as HTMLElement).style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-50 to-blue-100 border border-sky-200 text-[#0284c7] font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
-                              {initial}
-                            </div>
-                          )}
+                          <img
+                            src={logoUrl}
+                            alt={b.name}
+                            className="w-10 h-10 rounded-xl object-cover border border-slate-200/90 bg-white shadow-2xs shrink-0 p-0.5"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              if (target.src !== initialSvg) {
+                                target.src = initialSvg;
+                              }
+                            }}
+                          />
                           <div className="min-w-0">
                             <span className="font-bold text-xs text-slate-900 block truncate">{b.name}</span>
                             <span className="text-[10px] text-slate-400 truncate block max-w-[200px]">
@@ -503,8 +535,13 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                       </td>
 
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
-                          <TagOutlined className="text-[10px] text-amber-600" />
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-2xs">
+                          <span
+                            className="w-4 h-4 rounded-full text-white font-black text-[9px] flex items-center justify-center shrink-0 shadow-2xs leading-none"
+                            style={{ backgroundColor: brandColor.bg }}
+                          >
+                            {initial}
+                          </span>
                           <span>#{b.tag}</span>
                         </span>
                       </td>
@@ -796,10 +833,25 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                       src={formData.logo}
                       alt="Brand logo"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = getBrandInitialSvg(formData.name || 'Brand');
+                      }}
                     />
                     <div className="absolute inset-0 bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-semibold">
                       <UploadOutlined className="text-sm mb-0.5" />
                       <span>Change</span>
+                    </div>
+                  </div>
+                ) : formData.name.trim() ? (
+                  <div className="relative group w-full h-full rounded-xl overflow-hidden">
+                    <img
+                      src={getBrandInitialSvg(formData.name)}
+                      alt="Generated Brand Logo"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/45 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-semibold">
+                      <UploadOutlined className="text-sm mb-0.5" />
+                      <span>Upload Logo</span>
                     </div>
                   </div>
                 ) : (
