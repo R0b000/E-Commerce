@@ -426,10 +426,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
           <div className="px-5 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white shrink-0">
             <div>
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Brand & Tag Directory
+                Brands
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Manage product brands, assign searchable brand tags, and link catalog items.
+              <p className="text-xs text-slate-600 mt-0.5 font-medium">
+                Manage product brands and link catalog items.
               </p>
             </div>
 
@@ -526,8 +526,8 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                             }}
                           />
                           <div className="min-w-0">
-                            <span className="font-bold text-xs text-slate-900 block truncate">{b.name}</span>
-                            <span className="text-[10px] text-slate-400 truncate block max-w-[200px]">
+                            <span className="font-bold text-[13px] text-slate-900 block truncate">{b.name}</span>
+                            <span className="text-[11px] text-slate-700 font-medium truncate block max-w-[220px]">
                               {b.description || 'Verified manufacturer brand'}
                             </span>
                           </div>
@@ -535,7 +535,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                       </td>
 
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-2xs">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs">
                           <span
                             className="w-4 h-4 rounded-full text-white font-black text-[9px] flex items-center justify-center shrink-0 shadow-2xs leading-none"
                             style={{ backgroundColor: brandColor.bg }}
@@ -548,13 +548,13 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
 
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-800">{b.productCount}</span>
-                          <span className="text-[10px] text-slate-400">items</span>
+                          <span className="text-xs font-black text-slate-900">{b.productCount}</span>
+                          <span className="text-xs text-slate-700 font-semibold">items</span>
                           {b.productCount > 0 && (
                             <button
                               type="button"
                               onClick={() => navigate(`/admin/products?search=${encodeURIComponent(b.name)}`)}
-                              className="text-[10px] text-[#0284c7] hover:underline flex items-center gap-0.5 ml-1 font-semibold cursor-pointer"
+                              className="text-[10px] text-[#0096C7] hover:underline flex items-center gap-0.5 ml-1 font-bold cursor-pointer"
                               title="Filter products by this brand"
                             >
                               <span>View</span>
@@ -568,34 +568,34 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                         {b.categories.length > 0 ? (
                           <div className="flex items-center gap-1 flex-wrap">
                             {b.categories.slice(0, 2).map((c) => (
-                              <span key={c} className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                              <span key={c} className="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">
                                 {c}
                               </span>
                             ))}
                             {b.categories.length > 2 && (
-                              <span className="text-[10px] text-slate-400">+{b.categories.length - 2}</span>
+                              <span className="text-[11px] text-slate-700 font-bold">+{b.categories.length - 2}</span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-[10px] text-slate-300 italic">General Catalog</span>
+                          <span className="text-xs text-slate-700 font-medium">General Catalog</span>
                         )}
                       </td>
 
                       <td className="py-3 px-4">
-                        <span className={`text-xs font-semibold ${b.isActive ? 'text-emerald-500' : 'text-slate-400'}`}>
+                        <span className={`text-xs font-bold ${b.isActive ? 'text-emerald-700' : 'text-slate-600'}`}>
                           {b.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
 
                       <td className="py-3 px-6 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => openEditModal(b)}
-                            className="p-1.5 text-slate-400 hover:text-[#0284c7] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-slate-600 hover:text-[#0096C7] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
                             title="Edit Brand"
                           >
-                            <EditOutlined className="text-xs" />
+                            <EditOutlined className="text-sm" />
                           </button>
                           <Popconfirm
                             title="Remove this brand?"
@@ -606,10 +606,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                           >
                             <button
                               type="button"
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                               title="Delete Brand"
                             >
-                              <DeleteOutlined className="text-xs" />
+                              <DeleteOutlined className="text-sm" />
                             </button>
                           </Popconfirm>
                         </div>
