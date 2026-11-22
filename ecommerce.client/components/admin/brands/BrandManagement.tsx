@@ -24,6 +24,7 @@ import {
   AppSelect,
   AppModal,
   TableSkeleton,
+  AppImageUpload,
 } from 'shared-components';
 import { BrandItem, BrandManagementProps } from './BrandManagement.types';
 
@@ -332,24 +333,24 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
     setFormData(updated);
   };
 
-  // Ant Design Image Upload integration (Cloudinary with local fallback)
-  const handleImageUpload = async (file: File) => {
+  // Image Upload integration (Cloudinary with local fallback)
+  const handleImageUpload = async (file: File): Promise<string | void> => {
     setUploadingImage(true);
     try {
       const res = await ecommerceService.uploadImage(file, 'HimalayaOnlineShop');
       if (res.success && res.data?.url) {
         setFormData((prev) => ({ ...prev, logo: res.data.url }));
         showToast('Brand logo uploaded successfully', 'success');
-        return false;
+        return res.data.url;
       }
     } catch {
       const localUrl = URL.createObjectURL(file);
       setFormData((prev) => ({ ...prev, logo: localUrl }));
       showToast('Brand logo attached', 'success');
+      return localUrl;
     } finally {
       setUploadingImage(false);
     }
-    return false;
   };
 
   const handleSaveBrand = (e?: React.FormEvent) => {
@@ -864,91 +865,17 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             />
           </div>
 
-          {/* Row 3: Image Upload & Preview */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Image</label>
-            <div className="flex items-center gap-3 p-2.5 bg-slate-50 border border-slate-200/80 rounded-xl">
-              <Upload
-                name="brandLogo"
-                listType="picture-card"
-                className="brand-logo-uploader shrink-0 [&_.ant-upload]:!w-16 [&_.ant-upload]:!h-16 [&_.ant-upload]:!rounded-xl [&_.ant-upload]:!border-dashed [&_.ant-upload]:!border-slate-300 [&_.ant-upload]:!bg-white [&_.ant-upload]:!m-0"
-                showUploadList={false}
-                beforeUpload={(file) => {
-                  handleImageUpload(file);
-                  return false;
-                }}
-                accept="image/*"
-                disabled={uploadingImage}
-              >
-                {formData.logo ? (
-                  <div className="relative group w-full h-full rounded-xl overflow-hidden">
-                    <img
-                      src={formData.logo}
-                      alt="Brand logo"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = getBrandInitialSvg(formData.name || 'Brand');
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[9px] font-semibold">
-                      <UploadOutlined className="text-xs mb-0.5" />
-                      <span>Change</span>
-                    </div>
-                  </div>
-                ) : formData.name.trim() ? (
-                  <div className="relative group w-full h-full rounded-xl overflow-hidden">
-                    <img
-                      src={getBrandInitialSvg(formData.name)}
-                      alt="Generated Brand Logo"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/45 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[9px] font-semibold">
-                      <UploadOutlined className="text-xs mb-0.5" />
-                      <span>Upload</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-slate-400 p-1">
-                    {uploadingImage ? (
-                      <>
-                        <LoadingOutlined className="text-sm text-[#0096C7] mb-0.5" spin />
-                        <span className="text-[8px] text-slate-500 font-medium">Uploading</span>
-                      </>
-                    ) : (
-                      <>
-                        <PlusOutlined className="text-sm text-slate-400 mb-0.5" />
-                        <span className="text-[9px] text-slate-600 font-semibold leading-none">Upload</span>
-                      </>
-                    )}
-                  </div>
-                )}
-              </Upload>
-
-              <div className="flex-1 min-w-0 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-700">
-                    {formData.logo ? 'Brand Logo Uploaded' : 'Upload logo image or enter image URL'}
-                  </span>
-                  {formData.logo && (
-                    <button
-                      type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, logo: '' }))}
-                      className="text-[10px] text-rose-600 hover:text-rose-700 font-semibold cursor-pointer transition-colors"
-                    >
-                      ✕ Remove
-                    </button>
-                  )}
-                </div>
-                <input
-                  type="text"
-                  placeholder="Paste image URL (https://...)"
-                  value={formData.logo}
-                  onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-                  className="w-full px-2.5 py-1 bg-white border border-slate-200 rounded-md text-xs text-slate-700 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
-                />
-              </div>
-            </div>
-          </div>
+          {/* Row 3: Smart Image Upload (Browse from folder, Drag & Drop, or Ctrl+V image file/URL) */}
+          <AppImageUpload
+            label="Image"
+            value={formData.logo}
+            onChange={(url) => setFormData((prev) => ({ ...prev, logo: url }))}
+            onUpload={handleImageUpload}
+            loading={uploadingImage}
+            fallbackInitial={formData.name ? formData.name.charAt(0) : undefined}
+            placeholder="Paste image URL or press Ctrl+V with copied file / screenshot"
+            helperText="Browse from folder, drag & drop, or Ctrl+V anywhere to auto-detect image files, screenshots, or URLs."
+          />
 
           {/* Row 4: Status */}
           <div className="flex items-center justify-between pt-2 border-t border-slate-100">
