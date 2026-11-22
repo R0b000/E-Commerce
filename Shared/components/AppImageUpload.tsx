@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   UploadOutlined,
   LoadingOutlined,
-  PlusOutlined,
-  DeleteOutlined,
   LinkOutlined,
-  CheckCircleOutlined,
+  DeleteOutlined,
   PictureOutlined,
+  CheckCircleOutlined,
+  SwapOutlined,
 } from '@ant-design/icons';
 
 export interface AppImageUploadProps {
@@ -20,6 +20,7 @@ export interface AppImageUploadProps {
   className?: string;
   label?: string;
   helperText?: string;
+  title?: string;
   accept?: string;
   maxSizeMB?: number;
 }
@@ -30,33 +31,34 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
   onUpload,
   loading: externalLoading = false,
   disabled = false,
-  placeholder = 'Paste image URL or Ctrl+V file/link',
+  placeholder = 'https://example.com/image.png',
   fallbackInitial,
   className = '',
   label,
   helperText,
+  title = 'Upload image',
   accept = 'image/*',
   maxSizeMB = 5,
 }) => {
   const [internalLoading, setInternalLoading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [urlDraft, setUrlDraft] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const urlInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isLoading = externalLoading || internalLoading;
 
-  // Process File from browse, drag-drop, or Ctrl+V clipboard
+  // Process a selected/dropped/pasted file
   const processFile = useCallback(
     async (file: File) => {
       if (disabled || isLoading) return;
 
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         return;
       }
 
-      // Validate file size
       if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
         alert(`File exceeds maximum size limit of ${maxSizeMB}MB`);
         return;
@@ -70,7 +72,6 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
             onChange(resultUrl.trim());
           }
         } else {
-          // Local fallback preview if no upload handler
           const localUrl = URL.createObjectURL(file);
           onChange(localUrl);
         }
@@ -83,7 +84,7 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
     [disabled, isLoading, maxSizeMB, onUpload, onChange]
   );
 
-  // Global & Local Paste Handler: Detects copied image files and URLs
+  // Global & Local Paste Handler (Ctrl+V)
   const handlePaste = useCallback(
     (e: React.ClipboardEvent | ClipboardEvent) => {
       if (disabled || isLoading) return;
@@ -91,7 +92,7 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
       const clipboardData = (e as React.ClipboardEvent).clipboardData || (e as ClipboardEvent).clipboardData;
       if (!clipboardData) return;
 
-      // 1. Check for Image Files in Clipboard (from File Explorer, screenshots, browser copy image)
+      // 1. Files in clipboard (screenshots, copied image from file explorer or browser)
       const items = clipboardData.items;
       if (items && items.length > 0) {
         for (let i = 0; i < items.length; i++) {
@@ -107,7 +108,6 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
         }
       }
 
-      // Check clipboard files directly
       if (clipboardData.files && clipboardData.files.length > 0) {
         const file = clipboardData.files[0];
         if (file && file.type.startsWith('image/')) {
@@ -117,7 +117,7 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
         }
       }
 
-      // 2. Check for Text (Image URL or Base64 Data URL)
+      // 2. Direct text URL in clipboard
       const text = clipboardData.getData('text').trim();
       if (text) {
         const isUrl =
@@ -129,13 +129,14 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
         if (isUrl) {
           e.preventDefault();
           onChange(text);
+          setShowUrlInput(false);
         }
       }
     },
     [disabled, isLoading, onChange, processFile]
   );
 
-  // Listen to paste when container is focused or active
+  // Focus paste listener
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -152,7 +153,14 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
     };
   }, [handlePaste]);
 
-  // Drag and drop handlers
+  // Focus input when URL mode is opened
+  useEffect(() => {
+    if (showUrlInput) {
+      setTimeout(() => urlInputRef.current?.focus(), 50);
+    }
+  }, [showUrlInput]);
+
+  // Drag-and-drop handlers
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -174,10 +182,8 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
     if (disabled || isLoading) return;
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      processFile(file);
+      processFile(e.dataTransfer.files[0]);
     } else {
-      // Check for dropped URL text
       const droppedText = e.dataTransfer.getData('text').trim();
       if (
         droppedText.startsWith('http://') ||
@@ -189,157 +195,246 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
     }
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      processFile(e.target.files[0]);
+  const handleApplyUrl = () => {
+    const clean = urlDraft.trim();
+    if (clean) {
+      onChange(clean);
+      setUrlDraft('');
+      setShowUrlInput(false);
     }
-    // Reset file input value so same file can be selected again
-    e.target.value = '';
-  };
-
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onChange('');
   };
 
   const hasImage = Boolean(value && value.trim());
 
   return (
-    <div className={`app-image-upload space-y-1.5 ${className}`}>
+    <div className={`app-image-upload space-y-1 ${className}`}>
       {label && (
         <label className="block text-xs font-bold text-slate-700">
           {label}
         </label>
       )}
 
-      {/* Main Container with Drag, Focus, and Paste support */}
+      {/* Hidden File Picker */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={accept}
+        disabled={disabled || isLoading}
+        onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) {
+            processFile(e.target.files[0]);
+          }
+          e.target.value = '';
+        }}
+        className="hidden"
+      />
+
+      {/* Outer Card Container */}
       <div
         ref={containerRef}
         tabIndex={0}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
         onPaste={handlePaste}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`relative flex items-center gap-3.5 p-3 rounded-xl border transition-all outline-none ${
+        className={`relative w-full rounded-2xl p-2.5 sm:p-3 transition-all outline-none ${
           isDragOver
-            ? 'border-[#0096C7] bg-sky-50/80 ring-2 ring-[#0096C7]/20 shadow-xs'
-            : isFocused
-            ? 'border-[#0096C7] bg-white ring-1 ring-[#0096C7]/30 shadow-2xs'
-            : hasImage
-            ? 'border-slate-200/90 bg-slate-50/60'
-            : 'border-slate-200/90 bg-slate-50/40 hover:border-slate-300'
+            ? 'bg-sky-50/90 ring-2 ring-[#0096C7] shadow-xs'
+            : 'bg-slate-50/80 border border-slate-200/90'
         }`}
       >
-        {/* Hidden File Input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={accept}
-          disabled={disabled || isLoading}
-          onChange={handleFileInputChange}
-          className="hidden"
-        />
-
-        {/* Left Box: Thumbnail / Uploader Button */}
-        <div
-          onClick={() => !disabled && !isLoading && fileInputRef.current?.click()}
-          className={`relative shrink-0 w-16 h-16 rounded-xl overflow-hidden cursor-pointer flex flex-col items-center justify-center transition-all select-none group border ${
-            hasImage
-              ? 'border-slate-200 bg-white shadow-2xs'
-              : 'border-dashed border-slate-300 bg-white hover:border-[#0096C7] hover:bg-sky-50/40'
-          }`}
-          title="Click to browse image from folder, or drop / Ctrl+V"
-        >
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center p-1 text-center">
-              <LoadingOutlined className="text-lg text-[#0096C7] mb-0.5" spin />
-              <span className="text-[8px] font-semibold text-slate-500">Uploading</span>
-            </div>
-          ) : hasImage ? (
-            <>
+        {isLoading ? (
+          /* Loading State */
+          <div className="py-8 flex flex-col items-center justify-center text-center">
+            <LoadingOutlined className="text-3xl text-[#0096C7] mb-2" spin />
+            <span className="text-xs font-bold text-slate-800">Processing image...</span>
+            <span className="text-[10px] text-slate-400">Please wait while the image is being uploaded</span>
+          </div>
+        ) : hasImage ? (
+          /* Attached State with Preview & Action Pills */
+          <div className="flex flex-col sm:flex-row items-center gap-3.5 p-2 bg-white rounded-xl border border-slate-200/80 shadow-2xs">
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-2xs group">
               <img
                 src={value}
-                alt="Uploaded preview"
+                alt="Brand Logo / Upload Preview"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   if (fallbackInitial) {
-                    target.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%230096C7"/><text x="32" y="40" font-size="28" font-family="sans-serif" font-weight="900" fill="white" text-anchor="middle">${fallbackInitial.toUpperCase()}</text></svg>`;
+                    target.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" rx="16" fill="%230096C7"/><text x="48" y="60" font-size="44" font-family="sans-serif" font-weight="900" fill="white" text-anchor="middle">${fallbackInitial.toUpperCase()}</text></svg>`;
                   }
                 }}
               />
-              <div className="absolute inset-0 bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[9px] font-bold">
-                <UploadOutlined className="text-xs mb-0.5" />
-                <span>Change</span>
-              </div>
-            </>
-          ) : fallbackInitial ? (
-            <>
-              <div
-                className="w-full h-full flex flex-col items-center justify-center text-white font-black text-xl"
-                style={{ backgroundColor: '#0096C7' }}
-              >
-                {fallbackInitial.toUpperCase()}
-              </div>
-              <div className="absolute inset-0 bg-black/45 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[9px] font-semibold">
-                <UploadOutlined className="text-xs mb-0.5" />
-                <span>Upload</span>
-              </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center text-slate-400 group-hover:text-[#0096C7] transition-colors p-1">
-              <PlusOutlined className="text-sm mb-0.5" />
-              <span className="text-[9px] font-bold leading-none">Upload</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right Section: Info, Smart URL Input, and Actions */}
-        <div className="flex-1 min-w-0 space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-xs font-bold text-slate-800">
-                {hasImage ? 'Image Attached' : 'Attach Image'}
-              </span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-200/80 text-slate-700">
-                <kbd className="font-mono">Ctrl+V</kbd> to paste
-              </span>
-            </div>
-
-            {hasImage && (
               <button
                 type="button"
-                onClick={handleClear}
-                disabled={disabled || isLoading}
-                className="text-[10px] text-rose-600 hover:text-rose-700 font-semibold cursor-pointer transition-colors flex items-center gap-1 shrink-0"
-                title="Remove current image"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute inset-0 bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-bold cursor-pointer"
+                title="Change file"
               >
-                <DeleteOutlined className="text-[9px]" />
-                <span>Remove</span>
+                <SwapOutlined className="text-sm mb-0.5" />
+                <span>Replace</span>
               </button>
+            </div>
+
+            <div className="flex-1 min-w-0 space-y-2 text-center sm:text-left w-full">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                <CheckCircleOutlined className="text-emerald-500 text-xs" />
+                <span className="text-xs font-bold text-slate-800">Image Attached</span>
+                <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                  Ctrl+V to swap
+                </span>
+              </div>
+
+              <p className="text-[11px] text-slate-500 truncate block font-mono bg-slate-50 px-2 py-1 rounded border border-slate-200/60 max-w-full">
+                {value}
+              </p>
+
+              {/* Action Pills */}
+              <div className="flex items-center justify-center sm:justify-start gap-2 pt-0.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1 rounded-full bg-[#0096C7] hover:bg-[#0083ae] text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                >
+                  <UploadOutlined className="text-[10px]" />
+                  <span>Change file</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowUrlInput(!showUrlInput)}
+                  className="px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold flex items-center gap-1 border border-slate-200 transition-colors cursor-pointer"
+                >
+                  <LinkOutlined className="text-[10px] text-slate-500" />
+                  <span>Edit URL</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onChange('')}
+                  className="px-3 py-1 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-semibold flex items-center gap-1 border border-rose-200/70 transition-colors cursor-pointer"
+                >
+                  <DeleteOutlined className="text-[10px]" />
+                  <span>Remove</span>
+                </button>
+              </div>
+
+              {/* Quick URL Edit Drawer when clicked */}
+              {showUrlInput && (
+                <div className="flex items-center gap-1.5 pt-1">
+                  <input
+                    ref={urlInputRef}
+                    type="text"
+                    defaultValue={value}
+                    placeholder="Enter or paste new image URL..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        onChange((e.target as HTMLInputElement).value);
+                        setShowUrlInput(false);
+                      }
+                    }}
+                    className="flex-1 px-2.5 py-1 text-xs border border-slate-200 rounded-md focus:ring-1 focus:ring-[#0096C7] outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      const input = (e.currentTarget.previousSibling as HTMLInputElement);
+                      if (input?.value) onChange(input.value);
+                      setShowUrlInput(false);
+                    }}
+                    className="px-2.5 py-1 rounded-md bg-[#0096C7] text-white text-xs font-semibold cursor-pointer"
+                  >
+                    Save
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* Picsart-Style Empty Dropzone */
+          <div
+            className={`w-full rounded-xl border-2 border-dashed py-5 px-4 flex flex-col items-center justify-center text-center transition-all bg-white ${
+              isDragOver
+                ? 'border-[#0096C7] bg-sky-50/50'
+                : 'border-slate-300 hover:border-[#0096C7] hover:bg-sky-50/20'
+            }`}
+          >
+            {/* Center Circular Icon */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="w-11 h-11 rounded-full bg-sky-50 text-[#0096C7] border border-sky-100 flex items-center justify-center text-lg mb-2 cursor-pointer shadow-2xs hover:scale-105 transition-transform"
+              title="Click to select file"
+            >
+              <PictureOutlined />
+            </div>
+
+            {/* Title & Subtitle */}
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 tracking-tight mb-0.5">
+              {title}
+            </h4>
+            <p className="text-[11px] text-slate-500 font-medium mb-3">
+              {helperText || (
+                <>
+                  Upload or drag and drop, or press{' '}
+                  <kbd className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 border border-slate-200 font-mono text-slate-700 font-bold">
+                    Ctrl+V
+                  </kbd>{' '}
+                  to paste
+                </>
+              )}
+            </p>
+
+            {/* Two Action Pills: [ Add a file ] [ Add a URL ] */}
+            <div className="flex items-center justify-center gap-2.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-1.5 rounded-full bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+              >
+                <UploadOutlined className="text-xs" />
+                <span>Add a file</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowUrlInput(!showUrlInput)}
+                className="px-4 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 text-xs font-bold flex items-center gap-1.5 border border-slate-200 transition-colors cursor-pointer"
+              >
+                <LinkOutlined className="text-xs text-slate-500" />
+                <span>Add a URL</span>
+              </button>
+            </div>
+
+            {/* Inline URL Input (Toggled by "Add a URL") */}
+            {showUrlInput && (
+              <div className="w-full max-w-sm mt-3 pt-2 border-t border-slate-100 flex items-center gap-1.5">
+                <input
+                  ref={urlInputRef}
+                  type="text"
+                  placeholder={placeholder}
+                  value={urlDraft}
+                  onChange={(e) => setUrlDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleApplyUrl();
+                    }
+                  }}
+                  className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyUrl}
+                  disabled={!urlDraft.trim()}
+                  className="px-3 py-1.5 rounded-lg bg-[#0096C7] hover:bg-[#0083ae] disabled:opacity-40 text-white text-xs font-bold cursor-pointer transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
             )}
           </div>
-
-          {/* Paste URL or Edit Text Input */}
-          <div className="relative flex items-center">
-            <LinkOutlined className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={value}
-              disabled={disabled || isLoading}
-              onChange={(e) => onChange(e.target.value)}
-              onPaste={handlePaste}
-              className="w-full pl-7 pr-3 py-1 bg-white border border-slate-200 rounded-md text-xs text-slate-800 placeholder:text-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none transition-all"
-            />
-          </div>
-
-          <p className="text-[10px] text-slate-500 leading-tight">
-            {helperText || 'Browse, drag & drop, or Ctrl+V anywhere to auto-detect image files, screenshots, or URLs.'}
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );
