@@ -14,8 +14,6 @@ import {
   LeftOutlined,
   RightOutlined,
   DownOutlined,
-  AppstoreOutlined,
-  UnorderedListOutlined,
 } from '@ant-design/icons';
 import { Popconfirm, Breadcrumb, Switch, Upload } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -23,12 +21,10 @@ import { Product } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import {
   AppTable,
-  AppButton,
   AppInput,
   AppSelect,
   AppModal,
   TableSkeleton,
-  StatusBadge,
 } from 'shared-components';
 import { BrandItem, BrandManagementProps } from './BrandManagement.types';
 
@@ -107,12 +103,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // View Mode: 'grid' (Modern Showcase Cards) or 'table' (Data Table)
-  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -365,8 +358,8 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
 
   return (
     <div className="w-full font-['Poppins','Inter',sans-serif] p-2 sm:p-4 space-y-3.5">
-      {/* Top Bar: Breadcrumb + Embedded KPI Badges */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      {/* Top Bar: Breadcrumb */}
+      <div>
         <Breadcrumb
           className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
           items={[
@@ -389,246 +382,71 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             },
           ]}
         />
-
-        {/* Quick KPI Stat Chips */}
-        <div className="flex items-center gap-2 text-xs">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-200/80 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-[#0096C7]"></span>
-            <span className="text-[11px] text-slate-500 font-medium">Brands:</span>
-            <strong className="text-[11px] text-slate-900">{allBrands.length}</strong>
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-200/80 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-            <span className="text-[11px] text-slate-500 font-medium">Catalog Items:</span>
-            <strong className="text-[11px] text-amber-600">{allBrands.reduce((acc, b) => acc + b.productCount, 0)}</strong>
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-slate-200/80 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span className="text-[11px] text-slate-500 font-medium">Active Tags:</span>
-            <strong className="text-[11px] text-emerald-600">{allBrands.filter((b) => b.isActive).length}</strong>
-          </div>
-        </div>
       </div>
 
-      {/* Main Container Card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-        {/* Header Toolbar: Title + Search + Filters + View Toggle + Add Button */}
-        <div className="px-4 py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <span>Brand & Tag Showcase</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-sky-50 text-[#0096C7] border border-sky-100 uppercase">
-                {viewMode === 'grid' ? 'Visual Cards' : 'Data Table'}
-              </span>
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Browse brand identities, assign searchable product tags, and explore catalog links.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Search Input */}
-            <div className="w-full sm:w-[220px] shrink-0">
-              <AppInput
-                prefix={<SearchOutlined className="text-slate-400" />}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                placeholder="Search brands or tags..."
-                allowClear
-              />
+      {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions */}
+      <div className="flex flex-col lg:flex-row items-start gap-4">
+        {/* Left Column: Brand & Tag Directory Table */}
+        <div className="flex-1 min-w-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden flex flex-col">
+          {/* Header Toolbar: Title + Search + Status Filter */}
+          <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Brand & Tag Directory
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Manage product brands, assign searchable brand tags, and link catalog items.
+              </p>
             </div>
 
-            {/* Status Filter */}
-            <div className="w-full sm:w-[130px] shrink-0">
-              <AppSelect
-                value={statusFilter}
-                onChange={(val) => {
-                  setStatusFilter(val as string);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { label: 'All Statuses', value: 'all' },
-                  { label: 'Active', value: 'active' },
-                  { label: 'Inactive', value: 'inactive' },
-                ]}
-              />
-            </div>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              {/* Search Input */}
+              <div className="w-full sm:w-[220px]">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  placeholder="Search brands or tags..."
+                  allowClear
+                />
+              </div>
 
-            {/* View Mode Toggle: Grid Cards vs Table */}
-            <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === 'grid'
-                    ? 'bg-white text-[#0096C7] shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Visual Cards View"
-              >
-                <AppstoreOutlined />
-                <span>Cards</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  viewMode === 'table'
-                    ? 'bg-white text-[#0096C7] shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Data Table View"
-              >
-                <UnorderedListOutlined />
-                <span>Table</span>
-              </button>
-            </div>
-
-            {/* Primary Add Brand Action */}
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={openAddModal}
-              className="shrink-0"
-              style={{ backgroundColor: '#0096C7' }}
-            >
-              Add Brand
-            </AppButton>
-          </div>
-        </div>
-
-        {/* Content Section: Render based on viewMode */}
-        {loading ? (
-          <div className="p-6">
-            <TableSkeleton rows={6} />
-          </div>
-        ) : filteredBrands.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
-              <TagOutlined />
-            </div>
-            <h4 className="text-sm font-bold text-slate-700">No brands found</h4>
-            <p className="text-xs text-slate-400 mt-1">Try adjusting your search criteria or add a new brand.</p>
-          </div>
-        ) : viewMode === 'grid' ? (
-          /* =========================================================================
-             VIEW 1: Visual Brand Cards Showcase (Modern, Shopify / Linear style)
-             ========================================================================= */
-          <div className="p-4 bg-slate-50/50">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-              {paginatedBrands.map((b) => {
-                const initial = b.name ? b.name.charAt(0).toUpperCase() : 'B';
-                return (
-                  <div
-                    key={b.id}
-                    className="bg-white rounded-2xl border border-slate-200/80 hover:border-sky-300 p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group space-y-3"
-                  >
-                    <div className="space-y-2.5">
-                      {/* Top: Logo, Name & Status */}
-                      <div className="flex items-start justify-between gap-2.5">
-                        <div className="flex items-center gap-3 min-w-0">
-                          {b.logo ? (
-                            <img
-                              src={b.logo}
-                              alt={b.name}
-                              className="w-12 h-12 rounded-2xl object-cover border border-slate-100 shadow-2xs shrink-0 bg-white p-0.5"
-                              onError={(e) => {
-                                (e.target as HTMLElement).style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-50 to-blue-100 border border-sky-200 text-[#0284c7] font-bold text-base flex items-center justify-center shrink-0 shadow-2xs">
-                              {initial}
-                            </div>
-                          )}
-                          <div className="min-w-0">
-                            <h4 className="font-bold text-xs text-slate-900 truncate tracking-tight">{b.name}</h4>
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full mt-1 border border-amber-200 shadow-2xs truncate">
-                              <TagOutlined className="text-[9px] text-amber-600" />
-                              <span>#{b.tag}</span>
-                            </span>
-                          </div>
-                        </div>
-                        <StatusBadge status={b.isActive ? 'active' : 'inactive'} />
-                      </div>
-
-                      {/* Description */}
-                      <p className="text-[11px] text-slate-500 leading-relaxed line-clamp-2 min-h-[32px]">
-                        {b.description || 'Verified manufacturer brand with live catalog items.'}
-                      </p>
-
-                      {/* Department Tags */}
-                      {b.categories.length > 0 && (
-                        <div className="flex items-center gap-1 flex-wrap pt-0.5">
-                          {b.categories.slice(0, 2).map((c) => (
-                            <span key={c} className="text-[9px] px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 border border-slate-100">
-                              {c}
-                            </span>
-                          ))}
-                          {b.categories.length > 2 && (
-                            <span className="text-[9px] text-slate-400 font-semibold">+{b.categories.length - 2}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card Footer: Products Count & Actions */}
-                    <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-slate-800 text-xs">{b.productCount}</span>
-                        <span className="text-[10px] text-slate-400">Products</span>
-                        {b.productCount > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => navigate(`/admin/products?search=${encodeURIComponent(b.name)}`)}
-                            className="text-[10px] text-[#0096C7] font-bold hover:underline flex items-center gap-0.5 ml-1 cursor-pointer"
-                            title="View products in catalog"
-                          >
-                            <span>View</span>
-                            <ArrowRightOutlined className="text-[8px]" />
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(b)}
-                          className="p-1.5 text-slate-400 hover:text-[#0096C7] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
-                          title="Edit Brand"
-                        >
-                          <EditOutlined className="text-xs" />
-                        </button>
-                        <Popconfirm
-                          title="Remove this brand?"
-                          description="Are you sure you want to remove this brand entry?"
-                          onConfirm={() => handleDeleteBrand(b.name)}
-                          okText="Yes"
-                          cancelText="No"
-                        >
-                          <button
-                            type="button"
-                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                            title="Delete Brand"
-                          >
-                            <DeleteOutlined className="text-xs" />
-                          </button>
-                        </Popconfirm>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Status Filter */}
+              <div className="w-[130px] shrink-0">
+                <AppSelect
+                  value={statusFilter}
+                  onChange={(val) => {
+                    setStatusFilter(val as string);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { label: 'All Statuses', value: 'all' },
+                    { label: 'Active', value: 'active' },
+                    { label: 'Inactive', value: 'inactive' },
+                  ]}
+                />
+              </div>
             </div>
           </div>
-        ) : (
-          /* =========================================================================
-             VIEW 2: Classic Data Table
-             ========================================================================= */
-          <div className="overflow-x-auto">
+
+          {/* Content Section: Data Table */}
+          {loading ? (
+            <div className="p-6">
+              <TableSkeleton rows={6} />
+            </div>
+          ) : filteredBrands.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
+                <TagOutlined />
+              </div>
+              <h4 className="text-sm font-bold text-slate-700">No brands found</h4>
+              <p className="text-xs text-slate-400 mt-1">Try adjusting your search criteria or add a new brand.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto flex-1">
             <AppTable>
               <thead>
                 <tr>
@@ -713,7 +531,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                       </td>
 
                       <td className="py-3 px-4">
-                        <StatusBadge status={b.isActive ? 'active' : 'inactive'} />
+                        <span className={`text-xs font-semibold ${b.isActive ? 'text-emerald-500' : 'text-slate-400'}`}>
+                          {b.isActive ? 'Active' : 'Inactive'}
+                        </span>
                       </td>
 
                       <td className="py-3 px-6 text-right">
@@ -752,7 +572,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         )}
 
         {/* Table Footer: Total Count on Left, Pagination Controls on Right */}
-        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none mt-auto">
           {/* Left Side: Brand Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Brands:</span>
@@ -775,10 +595,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                     }}
                     className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
                   >
-                    <option value={8} className="bg-slate-800 text-white">8</option>
-                    <option value={12} className="bg-slate-800 text-white">12</option>
-                    <option value={24} className="bg-slate-800 text-white">24</option>
-                    <option value={48} className="bg-slate-800 text-white">48</option>
+                    <option value={10} className="bg-slate-800 text-white">10</option>
+                    <option value={20} className="bg-slate-800 text-white">20</option>
+                    <option value={50} className="bg-slate-800 text-white">50</option>
                   </select>
                   <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
                 </div>
@@ -813,6 +632,85 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
           )}
         </div>
       </div>
+
+      {/* Right Column: Add Brand Card + Catalog Summary Metrics */}
+      <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 space-y-4">
+        {/* Card 1: Add New Brand */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4">
+          <button
+            type="button"
+            onClick={openAddModal}
+            className="w-full h-10 flex items-center justify-center gap-2 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+          >
+            <PlusOutlined className="text-xs" />
+            <span>Add New Brand</span>
+          </button>
+          <p className="text-[11px] text-slate-400 mt-2.5 leading-relaxed text-center sm:text-left">
+            Register a new brand, attach its logo, and assign its searchable catalog product tag.
+          </p>
+        </div>
+
+        {/* Card 2: Catalog Summary */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 space-y-3.5">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-slate-900 tracking-tight">Catalog Summary</h4>
+            <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full">
+              Live Metrics
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {/* Metric 1: Total Brands */}
+            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
+              <div>
+                <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                  Total Brands
+                </span>
+                <span className="text-xl font-extrabold text-slate-900 leading-tight block">
+                  {allBrands.length}
+                </span>
+                <span className="text-[10px] text-slate-400">Available for catalog</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0 border border-sky-100/60">
+                <ShopOutlined />
+              </div>
+            </div>
+
+            {/* Metric 2: Products Tagged */}
+            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
+              <div>
+                <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                  Products Tagged
+                </span>
+                <span className="text-xl font-extrabold text-amber-600 leading-tight block">
+                  {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
+                </span>
+                <span className="text-[10px] text-slate-400">Active in store</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg shrink-0 border border-amber-100/60">
+                <TagOutlined />
+              </div>
+            </div>
+
+            {/* Metric 3: Active Tags */}
+            <div className="p-3 rounded-xl bg-slate-50/70 border border-slate-100 flex items-center justify-between">
+              <div>
+                <span className="block text-[9px] font-bold tracking-wider text-slate-400 uppercase">
+                  Active Tags
+                </span>
+                <span className="text-xl font-extrabold text-emerald-600 leading-tight block">
+                  {allBrands.filter((b) => b.isActive).length}
+                </span>
+                <span className="text-[10px] text-slate-400">Ready for product tagging</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg shrink-0 border border-emerald-100/60">
+                <CheckCircleOutlined />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
       {/* Add / Edit Brand Modal using Ant Design Upload Component */}
       <AppModal
