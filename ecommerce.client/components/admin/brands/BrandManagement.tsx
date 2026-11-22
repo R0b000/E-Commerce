@@ -9,8 +9,14 @@ import {
   ShopOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
+  UploadOutlined,
+  LoadingOutlined,
+  PictureOutlined,
+  LeftOutlined,
+  RightOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
-import { Popconfirm, Breadcrumb, Switch } from 'antd';
+import { Popconfirm, Breadcrumb, Switch, Upload } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -26,16 +32,66 @@ import {
 import { BrandItem, BrandManagementProps } from './BrandManagement.types';
 
 const INITIAL_POPULAR_BRANDS = [
-  { name: 'AeroPulse Audio', tag: 'AeroPulse Audio', desc: 'Premium wireless headphones and audiophile gear' },
-  { name: 'Apex Tech', tag: 'Apex Tech', desc: 'High-performance computing and smart electronics' },
-  { name: 'Chronos', tag: 'Chronos', desc: 'Precision luxury watches and timepieces' },
-  { name: 'ErgoDynamic', tag: 'ErgoDynamic', desc: 'Ergonomic office workstations and seating' },
-  { name: 'Vanguard EDC', tag: 'Vanguard EDC', desc: 'Everyday carry gear, tactical accessories, and wallets' },
-  { name: 'CraftHimalaya', tag: 'CraftHimalaya', desc: 'Artisan handmade singing bowls and cultural heritage crafts' },
-  { name: 'SummitGear', tag: 'SummitGear', desc: 'Mountaineering backpacks and extreme weather outdoor gear' },
-  { name: 'AlpineMerino', tag: 'AlpineMerino', desc: 'High-grade 100% Himalayan organic merino wool apparel' },
-  { name: 'Himalaya Herbals', tag: 'Himalaya Herbals', desc: 'Ayurvedic wellness, pure skincare, and herbal extracts' },
-  { name: 'Kama Botanicals', tag: 'Kama Botanicals', desc: 'Luxury organic botanical oils and natural beauty care' },
+  {
+    name: 'AeroPulse Audio',
+    tag: 'AeroPulse Audio',
+    desc: 'Premium wireless headphones and audiophile gear',
+    logo: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'Apex Tech',
+    tag: 'Apex Tech',
+    desc: 'High-performance computing and smart electronics',
+    logo: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'Chronos',
+    tag: 'Chronos',
+    desc: 'Precision luxury watches and timepieces',
+    logo: 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'ErgoDynamic',
+    tag: 'ErgoDynamic',
+    desc: 'Ergonomic office workstations and seating',
+    logo: 'https://images.unsplash.com/photo-1580481077197-2868840d04b6?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'Vanguard EDC',
+    tag: 'Vanguard EDC',
+    desc: 'Everyday carry gear, tactical accessories, and wallets',
+    logo: 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'CraftHimalaya',
+    tag: 'CraftHimalaya',
+    desc: 'Artisan handmade singing bowls and cultural heritage crafts',
+    logo: 'https://images.unsplash.com/photo-1617791160505-6f00b51616ec?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'SummitGear',
+    tag: 'SummitGear',
+    desc: 'Mountaineering backpacks and extreme weather outdoor gear',
+    logo: 'https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'AlpineMerino',
+    tag: 'AlpineMerino',
+    desc: 'High-grade 100% Himalayan organic merino wool apparel',
+    logo: 'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'Himalaya Herbals',
+    tag: 'Himalaya Herbals',
+    desc: 'Ayurvedic wellness, pure skincare, and herbal extracts',
+    logo: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=200&q=80',
+  },
+  {
+    name: 'Kama Botanicals',
+    tag: 'Kama Botanicals',
+    desc: 'Luxury organic botanical oils and natural beauty care',
+    logo: 'https://images.unsplash.com/photo-1608248597359-579898c6978d?auto=format&fit=crop&w=200&q=80',
+  },
 ];
 
 export const BrandManagement: React.FC<BrandManagementProps> = () => {
@@ -44,18 +100,26 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
 
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
-  const [customBrands, setCustomBrands] = useState<Array<{ name: string; tag: string; description?: string; website?: string; isActive: boolean }>>([]);
+  const [customBrands, setCustomBrands] = useState<
+    Array<{ name: string; tag: string; description?: string; website?: string; logo?: string; isActive: boolean }>
+  >([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     tag: '',
     description: '',
     website: '',
+    logo: '',
     isActive: true,
   });
 
@@ -77,7 +141,6 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
 
   useEffect(() => {
     loadData();
-    // Load custom added brands from local storage if any
     try {
       const saved = localStorage.getItem('ecommerce_custom_brands');
       if (saved) {
@@ -101,7 +164,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   const allBrands: BrandItem[] = useMemo(() => {
     const brandMap = new Map<string, BrandItem>();
 
-    // 1. Seed defaults
+    // 1. Seed defaults with images
     INITIAL_POPULAR_BRANDS.forEach((b) => {
       brandMap.set(b.name.toLowerCase(), {
         id: b.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -109,6 +172,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         slug: b.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         tag: b.tag,
         description: b.desc,
+        logo: b.logo,
         productCount: 0,
         categories: [],
         isActive: true,
@@ -126,6 +190,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         tag: cb.tag || cb.name,
         description: cb.description || existing?.description || '',
         website: cb.website,
+        logo: cb.logo || existing?.logo || '',
         productCount: existing?.productCount || 0,
         categories: existing?.categories || [],
         isActive: cb.isActive !== undefined ? cb.isActive : true,
@@ -196,6 +261,12 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
     return result;
   }, [allBrands, searchQuery, statusFilter]);
 
+  // Pagination calculation
+  const totalPages = Math.max(1, Math.ceil(filteredBrands.length / pageSize));
+  const paginatedBrands = useMemo(() => {
+    return filteredBrands.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [filteredBrands, currentPage, pageSize]);
+
   const openAddModal = () => {
     setEditingBrand(null);
     setFormData({
@@ -203,6 +274,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       tag: '',
       description: '',
       website: '',
+      logo: '',
       isActive: true,
     });
     setIsModalOpen(true);
@@ -215,6 +287,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       tag: brand.tag,
       description: brand.description || '',
       website: brand.website || '',
+      logo: brand.logo || '',
       isActive: brand.isActive,
     });
     setIsModalOpen(true);
@@ -226,6 +299,27 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       updated.tag = val;
     }
     setFormData(updated);
+  };
+
+  // Ant Design Image Upload integration (Cloudinary with local fallback)
+  const handleImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const res = await ecommerceService.uploadImage(file, 'HimalayaOnlineShop');
+      if (res.success && res.data?.url) {
+        setFormData((prev) => ({ ...prev, logo: res.data.url }));
+        showToast('Brand logo uploaded successfully', 'success');
+        return false;
+      }
+    } catch {
+      // Offline fallback: Use object URL so user sees immediate preview
+      const localUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({ ...prev, logo: localUrl }));
+      showToast('Brand logo attached', 'success');
+    } finally {
+      setUploadingImage(false);
+    }
+    return false;
   };
 
   const handleSaveBrand = (e?: React.FormEvent) => {
@@ -246,12 +340,18 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       tag: cleanTag,
       description: formData.description.trim(),
       website: formData.website.trim(),
+      logo: formData.logo,
       isActive: formData.isActive,
     });
 
     saveCustomBrands(updatedList);
     setIsModalOpen(false);
-    showToast(editingBrand ? `Brand "${cleanName}" updated successfully` : `Brand "${cleanName}" added with tag #${cleanTag}`, 'success');
+    showToast(
+      editingBrand
+        ? `Brand "${cleanName}" updated successfully`
+        : `Brand "${cleanName}" created with tag #${cleanTag}`,
+      'success'
+    );
   };
 
   const handleDeleteBrand = (brandName: string) => {
@@ -288,10 +388,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         />
       </div>
 
-      {/* 2-Column Responsive Layout: Left Table + Right Sidebar for Controls & Counts (Matching User Annotation) */}
+      {/* 2-Column Responsive Layout: Left Table + Right Sidebar for Controls & Counts */}
       <div className="flex flex-col lg:flex-row items-start gap-4">
-        {/* Left Column: Main Brands Directory Card */}
-        <div className="flex-1 min-w-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+        {/* Left Column: Main Brands Directory Card with Table + Branded Footer */}
+        <div className="flex-1 min-w-0 w-full bg-white rounded-t-2xl rounded-b-md border border-slate-100 shadow-xs overflow-hidden">
           {/* Table Top Controls */}
           <div className="px-4 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
             <div>
@@ -307,7 +407,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                 <AppInput
                   prefix={<SearchOutlined className="text-slate-400" />}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   placeholder="Search brands or tags..."
                   allowClear
                 />
@@ -317,7 +420,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               <div className="w-full sm:w-[130px] shrink-0">
                 <AppSelect
                   value={statusFilter}
-                  onChange={(val) => setStatusFilter(val as string)}
+                  onChange={(val) => {
+                    setStatusFilter(val as string);
+                    setCurrentPage(1);
+                  }}
                   options={[
                     { label: 'All Statuses', value: 'all' },
                     { label: 'Active', value: 'active' },
@@ -346,7 +452,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               <AppTable>
                 <thead>
                   <tr>
-                    <th className="py-2.5 px-6 font-medium text-[12px]">Brand & Identity</th>
+                    <th className="py-2.5 px-6 font-medium text-[12px]">Brand & Logo</th>
                     <th className="py-2.5 px-4 font-medium text-[12px]">Brand Tag</th>
                     <th className="py-2.5 px-4 font-medium text-[12px]">Catalog Products</th>
                     <th className="py-2.5 px-4 font-medium text-[12px]">Departments</th>
@@ -355,16 +461,28 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredBrands.map((b) => {
+                  {paginatedBrands.map((b) => {
                     const initial = b.name ? b.name.charAt(0).toUpperCase() : 'B';
                     return (
                       <tr key={b.id} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100">
-                        {/* Brand & Identity */}
+                        {/* Brand & Logo / Image */}
                         <td className="py-3 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-50 to-blue-100 border border-sky-200 text-[#0284c7] font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
-                              {initial}
-                            </div>
+                            {b.logo ? (
+                              <img
+                                src={b.logo}
+                                alt={b.name}
+                                className="w-10 h-10 rounded-xl object-cover border border-slate-200/90 bg-white shadow-2xs shrink-0 p-0.5"
+                                onError={(e) => {
+                                  // Fallback to stylized initial on broken image link
+                                  (e.target as HTMLElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-50 to-blue-100 border border-sky-200 text-[#0284c7] font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
+                                {initial}
+                              </div>
+                            )}
                             <div className="min-w-0">
                               <span className="font-bold text-xs text-slate-900 block truncate">{b.name}</span>
                               <span className="text-[10px] text-slate-400 truncate block max-w-[200px]">
@@ -459,9 +577,71 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               </AppTable>
             </div>
           )}
+
+          {/* Table Footer: Total Count on Left, Pagination Controls on Right */}
+          <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+            {/* Left Side: Brand Count */}
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="font-medium text-white/90 text-[11px] leading-none">Total Brands:</span>
+              <span className="font-bold text-white text-[11px] leading-none">
+                {filteredBrands.length} Brands
+              </span>
+            </div>
+
+            {/* Right Side: Pagination Controls */}
+            {filteredBrands.length > 0 && (
+              <div className="flex items-center gap-2.5 leading-none">
+                <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+                  <span>Rows:</span>
+                  <div className="relative">
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                    >
+                      <option value={5} className="bg-slate-800 text-white">5</option>
+                      <option value={10} className="bg-slate-800 text-white">10</option>
+                      <option value={20} className="bg-slate-800 text-white">20</option>
+                      <option value={50} className="bg-slate-800 text-white">50</option>
+                    </select>
+                    <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                  </div>
+                </div>
+
+                <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                  {filteredBrands.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-
+                  {Math.min(currentPage * pageSize, filteredBrands.length)} of {filteredBrands.length}
+                </span>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    title="Previous page"
+                    className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  >
+                    <LeftOutlined className="text-[8px]" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    title="Next page"
+                    className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  >
+                    <RightOutlined className="text-[8px]" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Right Column: Actions & Vertical Metrics Panel (Matching User Annotation) */}
+        {/* Right Column: Actions & Vertical Metrics Panel */}
         <div className="w-full lg:w-80 shrink-0 space-y-3">
           {/* Primary Action Card: Add Brand */}
           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs space-y-2.5">
@@ -475,7 +655,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               Add New Brand
             </AppButton>
             <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-              Register a new brand and assign its searchable catalog product tag.
+              Register a new brand, attach its logo, and assign its searchable catalog product tag.
             </p>
           </div>
 
@@ -528,12 +708,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               </div>
             </div>
           </div>
-
-
         </div>
       </div>
 
-      {/* Add / Edit Brand Modal */}
+      {/* Add / Edit Brand Modal using Ant Design Upload Component */}
       <AppModal
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
@@ -542,6 +720,85 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         okText={editingBrand ? 'Save Changes' : 'Create Brand'}
       >
         <form onSubmit={handleSaveBrand} className="space-y-4 pt-2">
+          {/* Ant Design Image Upload Section */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+              Brand Logo / Icon
+            </label>
+            <div className="flex items-center gap-3.5 p-3 bg-slate-50 border border-slate-200/90 rounded-xl">
+              <Upload
+                name="brandLogo"
+                listType="picture-card"
+                className="brand-logo-uploader [&_.ant-upload]:!w-20 [&_.ant-upload]:!h-20 [&_.ant-upload]:!rounded-xl [&_.ant-upload]:!border-dashed [&_.ant-upload]:!border-slate-300 [&_.ant-upload]:!bg-white"
+                showUploadList={false}
+                beforeUpload={(file) => {
+                  handleImageUpload(file);
+                  return false;
+                }}
+                accept="image/*"
+                disabled={uploadingImage}
+              >
+                {formData.logo ? (
+                  <div className="relative group w-full h-full rounded-xl overflow-hidden">
+                    <img
+                      src={formData.logo}
+                      alt="Brand logo"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-[10px] font-semibold">
+                      <UploadOutlined className="text-sm mb-0.5" />
+                      <span>Change</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-slate-400 p-1">
+                    {uploadingImage ? (
+                      <>
+                        <LoadingOutlined className="text-base text-[#0096C7] mb-1" spin />
+                        <span className="text-[9px] text-slate-500 font-medium">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusOutlined className="text-base text-slate-400 mb-0.5" />
+                        <span className="text-[10px] text-slate-600 font-semibold">Upload</span>
+                        <span className="text-[8px] text-slate-400">PNG / JPG</span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </Upload>
+
+              <div className="flex-1 space-y-1 min-w-0">
+                <span className="text-xs font-bold text-slate-800 block">
+                  {formData.logo ? 'Brand Logo Attached' : 'Attach Official Logo'}
+                </span>
+                <p className="text-[11px] text-slate-500 leading-tight">
+                  Click the box to upload from your computer, or paste a direct logo image URL below.
+                </p>
+                {formData.logo && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, logo: '' }))}
+                    className="text-[10px] text-rose-600 hover:text-rose-700 font-semibold cursor-pointer transition-colors block"
+                  >
+                    ✕ Remove Logo
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Optional URL input for direct web images */}
+            <div className="mt-1.5">
+              <input
+                type="text"
+                placeholder="Or paste direct image URL (https://...)"
+                value={formData.logo}
+                onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-700 focus:ring-1 focus:ring-[#0096C7] outline-none"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
               Brand Name <span className="text-rose-500">*</span>
