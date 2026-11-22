@@ -181,20 +181,17 @@ export const InventoryManagement: React.FC = () => {
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
         {/* Left Column: Warehouse Stock Ledger Table */}
         <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
-          {/* Header Toolbar: Title + Health Filter + Category + Search */}
-          <div className="px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white shrink-0">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+          {/* Header Toolbar: Title + Health Filter + Category + Search (Single-line Compact) */}
+          <div className="px-5 py-3.5 flex items-center justify-between gap-3 bg-white shrink-0">
+            <div className="shrink-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
                 Warehouse Stock Ledger
               </h3>
-              <p className="text-xs text-slate-600 mt-0.5 font-medium">
-                Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments.
-              </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <div className="flex items-center gap-2 shrink-0">
               {/* Search Input */}
-              <div className="w-full sm:w-[200px]">
+              <div className="w-[180px] sm:w-[200px]">
                 <AppInput
                   prefix={<SearchOutlined className="text-slate-400" />}
                   placeholder="Search inventory..."
@@ -208,7 +205,7 @@ export const InventoryManagement: React.FC = () => {
               </div>
 
               {/* Category Dropdown */}
-              <div className="w-full sm:w-[150px] shrink-0">
+              <div className="w-[130px] sm:w-[140px] shrink-0">
                 <AppSelect
                   value={categoryFilter}
                   onChange={(val) => {
@@ -229,7 +226,7 @@ export const InventoryManagement: React.FC = () => {
               </div>
 
               {/* Stock Health / Level Filter Dropdown */}
-              <div className="w-full sm:w-[150px] shrink-0">
+              <div className="w-[130px] sm:w-[140px] shrink-0">
                 <AppSelect
                   value={healthFilter}
                   onChange={(val) => {
