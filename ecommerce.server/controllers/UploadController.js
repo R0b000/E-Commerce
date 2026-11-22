@@ -61,6 +61,43 @@ uploadRouter.post('/multiple', optionalAuth, (req, res, next) => {
 });
 
 /**
+ * POST /ecommerce/upload/commit
+ * Move image from HimalayaOnlineShop/Temporary to permanent target folder
+ * (e.g. Admin/Brands, Admin/Products, Seller/Products, Customer/Avatars)
+ */
+uploadRouter.post('/commit', optionalAuth, async (req, res) => {
+  try {
+    const { public_id, targetFolder = 'Admin/Brands' } = req.body;
+    const result = await uploadService.commitImage(public_id, targetFolder);
+    res.status(result.statusCode || 200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      messages: ['Failed to commit image to permanent folder'],
+      errors: [error.message],
+    });
+  }
+});
+
+/**
+ * POST /ecommerce/upload/cleanup
+ * Trigger automatic purge of uncommitted files in Temporary folder older than 24h
+ */
+uploadRouter.post('/cleanup', optionalAuth, async (req, res) => {
+  try {
+    const maxAgeHours = Number(req.body?.maxAgeHours) || 24;
+    const result = await uploadService.cleanupTemporaryUploads(maxAgeHours);
+    res.status(result.statusCode || 200).json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      messages: ['Failed to clean up temporary uploads'],
+      errors: [error.message],
+    });
+  }
+});
+
+/**
  * DELETE /ecommerce/upload
  * Delete an image by publicId from Cloudinary
  */

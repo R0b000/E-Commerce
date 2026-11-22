@@ -1,4 +1,5 @@
 const cloudinary = require('cloudinary').v2;
+const crypto = require('crypto');
 const { Response: ApiResponse } = require('../../Shared/API/wrappers/Response');
 
 // Ensure Cloudinary is configured
@@ -6,23 +7,30 @@ cloudinary.config();
 
 class UploadService {
   constructor() {
-    this.defaultFolder = 'HimalayaOnlineShop';
+    this.rootFolder = 'HimalayaOnlineShop';
+    this.temporaryFolder = 'HimalayaOnlineShop/Temporary';
+    this.defaultFolder = this.temporaryFolder;
   }
 
   /**
-   * Upload single buffer to Cloudinary inside HimalayaOnlineShop folder
+   * Upload single buffer to Cloudinary with guaranteed unique ID.
+   * Defaults to HimalayaOnlineShop/Temporary for uncommitted staging.
    */
   async uploadBuffer(buffer, originalname = 'upload', folder = this.defaultFolder) {
     return new Promise((resolve, reject) => {
-      // Clean filename for public ID
+      // Clean filename for public ID and guarantee high-entropy uniqueness
       const safeName = originalname
         .replace(/\.[^/.]+$/, '')
-        .replace(/[^a-zA-Z0-9_-]/g, '_');
+        .replace(/[^a-zA-Z0-9_-]/g, '_')
+        .substring(0, 40);
+
+      const uniqueEntropy = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+      const uniquePublicId = `${uniqueEntropy}_${safeName}`;
 
       const uploadOptions = {
         folder: folder || this.defaultFolder,
         resource_type: 'auto',
-        public_id: `${Date.now()}_${safeName}`,
+        public_id: uniquePublicId,
         overwrite: false,
       };
 
@@ -50,7 +58,7 @@ class UploadService {
   }
 
   /**
-   * Upload single image file from Multer
+   * Upload single image file from Multer (defaults to HimalayaOnlineShop/Temporary)
    */
   async uploadSingleImage(file, folder = this.defaultFolder) {
     try {
@@ -59,7 +67,7 @@ class UploadService {
       }
 
       const result = await this.uploadBuffer(file.buffer, file.originalname, folder);
-      return ApiResponse.success(result, ['Image uploaded to Cloudinary successfully']);
+      return ApiResponse.success(result, ['Image uploaded to staging successfully']);
     } catch (error) {
       return ApiResponse.fail(error.message, [error.message], 500);
     }
@@ -87,10 +95,90 @@ class UploadService {
           files: results,
           count: results.length,
         },
-        ['Images uploaded to Cloudinary successfully']
+        ['Images uploaded to staging successfully']
       );
     } catch (error) {
       return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  /**
+   * Move/Commit image from Temporary staging to permanent folder
+   * e.g., from "HimalayaOnlineShop/Temporary/1732312345_a1b2_logo"
+   * to "HimalayaOnlineShop/Admin/Brands/1732312345_a1b2_logo"
+   */
+  async commitImage(publicId, targetSubfolder = 'Admin/Brands') {
+    try {
+      if (!publicId) {
+        return ApiResponse.fail('Public ID is required to commit image', [], 400);
+      }
+
+      // If asset is not in Temporary folder, it's already committed
+      if (!publicId.includes('/Temporary/') && !publicId.startsWith('HimalayaOnlineShop/Temporary')) {
+        return ApiResponse.success({ public_id: publicId }, ['Image is already in permanent storage']);
+      }
+
+      const fileName = publicId.split('/').pop();
+      const sanitizedFolder = targetSubfolder.replace(/^\/+|\/+$/g, '');
+      const newPublicId = `${this.rootFolder}/${sanitizedFolder}/${fileName}`;
+
+      // Instant Cloudinary rename / move
+      const result = await cloudinary.uploader.rename(publicId, newPublicId, {
+        overwrite: true,
+      });
+
+      return ApiResponse.success(
+        {
+          url: result.secure_url,
+          public_id: result.public_id,
+          format: result.format,
+          width: result.width,
+          height: result.height,
+        },
+        ['Image committed to permanent folder successfully']
+      );
+    } catch (error) {
+      console.error('[UploadService] Commit error:', error);
+      return ApiResponse.fail(`Failed to commit image: ${error.message}`, [error.message], 500);
+    }
+  }
+
+  /**
+   * Auto-delete uncommitted temporary files older than maxAgeHours (default 24h)
+   */
+  async cleanupTemporaryUploads(maxAgeHours = 24) {
+    try {
+      const cutoffTime = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000).toISOString();
+      console.log(`[UploadService] Scanning ${this.temporaryFolder} for uncommitted files older than ${maxAgeHours}h (cutoff: ${cutoffTime})...`);
+
+      // Search Cloudinary for temporary resources created before cutoff
+      const searchResult = await cloudinary.search
+        .expression(`folder:"${this.temporaryFolder}" AND created_at<=${cutoffTime}`)
+        .max_results(100)
+        .execute();
+
+      const resources = searchResult.resources || [];
+      if (resources.length === 0) {
+        console.log(`[UploadService] No expired temporary files found.`);
+        return ApiResponse.success({ deletedCount: 0 }, ['No expired temporary files found']);
+      }
+
+      const publicIds = resources.map((r) => r.public_id);
+      console.log(`[UploadService] Deleting ${publicIds.length} expired temporary file(s)...`);
+      const deleteResult = await cloudinary.api.delete_resources(publicIds);
+
+      console.log(`[UploadService] Cleanup finished. Deleted ${publicIds.length} file(s).`);
+      return ApiResponse.success(
+        {
+          deletedCount: publicIds.length,
+          publicIds,
+          details: deleteResult,
+        },
+        [`Successfully cleaned up ${publicIds.length} expired temporary file(s)`]
+      );
+    } catch (error) {
+      console.error('[UploadService] Cleanup error:', error);
+      return ApiResponse.fail(`Failed to clean up temporary uploads: ${error.message}`, [error.message], 500);
     }
   }
 
