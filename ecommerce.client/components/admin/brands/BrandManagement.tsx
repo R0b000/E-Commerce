@@ -421,7 +421,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions (Independent Scroll) */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
         {/* Left Column: Brand & Tag Directory Table */}
-        <div className="flex-1 min-w-0 h-full bg-white rounded-2xl shadow-xs overflow-hidden flex flex-col">
+        <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
           {/* Header Toolbar: Title + Search + Status Filter */}
           <div className="px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white shrink-0">
             <div>
@@ -623,7 +623,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         )}
 
         {/* Table Footer: Total Count on Left, Pagination Controls on Right */}
-        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-[2px] flex items-center justify-between text-[11px] shadow-inner select-none mt-auto">
+        <div className="px-6 h-[32px] min-h-[32px] max-h-[32px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none mt-auto overflow-hidden">
           {/* Left Side: Brand Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Brands:</span>
@@ -637,14 +637,15 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             <div className="flex items-center gap-2.5 leading-none">
               <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
                 <span>Items:</span>
-                <div className="relative">
+                <div className="relative inline-flex items-center">
                   <select
                     value={pageSize}
                     onChange={(e) => {
                       setPageSize(Number(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                    className="select-sm appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white !h-[20px] !min-h-[20px] !max-h-[20px] leading-none box-border"
+                    style={{ height: '20px', minHeight: '20px', maxHeight: '20px', lineHeight: '18px', paddingBottom: '0px', paddingTop: '0px' }}
                   >
                     <option value={10} className="bg-slate-800 text-white">10</option>
                     <option value={20} className="bg-slate-800 text-white">20</option>
@@ -665,7 +666,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   title="Previous page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
                 >
                   <LeftOutlined className="text-[8px]" />
                 </button>
@@ -674,7 +675,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   title="Next page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
                 >
                   <RightOutlined className="text-[8px]" />
                 </button>
