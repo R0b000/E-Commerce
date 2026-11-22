@@ -152,6 +152,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
     description: '',
     website: '',
     logo: '',
+    publicId: '',
     isActive: true,
   });
 
@@ -307,6 +308,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       description: '',
       website: '',
       logo: '',
+      publicId: '',
       isActive: true,
     });
     setIsModalOpen(true);
@@ -320,6 +322,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       description: brand.description || '',
       website: brand.website || '',
       logo: brand.logo || '',
+      publicId: '',
       isActive: brand.isActive,
     });
     setIsModalOpen(true);
@@ -333,32 +336,53 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
     setFormData(updated);
   };
 
-  // Image Upload integration (Cloudinary with local fallback)
+  // Image Upload integration (Uploads to HimalayaOnlineShop/Temporary staging with unique ID)
   const handleImageUpload = async (file: File): Promise<string | void> => {
     setUploadingImage(true);
     try {
-      const res = await ecommerceService.uploadImage(file, 'HimalayaOnlineShop');
+      const res = await ecommerceService.uploadImage(file, 'HimalayaOnlineShop/Temporary');
       if (res.success && res.data?.url) {
-        setFormData((prev) => ({ ...prev, logo: res.data.url }));
-        showToast('Brand logo uploaded successfully', 'success');
+        setFormData((prev) => ({
+          ...prev,
+          logo: res.data.url,
+          publicId: res.data.public_id,
+        }));
+        showToast('Image uploaded to temporary staging', 'success');
         return res.data.url;
       }
     } catch {
       const localUrl = URL.createObjectURL(file);
       setFormData((prev) => ({ ...prev, logo: localUrl }));
-      showToast('Brand logo attached', 'success');
+      showToast('Brand logo attached locally', 'success');
       return localUrl;
     } finally {
       setUploadingImage(false);
     }
   };
 
-  const handleSaveBrand = (e?: React.FormEvent) => {
+  const handleSaveBrand = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanName = formData.name.trim();
     if (!cleanName) {
       showToast('Brand name is required', 'error');
       return;
+    }
+
+    let finalLogo = formData.logo.trim();
+
+    // If an image was staged in HimalayaOnlineShop/Temporary, commit it to HimalayaOnlineShop/Admin/Brands
+    if (
+      formData.publicId &&
+      (formData.publicId.includes('/Temporary/') || formData.publicId.startsWith('HimalayaOnlineShop/Temporary'))
+    ) {
+      try {
+        const commitRes = await ecommerceService.commitImage(formData.publicId, 'Admin/Brands');
+        if (commitRes.success && commitRes.data?.url) {
+          finalLogo = commitRes.data.url;
+        }
+      } catch (err) {
+        console.warn('Commit image notice:', err);
+      }
     }
 
     const cleanTag = (formData.tag.trim() || cleanName).replace(/^#+/, '');
@@ -371,7 +395,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       tag: cleanTag,
       description: formData.description.trim(),
       website: formData.website.trim(),
-      logo: formData.logo.trim() || getBrandInitialSvg(cleanName),
+      logo: finalLogo || getBrandInitialSvg(cleanName),
       isActive: formData.isActive,
     });
 

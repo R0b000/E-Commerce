@@ -10,6 +10,7 @@ const { config } = require('./Shared/API/config/config');
 const { connectDatabase } = require('./Shared/API/config/Database.config');
 const { authRouter } = require('./auth.server/controllers/AuthController');
 const { ecommerceRouter } = require('./ecommerce.server/controllers/EcommerceRouter');
+const { UploadService } = require('./ecommerce.server/services/UploadService');
 
 const app = express();
 const PORT = config.port || process.env.PORT || 5001;
@@ -113,6 +114,20 @@ const startServer = async () => {
     server.listen(PORT, () => {
       console.log(`Server Running on port ${PORT} (with Socket.IO support)`);
       console.log(`Server Environment: ${config.nodeEnv}`);
+
+      // Schedule automated 24-hour cleanup for HimalayaOnlineShop/Temporary staging uploads
+      const uploadService = new UploadService();
+      const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+      setTimeout(() => {
+        uploadService.cleanupTemporaryUploads(24).catch((err) =>
+          console.error('[UploadService] Startup cleanup notice:', err.message)
+        );
+      }, 15000);
+      setInterval(() => {
+        uploadService.cleanupTemporaryUploads(24).catch((err) =>
+          console.error('[UploadService] Scheduled cleanup notice:', err.message)
+        );
+      }, TWELVE_HOURS);
     });
   } catch (error) {
     console.error('Server Failed to connect to database:', error);
