@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  CloudUploadOutlined,
-  LoadingOutlined,
-  CloseOutlined,
+  PlusOutlined,
+  DeleteOutlined,
   SwapOutlined,
+  EyeOutlined,
 } from '@ant-design/icons';
 
 export interface AppImageUploadProps {
@@ -16,9 +16,6 @@ export interface AppImageUploadProps {
   fallbackInitial?: string;
   className?: string;
   label?: string;
-  title?: string;
-  subtitle?: string;
-  buttonText?: string;
   accept?: string;
   maxSizeMB?: number;
 }
@@ -32,9 +29,6 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
   fallbackInitial,
   className = '',
   label,
-  title = 'Choose a file or drag & drop here.',
-  subtitle = 'JPEG, PNG, up to 10 MB.',
-  buttonText = 'Browse File',
   accept = 'image/*',
   maxSizeMB = 10,
 }) => {
@@ -207,7 +201,7 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
         className="hidden"
       />
 
-      {/* Main Container */}
+      {/* Picture-Card Container matching reference */}
       <div
         ref={containerRef}
         tabIndex={0}
@@ -215,21 +209,23 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className="outline-none"
+        className="inline-block outline-none"
       >
         {isLoading ? (
-          /* Loading State */
-          <div className="w-full h-32 rounded-2xl bg-[#111214] border border-slate-800 flex flex-col items-center justify-center text-center p-4">
-            <LoadingOutlined className="text-2xl text-[#0096C7] mb-2" spin />
-            <span className="text-xs font-semibold text-slate-200">Uploading image...</span>
+          /* Uploading Picture-Card State */
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl border border-dashed border-slate-700 bg-[#16171a] flex flex-col items-center justify-center p-2 text-center select-none shadow-xs">
+            <span className="text-xs font-semibold text-slate-200 mb-2.5">Uploading...</span>
+            <div className="w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full bg-[#0096C7] rounded-full animate-pulse w-3/4" />
+            </div>
           </div>
         ) : hasImage ? (
-          /* Uploaded Image Preview: Clean image card with NO text/URL clutter */
-          <div className="relative w-full h-36 sm:h-40 rounded-2xl overflow-hidden bg-[#111214] border border-slate-800 shadow-sm group flex items-center justify-center select-none">
+          /* Uploaded Picture-Card State: Rounded picture thumbnail card with hover actions */
+          <div className="relative group w-24 h-24 sm:w-28 sm:h-28 rounded-xl border border-slate-800 bg-[#16171a] p-1.5 flex items-center justify-center overflow-hidden shadow-xs select-none">
             <img
               src={value}
               alt="Uploaded preview"
-              className="w-full h-full object-contain p-2"
+              className="w-full h-full object-cover rounded-lg"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (fallbackInitial) {
@@ -238,67 +234,39 @@ export const AppImageUpload: React.FC<AppImageUploadProps> = ({
               }}
             />
 
-            {/* Top-Right Remove Button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onChange('');
-              }}
-              className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-black/65 hover:bg-rose-600 text-white flex items-center justify-center text-xs transition-colors cursor-pointer shadow-md z-10"
-              title="Remove image"
-            >
-              <CloseOutlined className="text-[10px]" />
-            </button>
-
-            {/* Hover Overlay with Replace Button */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            {/* Hover Actions: Replace & Delete */}
+            <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3.5 py-1.5 rounded-lg bg-white/95 hover:bg-white text-slate-900 font-bold text-xs shadow-lg flex items-center gap-1.5 transition-all cursor-pointer"
+                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Replace image (or Ctrl+V)"
               >
                 <SwapOutlined className="text-xs" />
-                <span>Replace Image</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="w-7 h-7 rounded-full bg-rose-500/80 hover:bg-rose-600 text-white flex items-center justify-center transition-all cursor-pointer"
+                title="Remove image"
+              >
+                <DeleteOutlined className="text-xs" />
               </button>
             </div>
           </div>
         ) : (
-          /* Empty Dropzone matching the user's reference image */
+          /* Empty Picture-Card: Dashed card with + and Upload */
           <div
-            className={`w-full rounded-2xl bg-[#111214] border transition-all py-6 px-4 flex flex-col items-center justify-center text-center cursor-pointer select-none ${
-              isDragOver
-                ? 'border-[#0096C7] ring-2 ring-[#0096C7]/50 shadow-md'
-                : 'border-slate-800 hover:border-slate-700'
-            }`}
             onClick={() => fileInputRef.current?.click()}
+            className={`w-24 h-24 sm:w-28 sm:h-28 rounded-xl border border-dashed flex flex-col items-center justify-center cursor-pointer transition-all select-none ${
+              isDragOver
+                ? 'border-[#0096C7] bg-[#1e2329] ring-2 ring-[#0096C7]/50 shadow-md'
+                : 'border-slate-700 bg-[#16171a] hover:border-slate-500 hover:bg-[#1a1c1f]'
+            }`}
+            title="Click to upload, drag & drop, or Ctrl+V"
           >
-            {/* Center Cloud Upload Icon */}
-            <div className="w-9 h-9 rounded-full bg-[#1e2023] border border-slate-700/60 text-slate-300 flex items-center justify-center text-sm mb-2 shadow-xs">
-              <CloudUploadOutlined />
-            </div>
-
-            {/* Title */}
-            <h4 className="text-xs sm:text-sm font-semibold text-white tracking-tight mb-0.5">
-              {title}
-            </h4>
-
-            {/* Subtitle */}
-            <p className="text-[11px] text-slate-400 font-normal mb-3.5">
-              {subtitle}
-            </p>
-
-            {/* Browse File Button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                fileInputRef.current?.click();
-              }}
-              className="px-4 py-1.5 rounded-lg bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-900 font-semibold text-xs shadow-sm transition-colors cursor-pointer"
-            >
-              {buttonText}
-            </button>
+            <PlusOutlined className="text-base text-slate-300 mb-1" />
+            <span className="text-xs font-semibold text-slate-300">Upload</span>
           </div>
         )}
       </div>

@@ -865,12 +865,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             />
           </div>
 
-          {/* Row 3: Image Upload (Choose a file or drag & drop here) */}
+          {/* Row 3: Image Upload (Picture-Card style) */}
           <AppImageUpload
             label="Image"
-            title="Choose a file or drag & drop here."
-            subtitle="JPEG, PNG, up to 10 MB."
-            buttonText="Browse File"
             value={formData.logo}
             onChange={(url) => setFormData((prev) => ({ ...prev, logo: url }))}
             onUpload={handleImageUpload}
