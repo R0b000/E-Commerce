@@ -1017,14 +1017,14 @@ export const AuthorizedLayout: React.FC = () => {
          ========================================================================= */}
       <main
         className={`flex-1 w-full relative bg-white ${
-          location.pathname.startsWith('/admin/profile')
+          location.pathname.startsWith('/admin/profile') || location.pathname.startsWith('/admin/brands')
             ? 'overflow-hidden flex flex-col h-[calc(100vh-4rem)]'
             : 'overflow-y-auto'
         }`}
       >
         <div
           className={`w-full ${
-            location.pathname.startsWith('/admin/profile')
+            location.pathname.startsWith('/admin/profile') || location.pathname.startsWith('/admin/brands')
               ? 'h-full p-2 sm:p-3 flex flex-col overflow-hidden min-h-0'
               : 'p-4'
           }`}

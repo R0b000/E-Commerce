@@ -357,9 +357,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   };
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif] p-2 sm:p-4 space-y-3.5">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] p-1 sm:p-2 space-y-2.5">
       {/* Top Bar: Breadcrumb */}
-      <div>
+      <div className="shrink-0">
         <Breadcrumb
           className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
           items={[
@@ -384,12 +384,12 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         />
       </div>
 
-      {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions */}
-      <div className="flex flex-col lg:flex-row items-start gap-4">
+      {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions (Independent Scroll) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
         {/* Left Column: Brand & Tag Directory Table */}
-        <div className="flex-1 min-w-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden flex flex-col">
+        <div className="flex-1 min-w-0 h-full bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden flex flex-col">
           {/* Header Toolbar: Title + Search + Status Filter */}
-          <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white">
+          <div className="px-5 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white shrink-0">
             <div>
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
                 Brand & Tag Directory
@@ -432,13 +432,13 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             </div>
           </div>
 
-          {/* Content Section: Data Table */}
+          {/* Content Section: Data Table (Independent Scroll Area) */}
           {loading ? (
-            <div className="p-6">
+            <div className="p-6 flex-1 min-h-0 overflow-y-auto">
               <TableSkeleton rows={6} />
             </div>
           ) : filteredBrands.length === 0 ? (
-            <div className="p-12 text-center">
+            <div className="p-12 text-center flex-1 min-h-0 overflow-y-auto">
               <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
                 <TagOutlined />
               </div>
@@ -446,8 +446,8 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               <p className="text-xs text-slate-400 mt-1">Try adjusting your search criteria or add a new brand.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto flex-1">
-            <AppTable>
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto brand-table-scroll">
+              <AppTable>
               <thead>
                 <tr>
                   <th className="py-2.5 px-6 font-medium text-[12px]">Brand & Logo</th>
@@ -633,8 +633,8 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         </div>
       </div>
 
-      {/* Right Column: Add Brand Card + Catalog Summary Metrics */}
-      <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 space-y-4">
+        {/* Right Column: Add Brand Card + Catalog Summary Metrics (Independent Scroll Area) */}
+        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
         {/* Card 1: Add New Brand */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4">
           <button
