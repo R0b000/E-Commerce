@@ -421,9 +421,9 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions (Independent Scroll) */}
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
         {/* Left Column: Brand & Tag Directory Table */}
-        <div className="flex-1 min-w-0 h-full bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden flex flex-col">
+        <div className="flex-1 min-w-0 h-full bg-white rounded-2xl shadow-xs overflow-hidden flex flex-col">
           {/* Header Toolbar: Title + Search + Status Filter */}
-          <div className="px-5 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white shrink-0">
+          <div className="px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white shrink-0">
             <div>
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
                 Brands
@@ -511,7 +511,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   const initialSvg = getBrandInitialSvg(b.name);
                   const logoUrl = b.logo && b.logo.trim() ? b.logo.trim() : initialSvg;
                   return (
-                    <tr key={b.id} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100">
+                    <tr key={b.id} className="hover:bg-slate-50/70 transition-colors">
                       <td className="py-3 px-6">
                         <div className="flex items-center gap-3">
                           <img
@@ -687,7 +687,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         {/* Right Column: Add Brand Card + Catalog Summary Metrics (Independent Scroll Area) */}
         <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
           {/* Card 1: Add New Brand (Height matched with Search & Status, no description) */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xs px-4 py-3 flex items-center">
+          <div className="bg-white rounded-2xl shadow-xs px-4 py-3 flex items-center">
             <button
               type="button"
               onClick={openAddModal}
@@ -700,10 +700,10 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
 
           {/* Card 2: Catalog Summary (Collapsible) */}
           {isSummaryCollapsed ? (
-            /* Collapsed View (Clean White Card - No black bg) */
+            /* Collapsed View (Clean White Card - Borderless) */
             <div
               onClick={() => setIsSummaryCollapsed(false)}
-              className="bg-white rounded-2xl border border-slate-100 hover:border-sky-200 shadow-xs p-4 cursor-pointer transition-all space-y-2 select-none group"
+              className="bg-white rounded-2xl shadow-xs p-4 cursor-pointer transition-all space-y-2 select-none group"
               title="Click to expand Catalog Summary"
             >
               <div className="flex items-center justify-between text-xs">
@@ -711,21 +711,21 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   <span className="font-bold text-xs">Catalog Summary</span>
                   <DownOutlined className="text-[9px] text-slate-400 group-hover:text-[#0096C7] -rotate-90 transition-transform" />
                 </div>
-                <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
                   {allBrands.length} Brands
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-slate-600 font-medium pt-2 border-t border-slate-100">
+              <div className="flex items-center gap-2 text-xs text-slate-900 font-bold pt-1.5">
                 <ShopOutlined className="text-[#0096C7] text-sm shrink-0" />
-                <span className="truncate tracking-tight text-[11px] text-slate-600 font-medium">
+                <span className="truncate tracking-tight text-[11px] text-slate-900 font-bold">
                   {allBrands.length} Brands · {allBrands.reduce((acc, b) => acc + b.productCount, 0)} Items · {allBrands.filter((b) => b.isActive).length} Active
                 </span>
               </div>
             </div>
           ) : (
-            /* Expanded View: Borderless, non-faded, vibrant clean metrics */
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-xs p-4 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+            /* Expanded View: Clean borderless cards and vibrant metrics */
+            <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+              <div className="flex items-center justify-between pb-1">
                 <button
                   type="button"
                   onClick={() => setIsSummaryCollapsed(true)}
@@ -735,12 +735,12 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   <span>Catalog Summary</span>
                   <DownOutlined className="text-[9px] text-slate-400 group-hover:text-[#0096C7] transition-transform" />
                 </button>
-                <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
                   Live Metrics
                 </span>
               </div>
 
-              <div className="divide-y divide-slate-100">
+              <div className="space-y-1">
                 {/* Metric 1: Total Brands */}
                 <div className="py-2.5 flex items-center justify-between">
                   <div>
