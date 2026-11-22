@@ -187,7 +187,7 @@ export function AppTable<T extends object = any>({
             <div className="flex items-center gap-2.5 leading-none">
               <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
                 <span>Rows:</span>
-                <div className="relative">
+                <div className="relative inline-flex items-center">
                   <select
                     value={pageSize}
                     onChange={(e) => {
@@ -196,7 +196,8 @@ export function AppTable<T extends object = any>({
                         pagination.onChange(1, newSize);
                       }
                     }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                    className="select-sm appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white !h-[20px] !min-h-[20px] !max-h-[20px] leading-none box-border"
+                    style={{ height: '20px', minHeight: '20px', maxHeight: '20px', lineHeight: '18px', paddingTop: 0, paddingBottom: 0 }}
                   >
                     <option value={10} className="bg-slate-800 text-white">10</option>
                     <option value={20} className="bg-slate-800 text-white">20</option>
