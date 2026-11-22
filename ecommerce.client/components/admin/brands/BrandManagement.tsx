@@ -9,7 +9,7 @@ import {
   ShopOutlined,
   ArrowRightOutlined,
   CheckCircleOutlined,
-  SyncOutlined,
+  InfoCircleOutlined,
 } from '@ant-design/icons';
 import { Popconfirm, Breadcrumb, Switch } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -223,7 +223,6 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
 
   const handleNameChange = (val: string) => {
     const updated = { ...formData, name: val };
-    // Automatically suggest tag matching brand name if tag is empty or matched previous name
     if (!formData.tag || formData.tag === formData.name) {
       updated.tag = val;
     }
@@ -263,7 +262,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   };
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif] p-2 sm:p-4 space-y-4">
+    <div className="w-full font-['Poppins','Inter',sans-serif] p-2 sm:p-4 space-y-3">
       {/* Breadcrumb Navigation */}
       <div className="px-1 flex items-center gap-1.5 text-[11px] leading-none text-slate-400">
         <Breadcrumb
@@ -290,225 +289,266 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         />
       </div>
 
-      {/* Header Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Brands</span>
-            <span className="text-2xl font-black text-slate-900 mt-1 block">{allBrands.length}</span>
-            <span className="text-[10px] text-slate-400">Available for product tag filtering</span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0284c7] flex items-center justify-center text-lg">
-            <ShopOutlined />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Products Tagged</span>
-            <span className="text-2xl font-black text-slate-900 mt-1 block">
-              {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
-            </span>
-            <span className="text-[10px] text-emerald-600 font-semibold">Live in store catalog</span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
-            <TagOutlined />
-          </div>
-        </div>
-
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Active Brand Tags</span>
-            <span className="text-2xl font-black text-emerald-600 mt-1 block">
-              {allBrands.filter((b) => b.isActive).length}
-            </span>
-            <span className="text-[10px] text-slate-400">Ready for instant tagging</span>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
-            <CheckCircleOutlined />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Brands Directory Card */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-        {/* Table Top Controls */}
-        <div className="px-4 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
-          <div>
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">Brand & Tag Directory</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Manage product brands, assign searchable brand tags, and link catalog items.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Search Input */}
-            <div className="w-full sm:w-[240px] shrink-0">
-              <AppInput
-                prefix={<SearchOutlined className="text-slate-400" />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search brands or tags..."
-                allowClear
-              />
+      {/* 2-Column Responsive Layout: Left Table + Right Sidebar for Controls & Counts (Matching User Annotation) */}
+      <div className="flex flex-col lg:flex-row items-start gap-4">
+        {/* Left Column: Main Brands Directory Card */}
+        <div className="flex-1 min-w-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+          {/* Table Top Controls */}
+          <div className="px-4 py-3.5 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">Brand & Tag Directory</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Manage product brands, assign searchable brand tags, and link catalog items.
+              </p>
             </div>
 
-            {/* Status Filter */}
-            <div className="w-full sm:w-[130px] shrink-0">
-              <AppSelect
-                value={statusFilter}
-                onChange={(val) => setStatusFilter(val as string)}
-                options={[
-                  { label: 'All Statuses', value: 'all' },
-                  { label: 'Active', value: 'active' },
-                  { label: 'Inactive', value: 'inactive' },
-                ]}
-              />
-            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              {/* Search Input */}
+              <div className="w-full sm:w-[240px] shrink-0">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search brands or tags..."
+                  allowClear
+                />
+              </div>
 
-            {/* Add Brand Button */}
+              {/* Status Filter */}
+              <div className="w-full sm:w-[130px] shrink-0">
+                <AppSelect
+                  value={statusFilter}
+                  onChange={(val) => setStatusFilter(val as string)}
+                  options={[
+                    { label: 'All Statuses', value: 'all' },
+                    { label: 'Active', value: 'active' },
+                    { label: 'Inactive', value: 'inactive' },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Brands Table */}
+          {loading ? (
+            <div className="p-6">
+              <TableSkeleton rows={6} />
+            </div>
+          ) : filteredBrands.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
+                <TagOutlined />
+              </div>
+              <h4 className="text-sm font-bold text-slate-700">No brands found</h4>
+              <p className="text-xs text-slate-400 mt-1">Try adjusting your search criteria or add a new brand.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <AppTable>
+                <thead>
+                  <tr>
+                    <th className="py-2.5 px-6 font-medium text-[12px]">Brand & Identity</th>
+                    <th className="py-2.5 px-4 font-medium text-[12px]">Brand Tag</th>
+                    <th className="py-2.5 px-4 font-medium text-[12px]">Catalog Products</th>
+                    <th className="py-2.5 px-4 font-medium text-[12px]">Departments</th>
+                    <th className="py-2.5 px-4 font-medium text-[12px]">Status</th>
+                    <th className="py-2.5 px-6 font-medium text-[12px] text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBrands.map((b) => {
+                    const initial = b.name ? b.name.charAt(0).toUpperCase() : 'B';
+                    return (
+                      <tr key={b.id} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100">
+                        {/* Brand & Identity */}
+                        <td className="py-3 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-50 to-blue-100 border border-sky-200 text-[#0284c7] font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
+                              {initial}
+                            </div>
+                            <div className="min-w-0">
+                              <span className="font-bold text-xs text-slate-900 block truncate">{b.name}</span>
+                              <span className="text-[10px] text-slate-400 truncate block max-w-[200px]">
+                                {b.description || 'Verified manufacturer brand'}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Brand Tag */}
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
+                            <TagOutlined className="text-[10px] text-amber-600" />
+                            <span>#{b.tag}</span>
+                          </span>
+                        </td>
+
+                        {/* Catalog Products */}
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-800">{b.productCount}</span>
+                            <span className="text-[10px] text-slate-400">items</span>
+                            {b.productCount > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => navigate(`/admin/products?search=${encodeURIComponent(b.name)}`)}
+                                className="text-[10px] text-[#0284c7] hover:underline flex items-center gap-0.5 ml-1 font-semibold cursor-pointer"
+                                title="Filter products by this brand"
+                              >
+                                <span>View</span>
+                                <ArrowRightOutlined className="text-[8px]" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Departments */}
+                        <td className="py-3 px-4">
+                          {b.categories.length > 0 ? (
+                            <div className="flex items-center gap-1 flex-wrap">
+                              {b.categories.slice(0, 2).map((c) => (
+                                <span key={c} className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                                  {c}
+                                </span>
+                              ))}
+                              {b.categories.length > 2 && (
+                                <span className="text-[10px] text-slate-400">+{b.categories.length - 2}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-slate-300 italic">General Catalog</span>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3 px-4">
+                          <StatusBadge status={b.isActive ? 'active' : 'inactive'} />
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-6 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => openEditModal(b)}
+                              className="p-1.5 text-slate-400 hover:text-[#0284c7] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
+                              title="Edit Brand"
+                            >
+                              <EditOutlined className="text-xs" />
+                            </button>
+                            <Popconfirm
+                              title="Remove this brand?"
+                              description="Are you sure you want to remove this brand entry?"
+                              onConfirm={() => handleDeleteBrand(b.name)}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <button
+                                type="button"
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Brand"
+                              >
+                                <DeleteOutlined className="text-xs" />
+                              </button>
+                            </Popconfirm>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </AppTable>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Actions & Vertical Metrics Panel (Matching User Annotation) */}
+        <div className="w-full lg:w-80 shrink-0 space-y-3">
+          {/* Primary Action Card: Add Brand */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs space-y-2.5">
             <AppButton
               type="primary"
               icon={<PlusOutlined />}
               onClick={openAddModal}
+              className="w-full !h-10 text-xs font-bold shadow-xs flex items-center justify-center gap-2"
               style={{ backgroundColor: '#0096C7' }}
             >
-              Add Brand
+              Add New Brand
             </AppButton>
+            <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+              Register a new brand and assign its searchable catalog product tag.
+            </p>
+          </div>
+
+          {/* Vertical Metric Counts Panel */}
+          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span className="text-xs font-bold text-slate-900 tracking-tight">Catalog Summary</span>
+              <span className="text-[10px] font-bold text-[#0284c7] bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">
+                Live Metrics
+              </span>
+            </div>
+
+            {/* Total Brands Count */}
+            <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100/90 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Brands</span>
+                <span className="text-xl font-black text-slate-900 mt-0.5 block">{allBrands.length}</span>
+                <span className="text-[10px] text-slate-400">Available for catalog</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-sky-100 text-[#0284c7] flex items-center justify-center text-lg shrink-0">
+                <ShopOutlined />
+              </div>
+            </div>
+
+            {/* Products Tagged Count */}
+            <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100/90 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Products Tagged</span>
+                <span className="text-xl font-black text-amber-600 mt-0.5 block">
+                  {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
+                </span>
+                <span className="text-[10px] text-emerald-600 font-semibold">Active in store</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                <TagOutlined />
+              </div>
+            </div>
+
+            {/* Active Brand Tags Count */}
+            <div className="p-3 rounded-xl bg-slate-50/80 border border-slate-100/90 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Tags</span>
+                <span className="text-xl font-black text-emerald-600 mt-0.5 block">
+                  {allBrands.filter((b) => b.isActive).length}
+                </span>
+                <span className="text-[10px] text-slate-400">Ready for product tagging</span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                <CheckCircleOutlined />
+              </div>
+            </div>
+          </div>
+
+          {/* Info & Tagging Shortcut Helper Card */}
+          <div className="bg-gradient-to-br from-sky-50/80 to-blue-50/30 p-4 rounded-2xl border border-sky-100/80 shadow-xs space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-sky-950">
+              <InfoCircleOutlined className="text-[#0284c7]" />
+              <span>How Brand Tags Work</span>
+            </div>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Assigning a brand automatically enables <strong>#BrandName</strong> product tags. Customers and admins can instantly filter products by clicking their brand tag.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/products')}
+              className="text-[11px] text-[#0284c7] font-bold hover:underline flex items-center gap-1 pt-1 cursor-pointer"
+            >
+              <span>Manage Products & Inventory</span>
+              <ArrowRightOutlined className="text-[9px]" />
+            </button>
           </div>
         </div>
-
-        {/* Brands Table */}
-        {loading ? (
-          <div className="p-6">
-            <TableSkeleton rows={5} />
-          </div>
-        ) : filteredBrands.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
-              <TagOutlined />
-            </div>
-            <h4 className="text-sm font-bold text-slate-700">No brands found</h4>
-            <p className="text-xs text-slate-400 mt-1">Try adjusting your search criteria or add a new brand.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <AppTable>
-              <thead>
-                <tr>
-                  <th className="py-2.5 px-6 font-medium text-[12px]">Brand & Identity</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Brand Tag</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Catalog Products</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Departments</th>
-                  <th className="py-2.5 px-4 font-medium text-[12px]">Status</th>
-                  <th className="py-2.5 px-6 font-medium text-[12px] text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredBrands.map((b) => {
-                  const initial = b.name ? b.name.charAt(0).toUpperCase() : 'B';
-                  return (
-                    <tr key={b.id} className="hover:bg-slate-50/70 transition-colors border-b border-slate-100">
-                      {/* Brand & Identity */}
-                      <td className="py-3 px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-50 to-blue-100 border border-sky-200 text-[#0284c7] font-bold text-sm flex items-center justify-center shrink-0 shadow-2xs">
-                            {initial}
-                          </div>
-                          <div className="min-w-0">
-                            <span className="font-bold text-xs text-slate-900 block truncate">{b.name}</span>
-                            <span className="text-[10px] text-slate-400 truncate block max-w-[240px]">
-                              {b.description || 'Verified manufacturer brand'}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Brand Tag */}
-                      <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-2xs">
-                          <TagOutlined className="text-[10px] text-amber-600" />
-                          <span>#{b.tag}</span>
-                        </span>
-                      </td>
-
-                      {/* Catalog Products */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-800">{b.productCount}</span>
-                          <span className="text-[10px] text-slate-400">items</span>
-                          {b.productCount > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => navigate(`/admin/products?search=${encodeURIComponent(b.name)}`)}
-                              className="text-[10px] text-[#0284c7] hover:underline flex items-center gap-0.5 ml-1 font-semibold cursor-pointer"
-                              title="Filter products by this brand"
-                            >
-                              <span>View</span>
-                              <ArrowRightOutlined className="text-[8px]" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Departments */}
-                      <td className="py-3 px-4">
-                        {b.categories.length > 0 ? (
-                          <div className="flex items-center gap-1 flex-wrap">
-                            {b.categories.slice(0, 2).map((c) => (
-                              <span key={c} className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                                {c}
-                              </span>
-                            ))}
-                            {b.categories.length > 2 && (
-                              <span className="text-[10px] text-slate-400">+{b.categories.length - 2}</span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-slate-300 italic">General Catalog</span>
-                        )}
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-3 px-4">
-                        <StatusBadge status={b.isActive ? 'active' : 'inactive'} />
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3 px-6 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => openEditModal(b)}
-                            className="p-1.5 text-slate-400 hover:text-[#0284c7] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
-                            title="Edit Brand"
-                          >
-                            <EditOutlined className="text-xs" />
-                          </button>
-                          <Popconfirm
-                            title="Remove this brand?"
-                            description="Are you sure you want to remove this brand entry?"
-                            onConfirm={() => handleDeleteBrand(b.name)}
-                            okText="Yes"
-                            cancelText="No"
-                          >
-                            <button
-                              type="button"
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                              title="Delete Brand"
-                            >
-                              <DeleteOutlined className="text-xs" />
-                            </button>
-                          </Popconfirm>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </AppTable>
-          </div>
-        )}
       </div>
 
       {/* Add / Edit Brand Modal */}
