@@ -395,24 +395,24 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
       {/* Top Bar: Breadcrumb */}
       <div className="shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Admin
                 </Link>
               ),
             },
             {
               title: (
-                <Link to="/admin/products" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin/products" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Products
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Brands</span>,
+              title: <span className="text-slate-800 font-bold">Brands</span>,
             },
           ]}
         />
@@ -623,7 +623,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         )}
 
         {/* Table Footer: Total Count on Left, Pagination Controls on Right */}
-        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none mt-auto">
+        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-none flex items-center justify-between text-[11px] shadow-inner select-none mt-auto">
           {/* Left Side: Brand Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Brands:</span>
