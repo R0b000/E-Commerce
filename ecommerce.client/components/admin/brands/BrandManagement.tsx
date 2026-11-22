@@ -865,16 +865,17 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             />
           </div>
 
-          {/* Row 3: Picsart-style Smart Image Upload */}
+          {/* Row 3: Image Upload (Choose a file or drag & drop here) */}
           <AppImageUpload
             label="Image"
-            title="Upload Brand Logo"
+            title="Choose a file or drag & drop here."
+            subtitle="JPEG, PNG, up to 10 MB."
+            buttonText="Browse File"
             value={formData.logo}
             onChange={(url) => setFormData((prev) => ({ ...prev, logo: url }))}
             onUpload={handleImageUpload}
             loading={uploadingImage}
             fallbackInitial={formData.name ? formData.name.charAt(0) : undefined}
-            placeholder="Paste image URL (https://...)"
           />
 
           {/* Row 4: Status */}
