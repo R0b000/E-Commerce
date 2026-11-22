@@ -881,7 +881,7 @@ export const AuthorizedLayout: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleItemClick}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer text-left ${
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer text-left group ${
                         isOpen
                           ? 'bg-white text-slate-800 border-amber-400 shadow-xs ring-1 ring-amber-400/20'
                           : active
@@ -904,18 +904,22 @@ export const AuthorizedLayout: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Small orange chevron down/up matching Image 4 */}
-                      <span
-                        className={`text-[10px] font-bold transition-transform duration-200 shrink-0 ml-1.5 ${
+                      {/* Modern Chevron down/up indicator */}
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ml-1.5 ${
                           isOpen
-                            ? 'text-amber-500 rotate-180'
+                            ? 'text-[#0284c7] rotate-180'
                             : active
                             ? 'text-white'
-                            : 'text-amber-500'
+                            : 'text-slate-400 group-hover:text-slate-600'
                         }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.2}
+                        stroke="currentColor"
                       >
-                        ▼
-                      </span>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                      </svg>
                     </button>
                   ) : (
                     <Link
