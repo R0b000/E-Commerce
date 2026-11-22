@@ -351,7 +351,7 @@ export const ProductManagement: React.FC = () => {
   const paginatedProducts = products.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] p-1 sm:p-2 space-y-2.5">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
       {/* Top Bar: Breadcrumb */}
       <div className="shrink-0">
         <Breadcrumb
@@ -376,7 +376,7 @@ export const ProductManagement: React.FC = () => {
         {/* Left Column: Products Directory Table */}
         <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
           {/* Header Toolbar: Title + Search + Filters */}
-          <div className="px-5 py-3.5 flex items-center justify-between gap-3 bg-white shrink-0">
+          <div className="px-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
             <div className="shrink-0">
               <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
                 {isSeller ? 'My Products & Inventory' : 'Products & Inventory'}
@@ -471,7 +471,7 @@ export const ProductManagement: React.FC = () => {
               <table className="kiran-role-table app-table w-full border-collapse">
                 <thead className="sticky top-0 z-20 shadow-xs">
                   <tr className="bg-[#0096C7]">
-                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-6 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
                       Product & SKU
                     </th>
                     <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
@@ -486,7 +486,7 @@ export const ProductManagement: React.FC = () => {
                     <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
                       Status
                     </th>
-                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-6 font-semibold text-[12px] text-right whitespace-nowrap shadow-xs">
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] text-right whitespace-nowrap shadow-xs">
                       Actions
                     </th>
                   </tr>
@@ -501,7 +501,7 @@ export const ProductManagement: React.FC = () => {
                     return (
                       <tr key={pId} className="hover:bg-sky-50/40 transition-colors group cursor-default">
                         {/* Product & SKU */}
-                        <td className="py-3 px-6 whitespace-nowrap">
+                        <td className="py-3 px-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <img
                               src={p.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}
@@ -601,7 +601,7 @@ export const ProductManagement: React.FC = () => {
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3 px-6 text-right whitespace-nowrap">
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-2">
                             {canEdit && (
                               <AppButton

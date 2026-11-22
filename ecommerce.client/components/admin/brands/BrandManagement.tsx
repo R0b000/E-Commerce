@@ -428,7 +428,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] p-1 sm:p-2 space-y-2.5">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
       {/* Top Bar: Breadcrumb */}
       <div className="shrink-0">
         <Breadcrumb
@@ -460,7 +460,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         {/* Left Column: Brand & Tag Directory Table */}
         <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
           {/* Header Toolbar: Title + Search + Status Filter */}
-          <div className="px-5 py-3.5 flex items-center justify-between gap-3 bg-white shrink-0">
+          <div className="px-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
             <div className="shrink-0">
               <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
                 Brands
@@ -518,7 +518,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
               <table className="kiran-role-table app-table w-full border-collapse">
                 <thead className="sticky top-0 z-20 shadow-xs">
                   <tr className="bg-[#0096C7]">
-                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-6 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
                       Brand & Logo
                     </th>
                     <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
@@ -533,7 +533,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                     <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
                       Status
                     </th>
-                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-6 font-semibold text-[12px] text-right whitespace-nowrap shadow-xs">
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] text-right whitespace-nowrap shadow-xs">
                       Actions
                     </th>
                   </tr>
@@ -546,7 +546,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                   const logoUrl = b.logo && b.logo.trim() ? b.logo.trim() : initialSvg;
                   return (
                     <tr key={b.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3 px-6">
+                      <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
                           <img
                             src={logoUrl}
@@ -621,7 +621,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
                         </span>
                       </td>
 
-                      <td className="py-3 px-6 text-right">
+                      <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
@@ -657,7 +657,7 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
         )}
 
         {/* Table Footer: Total Count on Left, Pagination Controls on Right */}
-        <div className="px-6 h-[32px] min-h-[32px] max-h-[32px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none mt-auto overflow-hidden">
+        <div className="px-4 h-[32px] min-h-[32px] max-h-[32px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none mt-auto overflow-hidden">
           {/* Left Side: Brand Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Brands:</span>
