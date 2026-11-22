@@ -243,9 +243,6 @@ export const DiscountManagement: React.FC = () => {
                 Active Campaigns
               </Tag>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Manage promotional codes, percentage markdowns, fixed discounts, and coupon redemption thresholds.
-            </p>
           </div>
 
           {/* Action Toolbar on Right */}

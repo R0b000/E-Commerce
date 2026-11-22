@@ -207,9 +207,6 @@ export const CustomerManagement: React.FC = () => {
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Accounts & Directory
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Comprehensive directory of registered accounts, customer buyers, authorized sellers/vendors, and staff.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">

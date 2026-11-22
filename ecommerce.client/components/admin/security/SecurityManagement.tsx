@@ -427,9 +427,6 @@ export default function SecurityManagement() {
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Security & Device Management
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Configure biometric passkeys, two-factor authentication, active sessions, and account credentials.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

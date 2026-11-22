@@ -377,9 +377,6 @@ export const BillingManagement: React.FC = () => {
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Commercial Invoices & Billing
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Track customer invoicing, automated VAT calculations, payment receipts, and settlement logs.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
