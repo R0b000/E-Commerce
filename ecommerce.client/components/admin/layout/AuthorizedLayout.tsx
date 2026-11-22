@@ -911,7 +911,7 @@ export const AuthorizedLayout: React.FC = () => {
                             ? 'text-[#0284c7] rotate-180'
                             : active
                             ? 'text-white'
-                            : 'text-slate-400 group-hover:text-slate-600'
+                            : 'text-[#ea580c] group-hover:text-[#0284c7]'
                         }`}
                         fill="none"
                         viewBox="0 0 24 24"
@@ -936,7 +936,7 @@ export const AuthorizedLayout: React.FC = () => {
                           className={`text-base shrink-0 ${
                             active
                               ? 'text-white'
-                              : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
+                              : 'text-[#0284c7] group-hover/menuitem:text-[#ea580c]'
                           }`}
                         >
                           {renderMenuIcon(item.icon)}
