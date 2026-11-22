@@ -899,25 +899,9 @@ export const AuthorizedLayout: React.FC = () => {
                         >
                           {renderMenuIcon(item.icon)}
                         </span>
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className={`truncate ${active && !isOpen ? 'text-white' : 'text-slate-800'}`}>
-                            {item.name}
-                          </span>
-                          {item.menuNameNepali && (
-                            <span
-                              className={`text-[10px] font-normal truncate ${
-                                active && !isOpen ? 'text-white/80' : 'text-slate-400'
-                              }`}
-                            >
-                              ({item.menuNameNepali})
-                            </span>
-                          )}
-                          {item.isPrimary && (
-                            <span className="px-1 py-0.2 rounded text-[8px] font-bold uppercase bg-amber-400 text-slate-900 ml-0.5">
-                              Primary
-                            </span>
-                          )}
-                        </div>
+                        <span className={`truncate ${active && !isOpen ? 'text-white' : 'text-slate-800'}`}>
+                          {item.name}
+                        </span>
                       </div>
 
                       {/* Small orange chevron down/up matching Image 4 */}
@@ -953,25 +937,9 @@ export const AuthorizedLayout: React.FC = () => {
                         >
                           {renderMenuIcon(item.icon)}
                         </span>
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
-                            {item.name}
-                          </span>
-                          {item.menuNameNepali && (
-                            <span
-                              className={`text-[10px] font-normal truncate ${
-                                active ? 'text-white/80' : 'text-slate-400'
-                              }`}
-                            >
-                              ({item.menuNameNepali})
-                            </span>
-                          )}
-                          {item.isPrimary && (
-                            <span className="px-1 py-0.2 rounded text-[8px] font-bold uppercase bg-amber-400 text-slate-900 ml-0.5">
-                              Primary
-                            </span>
-                          )}
-                        </div>
+                        <span className={`truncate ${active ? 'text-white' : 'text-slate-800'}`}>
+                          {item.name}
+                        </span>
                       </div>
                     </Link>
                   )}
@@ -1027,11 +995,6 @@ export const AuthorizedLayout: React.FC = () => {
                                   {renderMenuIcon(sub.icon || 'FileTextOutlined')}
                                 </span>
                                 <span className="truncate">{sub.label}</span>
-                                {sub.nameNepali && (
-                                  <span className="text-[10px] text-slate-400 font-normal truncate">
-                                    ({sub.nameNepali})
-                                  </span>
-                                )}
                               </div>
                             </Link>
                           );
