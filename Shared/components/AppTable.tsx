@@ -93,7 +93,7 @@ export function AppTable<T extends object = any>({
   };
 
   return (
-    <div className={`app-table-container w-full font-['Nunito_Sans','Poppins',sans-serif] ${wrapperClassName}`}>
+    <div className={`app-table-container w-full font-['Poppins','Inter',sans-serif] ${wrapperClassName}`}>
       {/* Scrollable Table View matching /admin/permissions layout */}
       <div
         className="kiran-role-table-scroll app-table-scroll"

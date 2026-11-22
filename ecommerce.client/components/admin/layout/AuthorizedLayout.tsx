@@ -381,7 +381,7 @@ export const AuthorizedLayout: React.FC = () => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const accountMenuContent = (
-    <div className="w-[260px] p-2 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="w-[260px] p-2 font-['Poppins','Inter',sans-serif]">
       {/* Account Profile Summary */}
       <div className="p-2 border-b border-slate-100 flex items-center gap-2.5">
         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0284c7] to-[#f97316] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
@@ -512,7 +512,7 @@ export const AuthorizedLayout: React.FC = () => {
   };
 
   const roleSwitcherPopoverContent = (
-    <div className="w-[300px] p-1 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="w-[300px] p-1 font-['Poppins','Inter',sans-serif]">
       <div className="pb-2.5 mb-2 border-b border-slate-100 flex items-center justify-between">
         <div>
           <h4 className="text-xs font-bold text-slate-900">Switch Role Perspective</h4>
@@ -584,7 +584,7 @@ export const AuthorizedLayout: React.FC = () => {
   // Auth Middleware check: if not logged in, block rendering and show verification skeleton
   if (!token) {
     return (
-      <div className="min-h-screen bg-white flex flex-col font-['Nunito_Sans','Poppins',sans-serif]">
+      <div className="min-h-screen bg-white flex flex-col font-['Poppins','Inter',sans-serif]">
         <div className="h-14 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between">
           <div className="w-32 h-6 bg-slate-200 animate-pulse rounded-lg" />
           <div className="w-48 h-8 bg-slate-200 animate-pulse rounded-full" />
@@ -648,7 +648,7 @@ export const AuthorizedLayout: React.FC = () => {
 
   // Notification Popover Content (Live Socket Stream)
   const notificationContent = (
-    <div className="w-[85vw] sm:w-[360px] p-1 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="w-[85vw] sm:w-[360px] p-1 font-['Poppins','Inter',sans-serif]">
       <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <span className="font-bold text-slate-900 text-sm">Notifications</span>
@@ -708,7 +708,7 @@ export const AuthorizedLayout: React.FC = () => {
   );
 
   return (
-    <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Nunito_Sans','Poppins',sans-serif] antialiased overflow-hidden">
+    <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Poppins','Inter',sans-serif] antialiased overflow-hidden">
       {/* =========================================================================
           Top Reference Header Bar
           - REMOVED Horizontal nav tabs

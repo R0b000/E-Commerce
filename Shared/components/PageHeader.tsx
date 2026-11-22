@@ -20,7 +20,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 mb-4 font-['Nunito_Sans','Poppins',sans-serif] ${className}`}>
+    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 mb-4 font-['Poppins','Inter',sans-serif] ${className}`}>
       <div className="space-y-0.5">
         {breadcrumbs && (
           <Breadcrumb
