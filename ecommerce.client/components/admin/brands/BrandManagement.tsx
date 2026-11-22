@@ -141,9 +141,6 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Collapsible Catalog Summary State
-  const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(false);
-
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<BrandItem | null>(null);
@@ -748,105 +745,71 @@ export const BrandManagement: React.FC<BrandManagementProps> = () => {
             </button>
           </div>
 
-          {/* Card 2: Catalog Summary (Collapsible) */}
-          {isSummaryCollapsed ? (
-            /* Collapsed View (Clean White Card - Borderless) */
-            <div
-              onClick={() => setIsSummaryCollapsed(false)}
-              className="bg-white rounded-2xl shadow-xs p-4 cursor-pointer transition-all space-y-2 select-none group"
-              title="Click to expand Catalog Summary"
-            >
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 text-slate-900 group-hover:text-[#0096C7] transition-colors">
-                  <span className="font-bold text-xs">Catalog Summary</span>
-                  <DownOutlined className="text-[9px] text-slate-400 group-hover:text-[#0096C7] -rotate-90 transition-transform" />
-                </div>
-                <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
-                  {allBrands.length} Brands
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-900 font-bold pt-1.5">
-                <ShopOutlined className="text-[#0096C7] text-sm shrink-0" />
-                <span className="truncate tracking-tight text-[11px] text-slate-900 font-bold">
-                  {allBrands.length} Brands · {allBrands.reduce((acc, b) => acc + b.productCount, 0)} Items · {allBrands.filter((b) => b.isActive).length} Active
-                </span>
-              </div>
+          {/* Card 2: Catalog Summary (Static Clean View) */}
+          <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+            <div className="flex items-center justify-between pb-1">
+              <h4 className="text-xs font-bold text-slate-900">Catalog Summary</h4>
+              <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
+                Live Metrics
+              </span>
             </div>
-          ) : (
-            /* Expanded View: Clean borderless cards and vibrant metrics */
-            <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
-              <div className="flex items-center justify-between pb-1">
-                <button
-                  type="button"
-                  onClick={() => setIsSummaryCollapsed(true)}
-                  className="flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-[#0096C7] transition-colors cursor-pointer group"
-                  title="Click to collapse Catalog Summary"
-                >
-                  <span>Catalog Summary</span>
-                  <DownOutlined className="text-[9px] text-slate-400 group-hover:text-[#0096C7] transition-transform" />
-                </button>
-                <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
-                  Live Metrics
-                </span>
+
+            <div className="space-y-1">
+              {/* Metric 1: Total Brands */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Total Brands
+                  </span>
+                  <span className="text-2xl font-black text-slate-900 leading-tight block">
+                    {allBrands.length}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Available for catalog
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0">
+                  <ShopOutlined />
+                </div>
               </div>
 
-              <div className="space-y-1">
-                {/* Metric 1: Total Brands */}
-                <div className="py-2.5 flex items-center justify-between">
-                  <div>
-                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
-                      Total Brands
-                    </span>
-                    <span className="text-2xl font-black text-slate-900 leading-tight block">
-                      {allBrands.length}
-                    </span>
-                    <span className="text-xs text-slate-500 font-medium">
-                      Available for catalog
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0">
-                    <ShopOutlined />
-                  </div>
+              {/* Metric 2: Products Tagged */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Products Tagged
+                  </span>
+                  <span className="text-2xl font-black text-amber-600 leading-tight block">
+                    {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Active in store
+                  </span>
                 </div>
-
-                {/* Metric 2: Products Tagged */}
-                <div className="py-2.5 flex items-center justify-between">
-                  <div>
-                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
-                      Products Tagged
-                    </span>
-                    <span className="text-2xl font-black text-amber-600 leading-tight block">
-                      {allBrands.reduce((acc, b) => acc + b.productCount, 0)}
-                    </span>
-                    <span className="text-xs text-slate-500 font-medium">
-                      Active in store
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
-                    <TagOutlined />
-                  </div>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                  <TagOutlined />
                 </div>
+              </div>
 
-                {/* Metric 3: Active Tags */}
-                <div className="py-2.5 flex items-center justify-between">
-                  <div>
-                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
-                      Active Tags
-                    </span>
-                    <span className="text-2xl font-black text-emerald-600 leading-tight block">
-                      {allBrands.filter((b) => b.isActive).length}
-                    </span>
-                    <span className="text-xs text-slate-500 font-medium">
-                      Ready for product tagging
-                    </span>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
-                    <CheckCircleOutlined />
-                  </div>
+              {/* Metric 3: Active Tags */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Active Tags
+                  </span>
+                  <span className="text-2xl font-black text-emerald-600 leading-tight block">
+                    {allBrands.filter((b) => b.isActive).length}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Ready for product tagging
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                  <CheckCircleOutlined />
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
