@@ -19,6 +19,9 @@ export type { AppInputProps } from './AppInput';
 export { AppSelect } from './AppSelect';
 export type { AppSelectProps } from './AppSelect';
 
+export { AppImageUpload } from './AppImageUpload';
+export type { AppImageUploadProps } from './AppImageUpload';
+
 export { AutoCompleteSelect } from '../UI/components/AutoCompleteSelect/AutoCompleteSelect';
 export type { AutoCompleteSelectProps, AutoCompleteSelectOption } from '../UI/components/AutoCompleteSelect/AutoCompleteSelect.types';
 
