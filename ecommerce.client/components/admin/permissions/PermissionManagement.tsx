@@ -726,11 +726,6 @@ export const PermissionManagement: React.FC = () => {
                           <span className="font-semibold text-slate-900 text-xs truncate">
                             {menu.name}
                           </span>
-                          {!menu.isChild && (
-                            <span className="ml-1 text-[9px] uppercase px-1.5 py-0.2 rounded bg-slate-200/80 text-slate-600 font-bold">
-                              Section
-                            </span>
-                          )}
                         </div>
                       </td>
 
