@@ -46,6 +46,7 @@ import {
   AppButton,
   AppInput,
   AppSelect,
+  AppModal,
   TableSkeleton,
 } from 'shared-components';
 
@@ -385,8 +386,8 @@ export const MenuManagement: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleSaveMenu = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveMenu = async (e?: React.FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!formName.trim() || !formPath.trim()) {
       showToast('Menu name and Path are required', 'error');
       return;
@@ -674,30 +675,15 @@ export const MenuManagement: React.FC = () => {
 
                       {/* Actions */}
                       <td className="py-3 px-6 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {!isSubmenu && (
-                            <Tooltip title={`Add Submenu under "${m.name}"`}>
-                              <AppButton
-                                size="small"
-                                icon={<PlusOutlined />}
-                                onClick={() => {
-                                  const parentVal =
-                                    m.menuId !== null && m.menuId !== undefined
-                                      ? String(m.menuId)
-                                      : (m._id || m.id || '').toString();
-                                  openAddModal(parentVal);
-                                }}
-                              />
-                            </Tooltip>
-                          )}
-
-                          <Tooltip title="Edit Menu">
-                            <AppButton
-                              size="small"
-                              icon={<EditOutlined />}
-                              onClick={() => openEditModal(m)}
-                            />
-                          </Tooltip>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(m)}
+                            className="p-1.5 text-slate-600 hover:text-[#0096C7] hover:bg-sky-50 rounded-lg transition-colors cursor-pointer"
+                            title="Edit Menu"
+                          >
+                            <EditOutlined className="text-sm" />
+                          </button>
 
                           {!m.isSystem && (
                             <Popconfirm
@@ -708,9 +694,13 @@ export const MenuManagement: React.FC = () => {
                               cancelText="Cancel"
                               okButtonProps={{ danger: true }}
                             >
-                              <Tooltip title="Delete Menu">
-                                <AppButton size="small" danger icon={<DeleteOutlined />} />
-                              </Tooltip>
+                              <button
+                                type="button"
+                                className="p-1.5 text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                                title="Delete Menu"
+                              >
+                                <DeleteOutlined className="text-sm" />
+                              </button>
                             </Popconfirm>
                           )}
                         </div>
@@ -784,240 +774,210 @@ export const MenuManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add / Edit Menu Modal matching User's Exact Design */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden border border-slate-200">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-2xl font-bold text-[#0096C7] tracking-tight">Menu</h2>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-lg bg-[#E63946] hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer shadow-sm"
-              >
-                <CloseOutlined className="text-sm stroke-2" />
-              </button>
+      {/* Add / Edit Menu Modal */}
+      <AppModal
+        open={isModalOpen}
+        title={editingMenu ? `Edit Menu: ${editingMenu.name}` : 'Add Menu'}
+        onCancel={() => setIsModalOpen(false)}
+        onOk={handleSaveMenu}
+        confirmLoading={submitting}
+        okText={editingMenu ? 'Save Changes' : 'Create Menu'}
+        width={720}
+      >
+        <form onSubmit={handleSaveMenu} className="space-y-4 pt-1">
+          {/* Row 1: Menu name | Path */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Menu name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Enter menu name"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                required
+                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
+              />
             </div>
 
-            {/* Modal Form Body */}
-            <form onSubmit={handleSaveMenu} className="p-6 space-y-6">
-              {/* Row 1: Menu name | Path */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    Menu name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter menu name"
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    required
-                    className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 focus:border-[#0096C7] focus:ring-1 focus:ring-[#0096C7] outline-none transition-all placeholder:text-slate-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    Path
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="/admin/example"
-                    value={formPath}
-                    onChange={(e) => setFormPath(e.target.value)}
-                    required
-                    className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 focus:border-[#0096C7] focus:ring-1 focus:ring-[#0096C7] outline-none transition-all placeholder:text-slate-400"
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Menu order | Menu icon | Primary menu */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    Menu order
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 68"
-                    value={formOrder}
-                    onChange={(e) => setFormOrder(Number(e.target.value))}
-                    className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 focus:border-[#0096C7] focus:ring-1 focus:ring-[#0096C7] outline-none transition-all placeholder:text-slate-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    Menu icon
-                  </label>
-                  <Select
-                    value={formIcon || undefined}
-                    onChange={(val) => setFormIcon(val)}
-                    placeholder="Select an icon"
-                    className="w-full h-[38px] [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-300"
-                    showSearch
-                    optionFilterProp="filterValue"
-                    options={AVAILABLE_ICONS.map((i) => ({
-                      filterValue: `${i.label} ${i.value}`,
-                      label: (
-                        <span className="flex items-center gap-2">
-                          <span className="text-[#0096C7]">{i.icon}</span>
-                          <span className="font-mono text-xs">{i.label}</span>
-                        </span>
-                      ),
-                      value: i.value,
-                    }))}
-                  />
-                </div>
-
-                <div className="pb-2">
-                  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={formPrimary}
-                      onChange={(e) => setFormPrimary(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-slate-800">Primary menu</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Row 3: Single page | Is Not Parent? & Parent menu | Is Not Child? & Child menu */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                {/* Single page */}
-                <div className="pt-2">
-                  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={formSinglePage}
-                      onChange={(e) => setFormSinglePage(e.target.checked)}
-                      className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-slate-800">Single page</span>
-                  </label>
-                </div>
-
-                {/* Is Not Parent? and Parent menu */}
-                <div className="space-y-2">
-                  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={formIsNotParent}
-                      onChange={(e) => {
-                        setFormIsNotParent(e.target.checked);
-                        if (!e.target.checked) setFormParentId('');
-                      }}
-                      className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-slate-800">Is Not Parent?</span>
-                  </label>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Parent menu
-                    </label>
-                    <Select
-                      disabled={!formIsNotParent}
-                      value={formParentId || undefined}
-                      onChange={(val) => setFormParentId(val || '')}
-                      placeholder="Select parent"
-                      allowClear
-                      className="w-full h-[38px] [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-300"
-                      showSearch
-                      optionFilterProp="filterValue"
-                      options={[
-                        { filterValue: 'none root', label: 'None (Root Menu)', value: '' },
-                        ...rootMenusList
-                          .filter(
-                            (r) =>
-                              (r._id || r.id) !== (editingMenu?._id || editingMenu?.id)
-                          )
-                          .map((r) => {
-                            const valStr = (r.menuId !== null && r.menuId !== undefined
-                              ? r.menuId
-                              : r._id || r.id || ''
-                            ).toString();
-                            return {
-                              filterValue: `${r.name} ${r.path} ${valStr}`,
-                              label: r.name,
-                              value: valStr,
-                            };
-                          }),
-                      ]}
-                    />
-                  </div>
-                </div>
-
-                {/* Is Not Child? and Child menu */}
-                <div className="space-y-2">
-                  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={formIsNotChild}
-                      onChange={(e) => {
-                        setFormIsNotChild(e.target.checked);
-                        if (!e.target.checked) setFormChildId('');
-                      }}
-                      className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
-                    />
-                    <span className="text-sm font-medium text-slate-800">Is Not Child?</span>
-                  </label>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Child menu
-                    </label>
-                    <Select
-                      disabled={!formIsNotChild}
-                      value={formChildId || undefined}
-                      onChange={(val) => setFormChildId(val || '')}
-                      placeholder="Select child"
-                      allowClear
-                      className="w-full h-[38px] [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-300"
-                      showSearch
-                      optionFilterProp="filterValue"
-                      options={[
-                        { filterValue: 'none', label: 'None', value: '' },
-                        ...menus
-                          .filter(
-                            (m) =>
-                              (m._id || m.id) !== (editingMenu?._id || editingMenu?.id)
-                          )
-                          .map((m) => {
-                            const valStr = (m.menuId !== null && m.menuId !== undefined
-                              ? m.menuId
-                              : m._id || m.id || ''
-                            ).toString();
-                            return {
-                              filterValue: `${m.name} ${m.path} ${valStr}`,
-                              label: m.name,
-                              value: valStr,
-                            };
-                          }),
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="bg-[#0096C7] hover:bg-[#0077B6] text-white px-6 py-2 rounded-lg font-medium text-sm flex items-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50"
-                >
-                  <SaveOutlined className="text-base" />
-                  <span>{submitting ? 'Saving...' : 'Save'}</span>
-                </button>
-              </div>
-            </form>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Path <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="/admin/example"
+                value={formPath}
+                onChange={(e) => setFormPath(e.target.value)}
+                required
+                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          {/* Row 2: Menu order | Menu icon */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Menu order
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 1"
+                value={formOrder}
+                onChange={(e) => setFormOrder(Number(e.target.value))}
+                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:ring-1 focus:ring-[#0096C7] focus:border-[#0096C7] outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Menu icon
+              </label>
+              <Select
+                value={formIcon || undefined}
+                onChange={(val) => setFormIcon(val)}
+                placeholder="Select an icon"
+                className="w-full h-[32px] text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
+                showSearch
+                optionFilterProp="filterValue"
+                options={AVAILABLE_ICONS.map((i) => ({
+                  filterValue: `${i.label} ${i.value}`,
+                  label: (
+                    <span className="flex items-center gap-2">
+                      <span className="text-[#0096C7]">{i.icon}</span>
+                      <span className="font-mono text-xs">{i.label}</span>
+                    </span>
+                  ),
+                  value: i.value,
+                }))}
+              />
+            </div>
+          </div>
+
+          {/* Row 3: Flags: Single page & Status */}
+          <div className="flex flex-wrap items-center gap-6 py-1">
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={formSinglePage}
+                onChange={(e) => setFormSinglePage(e.target.checked)}
+                className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
+              />
+              <span className="text-xs font-medium text-slate-800">Single page</span>
+            </label>
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={formActive}
+                onChange={(e) => setFormActive(e.target.checked)}
+                className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
+              />
+              <span className="text-xs font-medium text-slate-800">Active</span>
+            </label>
+          </div>
+
+          {/* Row 4: Parent & Child Menus */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 border-t border-slate-100">
+            {/* Is Not Parent? and Parent menu */}
+            <div className="space-y-1.5">
+              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={formIsNotParent}
+                  onChange={(e) => {
+                    setFormIsNotParent(e.target.checked);
+                    if (!e.target.checked) setFormParentId('');
+                  }}
+                  className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
+                />
+                <span className="text-xs font-bold text-slate-700">Assign Parent Menu</span>
+              </label>
+
+              <div>
+                <Select
+                  disabled={!formIsNotParent}
+                  value={formParentId || undefined}
+                  onChange={(val) => setFormParentId(val || '')}
+                  placeholder="Select parent"
+                  allowClear
+                  className="w-full h-[32px] text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
+                  showSearch
+                  optionFilterProp="filterValue"
+                  options={[
+                    { filterValue: 'none root', label: 'None (Root Menu)', value: '' },
+                    ...rootMenusList
+                      .filter(
+                        (r) =>
+                          (r._id || r.id) !== (editingMenu?._id || editingMenu?.id)
+                      )
+                      .map((r) => {
+                        const valStr = (r.menuId !== null && r.menuId !== undefined
+                          ? r.menuId
+                          : r._id || r.id || ''
+                        ).toString();
+                        return {
+                          filterValue: `${r.name} ${r.path} ${valStr}`,
+                          label: r.name,
+                          value: valStr,
+                        };
+                      }),
+                  ]}
+                />
+              </div>
+            </div>
+
+            {/* Is Not Child? and Child menu */}
+            <div className="space-y-1.5">
+              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={formIsNotChild}
+                  onChange={(e) => {
+                    setFormIsNotChild(e.target.checked);
+                    if (!e.target.checked) setFormChildId('');
+                  }}
+                  className="w-4 h-4 rounded text-[#0096C7] border-slate-300 focus:ring-[#0096C7] cursor-pointer"
+                />
+                <span className="text-xs font-bold text-slate-700">Assign Child Menu</span>
+              </label>
+
+              <div>
+                <Select
+                  disabled={!formIsNotChild}
+                  value={formChildId || undefined}
+                  onChange={(val) => setFormChildId(val || '')}
+                  placeholder="Select child"
+                  allowClear
+                  className="w-full h-[32px] text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
+                  showSearch
+                  optionFilterProp="filterValue"
+                  options={[
+                    { filterValue: 'none', label: 'None', value: '' },
+                    ...menus
+                      .filter(
+                        (m) =>
+                          (m._id || m.id) !== (editingMenu?._id || editingMenu?.id)
+                      )
+                      .map((m) => {
+                        const valStr = (m.menuId !== null && m.menuId !== undefined
+                          ? m.menuId
+                          : m._id || m.id || ''
+                        ).toString();
+                        return {
+                          filterValue: `${m.name} ${m.path} ${valStr}`,
+                          label: m.name,
+                          value: valStr,
+                        };
+                      }),
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+      </AppModal>
     </div>
   );
 };
