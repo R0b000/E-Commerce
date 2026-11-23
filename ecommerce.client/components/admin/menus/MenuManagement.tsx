@@ -489,7 +489,7 @@ export const MenuManagement: React.FC = () => {
       {/* Main Menu Directory Card */}
       <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs border border-slate-200/80">
         {/* Table Top Controls */}
-        <div className="px-4 py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+        <div className="pl-0 pr-4 py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
@@ -499,9 +499,6 @@ export const MenuManagement: React.FC = () => {
                 Menu Management
               </Tag>
             </div>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Configure parent menus, submenus, paths, icons, order, and single page settings.
-            </p>
           </div>
 
           {/* Action Toolbar on Right */}

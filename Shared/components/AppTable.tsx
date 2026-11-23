@@ -1,5 +1,6 @@
 import React from 'react';
 import { LeftOutlined, RightOutlined, DownOutlined } from '@ant-design/icons';
+import { Dropdown } from 'antd';
 import { TableSkeleton } from './AppSkeleton';
 
 export interface AppTableColumn<T = any> {
@@ -92,7 +93,7 @@ export function AppTable<T extends object = any>({
   };
 
   return (
-    <div className={`app-table-container w-full font-['Nunito_Sans','Poppins',sans-serif] ${wrapperClassName}`}>
+    <div className={`app-table-container w-full font-['Poppins','Inter',sans-serif] ${wrapperClassName}`}>
       {/* Scrollable Table View matching /admin/permissions layout */}
       <div
         className="kiran-role-table-scroll app-table-scroll"
@@ -185,26 +186,36 @@ export function AppTable<T extends object = any>({
           {/* Right Side: Pagination Controls (Rendered ONLY if totalItems > 10 and isPaginationEnabled) */}
           {isPaginationEnabled && totalItems > 10 && (
             <div className="flex items-center gap-2.5 leading-none">
-              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
+              <div className="flex items-center gap-1.5 text-[10px] text-white/95 font-medium leading-none">
                 <span>Rows:</span>
-                <div className="relative">
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      const newSize = Number(e.target.value);
+                <Dropdown
+                  menu={{
+                    items: [
+                      { key: '10', label: <span className="font-semibold text-xs text-slate-800">10 / page</span> },
+                      { key: '20', label: <span className="font-semibold text-xs text-slate-800">20 / page</span> },
+                      { key: '50', label: <span className="font-semibold text-xs text-slate-800">50 / page</span> },
+                      { key: '100', label: <span className="font-semibold text-xs text-slate-800">100 / page</span> },
+                    ],
+                    selectedKeys: [String(pageSize)],
+                    onClick: ({ key }) => {
+                      const newSize = Number(key);
                       if (pagination && pagination.onChange) {
                         pagination.onChange(1, newSize);
                       }
-                    }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                    },
+                  }}
+                  trigger={['click']}
+                  placement="topRight"
+                >
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 active:bg-white/40 border border-white/35 text-white font-bold text-[10px] rounded px-1.5 h-[20px] outline-none cursor-pointer transition-all leading-none"
+                    title="Change page size"
                   >
-                    <option value={10} className="bg-slate-800 text-white">10</option>
-                    <option value={20} className="bg-slate-800 text-white">20</option>
-                    <option value={50} className="bg-slate-800 text-white">50</option>
-                    <option value={100} className="bg-slate-800 text-white">100</option>
-                  </select>
-                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
-                </div>
+                    <span>{pageSize}</span>
+                    <DownOutlined className="text-[7px] text-white/85" />
+                  </button>
+                </Dropdown>
               </div>
 
               <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">

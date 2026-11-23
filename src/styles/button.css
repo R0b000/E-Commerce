@@ -221,6 +221,14 @@ select:not(.select-sm):not(.select-lg) {
   box-sizing: border-box;
 }
 
+select.select-sm,
+.select-sm {
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  box-sizing: border-box;
+}
+
 /* Ant Design Affix Wrapper (Search and prefixed/suffixed inputs) */
 .ant-input-affix-wrapper {
   display: inline-flex !important;

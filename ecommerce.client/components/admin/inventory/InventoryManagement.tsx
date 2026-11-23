@@ -15,8 +15,9 @@ import {
   LeftOutlined,
   RightOutlined,
   DownOutlined,
+  InboxOutlined,
 } from '@ant-design/icons';
-import { Tag, Spin, Tooltip, Progress, Breadcrumb } from 'antd';
+import { Tag, Spin, Tooltip, Progress, Breadcrumb, Dropdown } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -156,347 +157,414 @@ export const InventoryManagement: React.FC = () => {
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif]">
-      {/* Breadcrumb Navigation */}
-      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
+      {/* Top Bar: Breadcrumb */}
+      <div className="shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Admin
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Inventory</span>,
+              title: <span className="text-slate-800 font-bold">Inventory</span>,
             },
           ]}
         />
       </div>
 
-      {/* Main Inventory Directory Card with Integrated Header */}
-      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
-        {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
-        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
-          <div className="flex flex-col min-w-0">
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Warehouse Stock Ledger
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Monitor real-time warehouse inventory, stock thresholds, low-stock alerts, and batch adjustments.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Health Filter */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-              <button
-                onClick={() => {
-                  setHealthFilter('all');
-                  setCurrentPage(1);
-                }}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  healthFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => {
-                  setHealthFilter('healthy');
-                  setCurrentPage(1);
-                }}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  healthFilter === 'healthy' ? 'bg-white text-emerald-700 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                In Stock (&gt;10)
-              </button>
-              <button
-                onClick={() => {
-                  setHealthFilter('low');
-                  setCurrentPage(1);
-                }}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  healthFilter === 'low' ? 'bg-white text-[#f97316] shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                Low (1-10)
-              </button>
-              <button
-                onClick={() => {
-                  setHealthFilter('out');
-                  setCurrentPage(1);
-                }}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  healthFilter === 'out' ? 'bg-white text-rose-600 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                Out of Stock
-              </button>
+      {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions (Independent Scroll) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
+        {/* Left Column: Warehouse Stock Ledger Table */}
+        <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
+          {/* Header Toolbar: Title + Health Filter + Category + Search (Single-line Compact) */}
+          <div className="pl-0 pr-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
+            <div className="shrink-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
+                Warehouse Stock Ledger
+              </h3>
             </div>
 
-            {/* Category Dropdown */}
-            <div className="w-full sm:w-[170px] shrink-0">
-              <AppSelect
-                value={categoryFilter}
-                onChange={(val) => {
-                  setCategoryFilter(val as string);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { label: 'All Categories', value: 'all' },
-                  ...categories.map((c) => {
-                    const cId = (c._id || c.id) as string;
-                    return {
-                      label: c.name,
-                      value: cId,
-                    };
-                  }),
-                ]}
-              />
-            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Search Input */}
+              <div className="w-[180px] sm:w-[200px]">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  placeholder="Search inventory..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  allowClear
+                />
+              </div>
 
-            {/* Search Input */}
-            <div className="w-full sm:w-[260px] shrink-0">
-              <AppInput
-                prefix={<SearchOutlined className="text-slate-400" />}
-                placeholder="Search inventory..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                allowClear
-              />
+              {/* Category Dropdown */}
+              <div className="w-[130px] sm:w-[140px] shrink-0">
+                <AppSelect
+                  value={categoryFilter}
+                  onChange={(val) => {
+                    setCategoryFilter(val as string);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { label: 'All Categories', value: 'all' },
+                    ...categories.map((c) => {
+                      const cId = (c._id || c.id) as string;
+                      return {
+                        label: c.name,
+                        value: cId,
+                      };
+                    }),
+                  ]}
+                />
+              </div>
+
+              {/* Stock Health / Level Filter Dropdown */}
+              <div className="w-[130px] sm:w-[140px] shrink-0">
+                <AppSelect
+                  value={healthFilter}
+                  onChange={(val) => {
+                    setHealthFilter(val as 'all' | 'healthy' | 'low' | 'out');
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { label: 'All Stock Levels', value: 'all' },
+                    { label: 'In Stock (>10)', value: 'healthy' },
+                    { label: 'Low Stock (1-10)', value: 'low' },
+                    { label: 'Out of Stock (0)', value: 'out' },
+                  ]}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Inventory Stock Table */}
-        <div className="overflow-hidden">
-          <AppTable>
-          <thead>
-              <tr>
-                <th className="py-2.5 px-6 font-medium text-[12px]">Product & SKU</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Category</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Stock Level & Status</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Unit Price</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Asset Value</th>
-                <th className="py-2.5 px-6 text-right font-medium text-[12px]">Quick Restock Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <TableSkeleton columns={6} rows={6} hasAvatar={false} />
-              ) : filteredProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
-                    No products found matching your inventory filters.
-                  </td>
-                </tr>
-              ) : (
-                paginatedProducts.map((p) => {
-                  const pId = (p._id || p.id) as string;
-                  const price = p.salePrice ?? p.price;
-                  const assetValue = (p.stock || 0) * price;
-                  const isLow = p.stock > 0 && p.stock <= 5;
-                  const isOut = p.stock <= 0;
-                  const categoryName = typeof p.category === 'object' ? (p.category as any)?.name : 'Catalog';
+          {/* Content Section: Data Table (Independent Scroll Area) */}
+          {loading ? (
+            <div className="p-6 flex-1 min-h-0 overflow-y-auto">
+              <TableSkeleton columns={6} rows={6} hasAvatar={false} />
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="p-12 text-center flex-1 min-h-0 overflow-y-auto">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-lg">
+                <InboxOutlined />
+              </div>
+              <h4 className="text-sm font-bold text-slate-700">No products found</h4>
+              <p className="text-xs text-slate-400 mt-1">Try adjusting your inventory filters or search query.</p>
+            </div>
+          ) : (
+            <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto brand-table-scroll relative">
+              <table className="kiran-role-table app-table w-full border-collapse">
+                <thead className="sticky top-0 z-20 shadow-xs">
+                  <tr className="bg-[#0096C7]">
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Product & SKU
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Category
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Stock Level & Status
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Unit Price
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] whitespace-nowrap shadow-xs">
+                      Asset Value
+                    </th>
+                    <th className="sticky top-0 z-20 !bg-[#0096C7] !text-white py-2.5 px-4 font-semibold text-[12px] text-right whitespace-nowrap shadow-xs">
+                      Quick Restock Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedProducts.map((p) => {
+                    const pId = (p._id || p.id) as string;
+                    const price = p.salePrice ?? p.price;
+                    const assetValue = (p.stock || 0) * price;
+                    const isLow = p.stock > 0 && p.stock <= 5;
+                    const isOut = p.stock <= 0;
+                    const categoryName = typeof p.category === 'object' ? (p.category as any)?.name : 'Catalog';
 
-                  return (
-                    <tr
-                      key={pId}
-                      className="hover:bg-slate-50/70 transition-colors group cursor-default"
-                    >
-                      {/* Product & SKU */}
-                      <td className="py-3.5 px-6 whitespace-nowrap">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={p.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}
-                            alt={p.name}
-                            className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0"
-                          />
-                          <div className="max-w-[220px]">
-                            <div className="font-bold text-slate-900 text-xs truncate">
-                              {p.name}
-                            </div>
-                            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                              SKU: {p.sku || 'N/A'}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Category */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <Tag className="m-0 font-semibold text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 border-slate-200 text-slate-700">
-                          {categoryName}
-                        </Tag>
-                      </td>
-
-                      {/* Stock Level & Status */}
-                      <td className="py-3.5 px-4 whitespace-nowrap min-w-[180px]">
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <span
-                              className={`text-xs font-black ${
-                                isOut
-                                  ? 'text-rose-600'
-                                  : isLow
-                                  ? 'text-[#f97316]'
-                                  : 'text-emerald-700'
-                              }`}
-                            >
-                              {p.stock} Units
-                            </span>
-
-                            <Tag
-                              className="m-0 font-bold text-[10px] uppercase px-2 py-0.2 rounded-md"
-                              color={isOut ? 'error' : isLow ? 'orange' : 'success'}
-                            >
-                              {isOut ? 'Out of Stock' : isLow ? 'Low Stock' : 'Optimal'}
-                            </Tag>
-                          </div>
-
-                          {/* Stock Health Bar */}
-                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${
-                                isOut
-                                  ? 'bg-rose-500 w-0'
-                                  : isLow
-                                  ? 'bg-[#f97316] w-[25%]'
-                                  : 'bg-emerald-500 w-[85%]'
-                              }`}
+                    return (
+                      <tr
+                        key={pId}
+                        className="hover:bg-sky-50/40 transition-colors group cursor-default"
+                      >
+                        {/* Product & SKU */}
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={p.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}
+                              alt={p.name}
+                              className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0"
                             />
+                            <div className="max-w-[220px]">
+                              <div className="font-bold text-slate-900 text-xs truncate">
+                                {p.name}
+                              </div>
+                              <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                                SKU: {p.sku || 'N/A'}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Unit Price */}
-                      <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-slate-800 text-xs">
-                        ${price.toFixed(2)}
-                      </td>
+                        {/* Category */}
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <Tag className="m-0 font-semibold text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 border-slate-200 text-slate-700">
+                            {categoryName}
+                          </Tag>
+                        </td>
 
-                      {/* Total Asset Value */}
-                      <td className="py-3.5 px-4 whitespace-nowrap font-black text-slate-900 text-xs">
-                        ${assetValue.toFixed(2)}
-                      </td>
+                        {/* Stock Level & Status */}
+                        <td className="py-3 px-4 whitespace-nowrap min-w-[180px]">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span
+                                className={`text-xs font-black ${
+                                  isOut
+                                    ? 'text-rose-600'
+                                    : isLow
+                                    ? 'text-[#f97316]'
+                                    : 'text-emerald-700'
+                                }`}
+                              >
+                                {p.stock} Units
+                              </span>
 
-                      {/* Actions */}
-                      <td className="py-3.5 px-6 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5">
-                          {/* Fast +10 */}
-                          <button
-                            onClick={() => handleQuickRestock(pId, p.stock, 10)}
-                            className="px-2 py-1 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 font-bold text-[11px] text-slate-700 transition-all cursor-pointer shadow-2xs active:scale-95"
-                            title="Add 10 units"
-                          >
-                            +10
-                          </button>
+                              <Tag
+                                className="m-0 font-bold text-[10px] uppercase px-2 py-0.2 rounded-md"
+                                color={isOut ? 'error' : isLow ? 'orange' : 'success'}
+                              >
+                                {isOut ? 'Out of Stock' : isLow ? 'Low Stock' : 'Optimal'}
+                              </Tag>
+                            </div>
 
-                          {/* Fast +25 */}
-                          <button
-                            onClick={() => handleQuickRestock(pId, p.stock, 25)}
-                            className="px-2 py-1 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 font-bold text-[11px] text-slate-700 transition-all cursor-pointer shadow-2xs active:scale-95"
-                            title="Add 25 units"
-                          >
-                            +25
-                          </button>
+                            {/* Stock Health Bar */}
+                            <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all ${
+                                  isOut
+                                    ? 'bg-rose-500 w-0'
+                                    : isLow
+                                    ? 'bg-[#f97316] w-[25%]'
+                                    : 'bg-emerald-500 w-[85%]'
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        </td>
 
-                          {/* Fast +50 */}
-                          <button
-                            onClick={() => handleQuickRestock(pId, p.stock, 50)}
-                            className="px-2 py-1 rounded-lg border border-slate-200 bg-white hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 font-bold text-[11px] text-slate-700 transition-all cursor-pointer shadow-2xs active:scale-95"
-                            title="Add 50 units"
-                          >
-                            +50
-                          </button>
+                        {/* Unit Price */}
+                        <td className="py-3 px-4 whitespace-nowrap font-semibold text-slate-800 text-xs">
+                          ${price.toFixed(2)}
+                        </td>
 
-                          {/* Custom Adjust Modal Button */}
-                          <button
-                            onClick={() => {
-                              setSelectedProduct(p);
-                              setAdjustAmount(10);
-                              setAdjustType('add');
-                            }}
-                            title="Adjust Stock"
-                            className="inline-flex items-center justify-center p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-300 font-semibold text-xs text-slate-700 transition-all cursor-pointer shadow-2xs ml-1"
-                          >
-                            <EditOutlined className="text-xs" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </AppTable>
+                        {/* Total Asset Value */}
+                        <td className="py-3 px-4 whitespace-nowrap font-black text-slate-900 text-xs">
+                          ${assetValue.toFixed(2)}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1.5">
+                            {/* Fast +10 */}
+                            <button
+                              type="button"
+                              onClick={() => handleQuickRestock(pId, p.stock, 10)}
+                              className="px-2 py-1 rounded-lg border border-slate-200 bg-white hover:bg-[#0096C7] hover:text-white font-bold text-[11px] text-slate-700 transition-all cursor-pointer shadow-2xs active:scale-95"
+                              title="Add 10 units"
+                            >
+                              +10
+                            </button>
+
+                            {/* Fast +25 */}
+                            <button
+                              type="button"
+                              onClick={() => handleQuickRestock(pId, p.stock, 25)}
+                              className="px-2 py-1 rounded-lg border border-slate-200 bg-white hover:bg-[#0096C7] hover:text-white font-bold text-[11px] text-slate-700 transition-all cursor-pointer shadow-2xs active:scale-95"
+                              title="Add 25 units"
+                            >
+                              +25
+                            </button>
+
+                            {/* Fast +50 */}
+                            <button
+                              type="button"
+                              onClick={() => handleQuickRestock(pId, p.stock, 50)}
+                              className="px-2 py-1 rounded-lg border border-slate-200 bg-white hover:bg-[#0096C7] hover:text-white font-bold text-[11px] text-slate-700 transition-all cursor-pointer shadow-2xs active:scale-95"
+                              title="Add 50 units"
+                            >
+                              +50
+                            </button>
+
+                            {/* Custom Adjust Modal Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProduct(p);
+                                setAdjustAmount(10);
+                                setAdjustType('add');
+                              }}
+                              title="Adjust Stock"
+                              className="inline-flex items-center justify-center p-1.5 rounded-lg bg-white border border-slate-200 hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-300 font-semibold text-xs text-slate-700 transition-all cursor-pointer shadow-2xs ml-1"
+                            >
+                              <EditOutlined className="text-xs" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination Footer (Compact cyan toolbar with AntD Dropdown) */}
+          <div className="bg-[#0096C7] px-4 py-1.5 flex items-center justify-between shrink-0 shadow-inner rounded-b-[2px] select-none h-[32px]">
+            {/* Left Side: Page Size Selector via AntD Dropdown */}
+            <div className="flex items-center gap-1.5 text-[10px] text-white/90 font-medium">
+              <span>Showing</span>
+              <Dropdown
+                menu={{
+                  items: [
+                    { key: '10', label: '10 / page' },
+                    { key: '20', label: '20 / page' },
+                    { key: '50', label: '50 / page' },
+                  ],
+                  selectedKeys: [String(pageSize)],
+                  onClick: ({ key }) => {
+                    setPageSize(Number(key));
+                    setCurrentPage(1);
+                  },
+                }}
+                trigger={['click']}
+                placement="topRight"
+              >
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 active:bg-white/40 border border-white/35 text-white font-bold text-[10px] rounded px-1.5 h-[20px] outline-none cursor-pointer transition-all leading-none"
+                  title="Change page size"
+                >
+                  <span>{pageSize}</span>
+                  <DownOutlined className="text-[7px] text-white/85" />
+                </button>
+              </Dropdown>
+            </div>
+
+            <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+              {filteredProducts.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-
+              {Math.min(currentPage * pageSize, filteredProducts.length)} of {filteredProducts.length}
+            </span>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                title="Previous page"
+                className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
+              >
+                <LeftOutlined className="text-[8px]" />
+              </button>
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                title="Next page"
+                className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
+              >
+                <RightOutlined className="text-[8px]" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
-        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
-          {/* Left Side: Product Count */}
-          <div className="flex items-center gap-1.5 leading-none">
-            <span className="font-medium text-white/90 text-[11px] leading-none">Total Products:</span>
-            <span className="font-bold text-white text-[11px] leading-none">
-              {filteredProducts.length} Items
-            </span>
+        {/* Right Column: Restock Action Card + Inventory Summary Metrics (Independent Scroll Area) */}
+        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
+          {/* Card 1: Add New Stock Item */}
+          <div className="bg-white rounded-2xl shadow-xs px-4 py-3 flex items-center">
+            <Link
+              to="/admin/products?action=new"
+              className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+            >
+              <PlusOutlined className="text-xs" />
+              <span>New Stock Item</span>
+            </Link>
           </div>
 
-          {/* Right Side: Pagination Controls (Rendered ONLY if products > 10) */}
-          {filteredProducts.length > 10 && (
-            <div className="flex items-center gap-2.5 leading-none">
-              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
-                <span>Rows:</span>
-                <div className="relative">
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
-                  >
-                    <option value={10} className="bg-slate-800 text-white">10</option>
-                    <option value={20} className="bg-slate-800 text-white">20</option>
-                    <option value={50} className="bg-slate-800 text-white">50</option>
-                    <option value={100} className="bg-slate-800 text-white">100</option>
-                  </select>
-                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+          {/* Card 2: Inventory Summary (Static Clean View) */}
+          <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+            <div className="flex items-center justify-between pb-1">
+              <h4 className="text-xs font-bold text-slate-900">Inventory Summary</h4>
+              <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
+                Live Metrics
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              {/* Metric 1: Total Stock Units */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Total Units
+                  </span>
+                  <span className="text-2xl font-black text-slate-900 leading-tight block">
+                    {products.reduce((acc, p) => acc + (p.stock || 0), 0)}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Units on shelves
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0">
+                  <InboxOutlined />
                 </div>
               </div>
 
-              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
-                {filteredProducts.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, filteredProducts.length)} of {filteredProducts.length}
-              </span>
+              {/* Metric 2: Low Stock Alerts */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Low Stock Alerts
+                  </span>
+                  <span className="text-2xl font-black text-amber-600 leading-tight block">
+                    {products.filter((p) => p.stock > 0 && p.stock <= 10).length}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Requires reorder
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                  <WarningOutlined />
+                </div>
+              </div>
 
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  title="Previous page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
-                >
-                  <LeftOutlined className="text-[8px]" />
-                </button>
-                <button
-                  type="button"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  title="Next page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
-                >
-                  <RightOutlined className="text-[8px]" />
-                </button>
+              {/* Metric 3: Out of Stock */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Out of Stock
+                  </span>
+                  <span className="text-2xl font-black text-rose-600 leading-tight block">
+                    {products.filter((p) => p.stock <= 0).length}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Critical backorders
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0">
+                  <CloseCircleOutlined />
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 

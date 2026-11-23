@@ -381,7 +381,7 @@ export const AuthorizedLayout: React.FC = () => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   const accountMenuContent = (
-    <div className="w-[260px] p-2 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="w-[260px] p-2 font-['Poppins','Inter',sans-serif]">
       {/* Account Profile Summary */}
       <div className="p-2 border-b border-slate-100 flex items-center gap-2.5">
         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#0284c7] to-[#f97316] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
@@ -512,7 +512,7 @@ export const AuthorizedLayout: React.FC = () => {
   };
 
   const roleSwitcherPopoverContent = (
-    <div className="w-[300px] p-1 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="w-[300px] p-1 font-['Poppins','Inter',sans-serif]">
       <div className="pb-2.5 mb-2 border-b border-slate-100 flex items-center justify-between">
         <div>
           <h4 className="text-xs font-bold text-slate-900">Switch Role Perspective</h4>
@@ -584,7 +584,7 @@ export const AuthorizedLayout: React.FC = () => {
   // Auth Middleware check: if not logged in, block rendering and show verification skeleton
   if (!token) {
     return (
-      <div className="min-h-screen bg-white flex flex-col font-['Nunito_Sans','Poppins',sans-serif]">
+      <div className="min-h-screen bg-white flex flex-col font-['Poppins','Inter',sans-serif]">
         <div className="h-14 bg-white border-b border-slate-200/80 px-6 flex items-center justify-between">
           <div className="w-32 h-6 bg-slate-200 animate-pulse rounded-lg" />
           <div className="w-48 h-8 bg-slate-200 animate-pulse rounded-full" />
@@ -648,7 +648,7 @@ export const AuthorizedLayout: React.FC = () => {
 
   // Notification Popover Content (Live Socket Stream)
   const notificationContent = (
-    <div className="w-[85vw] sm:w-[360px] p-1 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="w-[85vw] sm:w-[360px] p-1 font-['Poppins','Inter',sans-serif]">
       <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <span className="font-bold text-slate-900 text-sm">Notifications</span>
@@ -707,8 +707,15 @@ export const AuthorizedLayout: React.FC = () => {
     </div>
   );
 
+  const isFullHeightPage =
+    location.pathname.startsWith('/admin/profile') ||
+    location.pathname.startsWith('/admin/brands') ||
+    location.pathname.startsWith('/admin/products') ||
+    location.pathname.startsWith('/admin/categories') ||
+    location.pathname.startsWith('/admin/inventory');
+
   return (
-    <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Nunito_Sans','Poppins',sans-serif] antialiased overflow-hidden">
+    <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Poppins','Inter',sans-serif] antialiased overflow-hidden">
       {/* =========================================================================
           Top Reference Header Bar
           - REMOVED Horizontal nav tabs
@@ -881,7 +888,7 @@ export const AuthorizedLayout: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleItemClick}
-                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer text-left ${
+                      className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border transition-all text-xs font-semibold cursor-pointer text-left group ${
                         isOpen
                           ? 'bg-white text-slate-800 border-amber-400 shadow-xs ring-1 ring-amber-400/20'
                           : active
@@ -904,18 +911,22 @@ export const AuthorizedLayout: React.FC = () => {
                         </span>
                       </div>
 
-                      {/* Small orange chevron down/up matching Image 4 */}
-                      <span
-                        className={`text-[10px] font-bold transition-transform duration-200 shrink-0 ml-1.5 ${
+                      {/* Modern Chevron down/up indicator */}
+                      <svg
+                        className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ml-1.5 ${
                           isOpen
-                            ? 'text-amber-500 rotate-180'
+                            ? 'text-[#0284c7] rotate-180'
                             : active
                             ? 'text-white'
-                            : 'text-amber-500'
+                            : 'text-[#ea580c] group-hover:text-[#0284c7]'
                         }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.2}
+                        stroke="currentColor"
                       >
-                        ▼
-                      </span>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                      </svg>
                     </button>
                   ) : (
                     <Link
@@ -932,7 +943,7 @@ export const AuthorizedLayout: React.FC = () => {
                           className={`text-base shrink-0 ${
                             active
                               ? 'text-white'
-                              : 'text-[#0284c7] group-hover/menuitem:text-[#f97316]'
+                              : 'text-[#0284c7] group-hover/menuitem:text-[#ea580c]'
                           }`}
                         >
                           {renderMenuIcon(item.icon)}
@@ -1013,14 +1024,14 @@ export const AuthorizedLayout: React.FC = () => {
          ========================================================================= */}
       <main
         className={`flex-1 w-full relative bg-white ${
-          location.pathname.startsWith('/admin/profile')
+          isFullHeightPage
             ? 'overflow-hidden flex flex-col h-[calc(100vh-4rem)]'
             : 'overflow-y-auto'
         }`}
       >
         <div
           className={`w-full ${
-            location.pathname.startsWith('/admin/profile')
+            isFullHeightPage
               ? 'h-full p-2 sm:p-3 flex flex-col overflow-hidden min-h-0'
               : 'p-4'
           }`}

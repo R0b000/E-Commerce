@@ -172,7 +172,7 @@ export const CardSkeleton: React.FC<CardSkeletonProps> = ({
 // ============================================================================
 export const DashboardSkeleton: React.FC = () => {
   return (
-    <div className="space-y-6 w-full font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
       {/* 4 KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {Array.from({ length: 4 }).map((_, i) => (

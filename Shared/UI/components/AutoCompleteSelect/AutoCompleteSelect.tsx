@@ -112,7 +112,7 @@ export const AutoCompleteSelect: React.FC<AutoCompleteSelectProps> = ({
 
   return (
     <div
-      className={`relative inline-block w-full font-['Nunito_Sans','Poppins',sans-serif] ${className} ${isOpen ? 'z-[9000]' : ''}`}
+      className={`relative inline-block w-full font-['Poppins','Inter',sans-serif] ${className} ${isOpen ? 'z-[9000]' : ''}`}
       style={{
         ...style,
         zIndex: isOpen ? 'var(--z-dropdown, 9000)' : undefined,

@@ -393,3 +393,47 @@ select:focus-visible,
   background: #0077b6;
 }
 
+/* =========================================================================
+   Brand Management Independent Scrollbars
+   ========================================================================= */
+.brand-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #0096c7 transparent;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+.brand-table-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.brand-table-scroll::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+.brand-table-scroll::-webkit-scrollbar-thumb {
+  background: #0096c7;
+  border-radius: 9999px;
+}
+.brand-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: #0077b6;
+}
+
+.brand-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+  overflow-y: auto;
+}
+.brand-sidebar-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.brand-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.brand-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.brand-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+

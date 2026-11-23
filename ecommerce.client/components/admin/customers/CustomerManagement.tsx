@@ -202,14 +202,11 @@ export const CustomerManagement: React.FC = () => {
       {/* Main Accounts Directory Card with Integrated Header */}
       <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
         {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
-        <div className="px-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+        <div className="pl-0 pr-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
           <div className="flex flex-col min-w-0">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Accounts & Directory
             </h3>
-            <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Comprehensive directory of registered accounts, customer buyers, authorized sellers/vendors, and staff.
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">

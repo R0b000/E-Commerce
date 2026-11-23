@@ -51,7 +51,7 @@ class RbacService {
         /^\/categories$/,
       ];
 
-      const validMenuIds = [1, 2, 21, 22, 23, 11, 12, 13, 14, 4, 41, 42, 5, 10, 101, 102, 103, 104, 60, 61, 62];
+      const validMenuIds = [1, 2, 21, 22, 23, 24, 11, 12, 13, 14, 4, 41, 42, 5, 10, 101, 102, 103, 104, 60, 61, 62];
 
       await Menu.deleteMany({
         $or: [
@@ -131,12 +131,28 @@ class RbacService {
           isActive: true,
         },
         {
+          menuId: 24,
+          name: 'Brands',
+          menuNameNepali: 'ब्रान्डहरू',
+          path: '/admin/brands',
+          icon: 'tag',
+          order: 3,
+          parentId: 2,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'seller', 'manager'],
+          isActive: true,
+        },
+        {
           menuId: 23,
           name: 'Stock & Inventory',
           menuNameNepali: 'मौज्दात तथा भण्डारण',
           path: '/admin/inventory',
           icon: 'inventory_2',
-          order: 3,
+          order: 4,
           parentId: 2,
           isSinglePage: true,
           isPrimary: false,

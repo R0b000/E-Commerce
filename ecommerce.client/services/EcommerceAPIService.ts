@@ -294,8 +294,8 @@ export class EcommerceAPIService {
     return res.data;
   }
 
-  // Cloudinary Image Upload (folder: HimalayaOnlineShop)
-  async uploadImage(file: File, folder: string = 'HimalayaOnlineShop') {
+  // Cloudinary Image Upload (defaults to HimalayaOnlineShop/Temporary staging)
+  async uploadImage(file: File, folder: string = 'HimalayaOnlineShop/Temporary') {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);
@@ -307,6 +307,19 @@ export class EcommerceAPIService {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+    });
+    return res.data;
+  }
+
+  // Move image from Temporary staging to permanent destination on successful form save
+  async commitImage(publicId: string, targetSubfolder: string = 'Admin/Brands') {
+    const res = await axiosConfig.post<{
+      success: boolean;
+      data: { url: string; public_id: string; format?: string; width?: number; height?: number };
+      messages?: string[];
+    }>('/ecommerce/upload/commit', {
+      public_id: publicId,
+      targetFolder: targetSubfolder,
     });
     return res.data;
   }
