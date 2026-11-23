@@ -604,57 +604,12 @@ export const PermissionManagement: React.FC = () => {
                 allowClear
               />
             </div>
-
-            {/* Save & Reset Buttons */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <AppButton
-                icon={<ReloadOutlined />}
-                onClick={handleResetDefaults}
-                disabled={saving}
-                title="Reset to role defaults"
-              >
-                Reset
-              </AppButton>
-              <AppButton
-                type="primary"
-                icon={<SaveOutlined />}
-                onClick={handleSave}
-                loading={saving}
-                style={{ backgroundColor: '#0096C7' }}
-              >
-                Save Policy
-              </AppButton>
-            </div>
           </div>
         </div>
 
-        {/* Secondary Action Strip: Quick Batch Actions & Role Status */}
-        <div className="px-6 py-2 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-slate-500 text-[11px] font-medium mr-1">Quick Batch:</span>
-            <button
-              type="button"
-              onClick={handleGrantAllRead}
-              className="px-2.5 py-1 text-[11px] font-semibold text-[#0096c7] bg-cyan-50 hover:bg-cyan-100 rounded-lg border border-cyan-200 transition-colors cursor-pointer"
-            >
-              + Grant All Read
-            </button>
-            <button
-              type="button"
-              onClick={handleGrantFullAccess}
-              className="px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors cursor-pointer"
-            >
-              + Grant All CRUD
-            </button>
-            <button
-              type="button"
-              onClick={handleRevokeAll}
-              className="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors cursor-pointer"
-            >
-              - Revoke Filtered
-            </button>
-          </div>
-
+        {/* Secondary Action Strip: Role Status & Quick Batch Actions */}
+        <div className="px-6 py-2 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+          {/* Left Side: Role Identity & Status Badge (Swapped to Left) */}
           <div className="flex items-center gap-2">
             {isSuperAdminRole && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">
@@ -667,6 +622,58 @@ export const PermissionManagement: React.FC = () => {
               <span className="px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700 text-[10px] font-mono font-bold">
                 {assignedCodes.has('*') ? 'Wildcard (*)' : `${assignedCodes.size} assigned`}
               </span>
+            </div>
+          </div>
+
+          {/* Right Side: Quick Batch Actions + Reset & Save Policy Buttons */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-slate-500 text-[11px] font-medium mr-1">Quick Batch:</span>
+              <button
+                type="button"
+                onClick={handleGrantAllRead}
+                className="px-2.5 py-1 text-[11px] font-semibold text-[#0096c7] bg-cyan-50 hover:bg-cyan-100 rounded-lg border border-cyan-200 transition-colors cursor-pointer"
+              >
+                + Grant All Read
+              </button>
+              <button
+                type="button"
+                onClick={handleGrantFullAccess}
+                className="px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-colors cursor-pointer"
+              >
+                + Grant All CRUD
+              </button>
+              <button
+                type="button"
+                onClick={handleRevokeAll}
+                className="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition-colors cursor-pointer"
+              >
+                - Revoke Filtered
+              </button>
+            </div>
+
+            <div className="h-4 w-[1px] bg-slate-300 mx-1 hidden sm:block" />
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <AppButton
+                icon={<ReloadOutlined />}
+                onClick={handleResetDefaults}
+                disabled={saving}
+                size="small"
+                title="Reset to role defaults"
+              >
+                Reset
+              </AppButton>
+              <AppButton
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSave}
+                loading={saving}
+                size="small"
+                style={{ backgroundColor: '#0096C7' }}
+              >
+                Save Policy
+              </AppButton>
             </div>
           </div>
         </div>
