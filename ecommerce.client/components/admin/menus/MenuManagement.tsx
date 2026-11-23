@@ -839,9 +839,14 @@ export const MenuManagement: React.FC = () => {
                 value={formIcon || undefined}
                 onChange={(val) => setFormIcon(val)}
                 placeholder="Select an icon"
-                className="w-full h-[32px] text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
+                className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
                 showSearch
-                optionFilterProp="filterValue"
+                getPopupContainer={() => document.body}
+                filterOption={(input, option) =>
+                  String((option as any)?.filterValue ?? option?.label ?? '')
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
                 options={AVAILABLE_ICONS.map((i) => ({
                   filterValue: `${i.label} ${i.value}`,
                   label: (
@@ -902,9 +907,16 @@ export const MenuManagement: React.FC = () => {
                   onChange={(val) => setFormParentId(val || '')}
                   placeholder="Select parent"
                   allowClear
-                  className="w-full h-[32px] text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
+                  className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
                   showSearch
-                  optionFilterProp="filterValue"
+                  placement="topLeft"
+                  getPopupContainer={() => document.body}
+                  dropdownStyle={{ zIndex: 1100 }}
+                  filterOption={(input, option) =>
+                    String((option as any)?.filterValue ?? option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                   options={[
                     { filterValue: 'none root', label: 'None (Root Menu)', value: '' },
                     ...rootMenusList
@@ -950,9 +962,16 @@ export const MenuManagement: React.FC = () => {
                   onChange={(val) => setFormChildId(val || '')}
                   placeholder="Select child"
                   allowClear
-                  className="w-full h-[32px] text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
+                  className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
                   showSearch
-                  optionFilterProp="filterValue"
+                  placement="topLeft"
+                  getPopupContainer={() => document.body}
+                  dropdownStyle={{ zIndex: 1100 }}
+                  filterOption={(input, option) =>
+                    String((option as any)?.filterValue ?? option?.label ?? '')
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                   options={[
                     { filterValue: 'none', label: 'None', value: '' },
                     ...menus
