@@ -68,7 +68,7 @@ class RbacService {
         {
           menuId: 1,
           name: 'Dashboard',
-          menuNameNepali: 'ड्यासबोर्ड',
+          menuNameNepali: '',
           path: '/admin',
           icon: 'dashboard',
           order: 1,
@@ -85,7 +85,7 @@ class RbacService {
         {
           menuId: 2,
           name: 'Products',
-          menuNameNepali: 'उत्पादनहरू',
+          menuNameNepali: '',
           path: '/admin/products',
           icon: 'shopping_cart',
           order: 2,
@@ -101,7 +101,7 @@ class RbacService {
         {
           menuId: 21,
           name: 'All Products',
-          menuNameNepali: 'सबै उत्पादनहरू',
+          menuNameNepali: '',
           path: '/admin/products',
           icon: 'shopping_cart',
           order: 1,
@@ -117,7 +117,7 @@ class RbacService {
         {
           menuId: 22,
           name: 'Categories',
-          menuNameNepali: 'कोटिहरू',
+          menuNameNepali: '',
           path: '/admin/categories',
           icon: 'category',
           order: 2,
@@ -133,7 +133,7 @@ class RbacService {
         {
           menuId: 24,
           name: 'Brands',
-          menuNameNepali: 'ब्रान्डहरू',
+          menuNameNepali: '',
           path: '/admin/brands',
           icon: 'tag',
           order: 3,
@@ -149,7 +149,7 @@ class RbacService {
         {
           menuId: 23,
           name: 'Stock & Inventory',
-          menuNameNepali: 'मौज्दात तथा भण्डारण',
+          menuNameNepali: '',
           path: '/admin/inventory',
           icon: 'inventory_2',
           order: 4,
@@ -167,7 +167,7 @@ class RbacService {
         {
           menuId: 11,
           name: 'Order',
-          menuNameNepali: 'अर्डर',
+          menuNameNepali: '',
           path: '/admin/orders',
           icon: 'receipt_long',
           order: 3,
@@ -183,7 +183,7 @@ class RbacService {
         {
           menuId: 12,
           name: 'Orders',
-          menuNameNepali: 'अर्डर सूची',
+          menuNameNepali: '',
           path: '/admin/orders',
           icon: 'receipt_long',
           order: 1,
@@ -199,7 +199,7 @@ class RbacService {
         {
           menuId: 13,
           name: 'Billing',
-          menuNameNepali: 'बिलिङ',
+          menuNameNepali: '',
           path: '/admin/billing',
           icon: 'receipt',
           order: 2,
@@ -215,7 +215,7 @@ class RbacService {
         {
           menuId: 14,
           name: 'Customer Reviews',
-          menuNameNepali: 'ग्राहक समीक्षाहरू',
+          menuNameNepali: '',
           path: '/admin/reviews',
           icon: 'star',
           order: 3,
@@ -233,7 +233,7 @@ class RbacService {
         {
           menuId: 4,
           name: 'Marketing',
-          menuNameNepali: 'बजार व्यवस्थापन',
+          menuNameNepali: '',
           path: '/admin/discounts',
           icon: 'tune',
           order: 4,
@@ -249,7 +249,7 @@ class RbacService {
         {
           menuId: 41,
           name: 'Discounts & Coupons',
-          menuNameNepali: 'छुट र कुपन',
+          menuNameNepali: '',
           path: '/admin/discounts',
           icon: 'tune',
           order: 1,
@@ -265,7 +265,7 @@ class RbacService {
         {
           menuId: 42,
           name: 'Hero Banners',
-          menuNameNepali: 'ब्यानरहरू',
+          menuNameNepali: '',
           path: '/admin/banners',
           icon: 'photo_camera',
           order: 2,
@@ -283,7 +283,7 @@ class RbacService {
         {
           menuId: 5,
           name: 'Accounts',
-          menuNameNepali: 'खाताहरू',
+          menuNameNepali: '',
           path: '/admin/customers',
           icon: 'groups',
           order: 5,
@@ -300,7 +300,7 @@ class RbacService {
         {
           menuId: 10,
           name: 'Auth',
-          menuNameNepali: 'प्रमाणीकरण',
+          menuNameNepali: '',
           path: '/admin/auth',
           icon: 'shield',
           order: 6,
@@ -316,7 +316,7 @@ class RbacService {
         {
           menuId: 101,
           name: 'Menu Setup',
-          menuNameNepali: 'मेनु सेटअप',
+          menuNameNepali: '',
           path: '/admin/menus',
           icon: 'menu',
           order: 1,
@@ -332,7 +332,7 @@ class RbacService {
         {
           menuId: 102,
           name: 'Menu Role Setup',
-          menuNameNepali: 'मेनु भूमिका सेटअप',
+          menuNameNepali: '',
           path: '/admin/roles',
           icon: 'admin_panel_settings',
           order: 2,
@@ -348,7 +348,7 @@ class RbacService {
         {
           menuId: 103,
           name: 'User Setup',
-          menuNameNepali: 'प्रयोगकर्ता सेटअप',
+          menuNameNepali: '',
           path: '/admin/customers',
           icon: 'person',
           order: 3,
@@ -364,7 +364,7 @@ class RbacService {
         {
           menuId: 104,
           name: 'User Role',
-          menuNameNepali: 'प्रयोगकर्ता भूमिका',
+          menuNameNepali: '',
           path: '/admin/permissions',
           icon: 'group',
           order: 4,
@@ -382,7 +382,7 @@ class RbacService {
         {
           menuId: 60,
           name: 'Security & System',
-          menuNameNepali: 'सुरक्षा र प्रणाली',
+          menuNameNepali: '',
           path: '/admin/security',
           icon: 'lock',
           order: 7,
@@ -398,7 +398,7 @@ class RbacService {
         {
           menuId: 61,
           name: 'Security & Devices',
-          menuNameNepali: 'सुरक्षा र उपकरणहरू',
+          menuNameNepali: '',
           path: '/admin/security',
           icon: 'lock',
           order: 1,
@@ -414,7 +414,7 @@ class RbacService {
         {
           menuId: 62,
           name: 'Audit Logs',
-          menuNameNepali: 'अडिट लगहरू',
+          menuNameNepali: '',
           path: '/admin/audit-logs',
           icon: 'analytics',
           order: 2,

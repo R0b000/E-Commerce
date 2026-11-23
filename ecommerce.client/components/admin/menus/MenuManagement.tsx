@@ -277,7 +277,7 @@ export const MenuManagement: React.FC = () => {
           pId = (sub.parentId || '').toString();
         }
         const parentObj = idToMenu.get(pId);
-        const pName = parentObj ? parentObj.name : `Parent #${pId}`;
+        const pName = parentObj ? parentObj.name : `Parent ${pId}`;
 
         flatTree.push({
           menu: sub,
@@ -556,7 +556,7 @@ export const MenuManagement: React.FC = () => {
               <tr>
                 <th className="py-2.5 px-4 font-medium text-[12px] w-[80px]">Menu ID</th>
                 <th className="py-2.5 px-4 font-medium text-[12px] w-[70px]">Order</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Menu Name (EN & Nepali)</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Menu Name</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Path</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Hierarchy / Parent</th>
                 <th className="py-2.5 px-4 font-medium text-[12px] text-center">Settings</th>
@@ -587,7 +587,7 @@ export const MenuManagement: React.FC = () => {
                       {/* Menu ID */}
                       <td className="py-3 px-4 font-mono font-bold text-slate-700">
                         <Tag className="m-0 font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border-slate-200">
-                          #{m.menuId !== null && m.menuId !== undefined ? m.menuId : m._id.slice(-4)}
+                          {m.menuId !== null && m.menuId !== undefined ? m.menuId : m._id.slice(-4)}
                         </Tag>
                       </td>
 
@@ -603,7 +603,7 @@ export const MenuManagement: React.FC = () => {
                         )}
                       </td>
 
-                      {/* Menu Name & Nepali Name & Icon */}
+                      {/* Menu Name & Icon */}
                       <td className="py-3 px-4">
                         <div className={`flex items-center gap-2.5 ${isSubmenu ? 'pl-3' : ''}`}>
                           <div
@@ -618,11 +618,6 @@ export const MenuManagement: React.FC = () => {
                           <div className="min-w-0">
                             <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
                               <span>{m.name}</span>
-                              {m.menuNameNepali && (
-                                <span className="text-[11px] text-slate-500 font-normal">
-                                  ({m.menuNameNepali})
-                                </span>
-                              )}
                               {m.isPrimary && (
                                 <Tag className="m-0 text-[9px] font-bold px-1 py-0 rounded bg-amber-50 text-amber-700 border-amber-200">
                                   Primary
@@ -818,8 +813,8 @@ export const MenuManagement: React.FC = () => {
 
             {/* Modal Form Body */}
             <form onSubmit={handleSaveMenu} className="p-6 space-y-6">
-              {/* Row 1: Menu name | Menu name Nepali | Path */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Row 1: Menu name | Path */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-slate-800 mb-1.5">
                     Menu name
@@ -830,19 +825,6 @@ export const MenuManagement: React.FC = () => {
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 focus:border-[#0096C7] focus:ring-1 focus:ring-[#0096C7] outline-none transition-all placeholder:text-slate-400"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-800 mb-1.5">
-                    Menu name Nepali
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Optional Nepali name"
-                    value={formNameNepali}
-                    onChange={(e) => setFormNameNepali(e.target.value)}
                     className="w-full px-3.5 py-2 text-sm rounded-lg border border-slate-300 focus:border-[#0096C7] focus:ring-1 focus:ring-[#0096C7] outline-none transition-all placeholder:text-slate-400"
                   />
                 </div>
@@ -971,7 +953,7 @@ export const MenuManagement: React.FC = () => {
                             ).toString();
                             return {
                               filterValue: `${r.name} ${r.path} ${valStr}`,
-                              label: `${r.menuId ? `[#${r.menuId}] ` : ''}${r.name} (${r.path})`,
+                              label: `${r.menuId ? `[${r.menuId}] ` : ''}${r.name} (${r.path})`,
                               value: valStr,
                             };
                           }),
@@ -1022,7 +1004,7 @@ export const MenuManagement: React.FC = () => {
                             ).toString();
                             return {
                               filterValue: `${m.name} ${m.path} ${valStr}`,
-                              label: `${m.menuId ? `[#${m.menuId}] ` : ''}${m.name} (${m.path})`,
+                              label: `${m.menuId ? `[${m.menuId}] ` : ''}${m.name} (${m.path})`,
                               value: valStr,
                             };
                           }),

@@ -722,7 +722,8 @@ export const AuthorizedLayout: React.FC = () => {
     location.pathname.startsWith('/admin/audit-logs') ||
     location.pathname.startsWith('/admin/security') ||
     location.pathname.startsWith('/admin/roles') ||
-    location.pathname.startsWith('/admin/permissions');
+    location.pathname.startsWith('/admin/permissions') ||
+    location.pathname.startsWith('/admin/menus');
 
   return (
     <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Poppins','Inter',sans-serif] antialiased overflow-hidden">
