@@ -553,7 +553,7 @@ export const MenuManagement: React.FC = () => {
                 <th className="py-2.5 px-4 font-medium text-[12px] w-[70px]">Order</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Menu Name</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Path</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Hierarchy / Parent</th>
+                <th className="py-2.5 px-4 font-medium text-[12px]">Parent Menu</th>
                 <th className="py-2.5 px-4 font-medium text-[12px] text-center">Settings</th>
                 <th className="py-2.5 px-4 font-medium text-[12px] text-center w-[80px]">Status</th>
                 <th className="py-2.5 px-6 text-right font-medium text-[12px] w-[120px]">Actions</th>
@@ -628,24 +628,14 @@ export const MenuManagement: React.FC = () => {
                         </span>
                       </td>
 
-                      {/* Hierarchy Level */}
+                      {/* Parent Menu */}
                       <td className="py-3 px-4">
                         {isSubmenu ? (
-                          <Tag className="m-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border-0 inline-flex items-center gap-1">
-                            <BranchesOutlined className="text-[10px]" />
-                            <span>
-                              Submenu of: <strong>{parentName || 'Parent'}</strong>
-                            </span>
-                          </Tag>
+                          <span className="text-slate-700 font-medium text-xs">
+                            {parentName || '—'}
+                          </span>
                         ) : (
-                          <Tag className="m-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border-0 inline-flex items-center gap-1">
-                            <FolderOutlined className="text-[10px]" />
-                            <span>
-                              {subCount && subCount > 0
-                                ? `Parent (${subCount} submenus)`
-                                : 'Parent Menu'}
-                            </span>
-                          </Tag>
+                          <span className="text-slate-400 font-normal text-xs">—</span>
                         )}
                       </td>
 
