@@ -16,7 +16,7 @@ import {
   DollarOutlined,
   GiftOutlined,
 } from '@ant-design/icons';
-import { Tag, Switch, Popconfirm, Select, InputNumber, Breadcrumb, Tooltip, Progress } from 'antd';
+import { Tag, Switch, Popconfirm, Select, InputNumber, Breadcrumb, Tooltip, Progress, Dropdown } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { DiscountItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -209,103 +209,96 @@ export const DiscountManagement: React.FC = () => {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
+  // Summary Metrics
+  const activeDiscounts = discounts.filter((d) => d.isActive !== false && (!d.endDate || new Date(d.endDate) >= new Date())).length;
+  const expiredDiscounts = discounts.filter((d) => d.endDate && new Date(d.endDate) < new Date()).length;
+  const totalRedemptions = discounts.reduce((acc, d) => acc + (d.usedCount || 0), 0);
+
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif]">
-      {/* Breadcrumb Navigation */}
-      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
+      {/* Top Bar: Breadcrumb */}
+      <div className="shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Admin
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Discounts & Coupons</span>,
+              title: <span className="text-slate-800 font-bold">Discounts & Coupons</span>,
             },
           ]}
         />
       </div>
 
-      {/* Main Table Card with Integrated Header */}
-      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
-        {/* Table Top Controls & Integrated Header */}
-        <div className="pl-0 pr-3 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Discount Coupons & Promotional Rules
+      {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions (Independent Scroll) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
+        {/* Left Column: Discounts & Coupons Table */}
+        <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
+          {/* Header Toolbar: Title + Search + Filters */}
+          <div className="pl-0 pr-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
+            <div className="shrink-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
+                Discounts & Coupons
               </h3>
-              <Tag className="m-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border-amber-200">
-                Active Campaigns
-              </Tag>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              {/* Search Input */}
+              <div className="w-full sm:w-[190px]">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  placeholder="Search code or desc..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  allowClear
+                />
+              </div>
+
+              {/* Type Filter */}
+              <div className="w-[130px] shrink-0">
+                <AppSelect
+                  value={typeFilter}
+                  onChange={(val) => {
+                    setTypeFilter(val as string);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { label: 'All Types', value: 'all' },
+                    { label: 'Percentage (%)', value: 'percentage' },
+                    { label: 'Fixed Amount ($)', value: 'fixed_amount' },
+                  ]}
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="w-[125px] shrink-0">
+                <AppSelect
+                  value={statusFilter}
+                  onChange={(val) => {
+                    setStatusFilter(val as string);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { label: 'All Statuses', value: 'all' },
+                    { label: 'Active Codes', value: 'active' },
+                    { label: 'Disabled', value: 'inactive' },
+                    { label: 'Expired', value: 'expired' },
+                  ]}
+                />
+              </div>
             </div>
           </div>
 
-          {/* Action Toolbar on Right */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Search Input */}
-            <div className="w-full sm:w-[180px]">
-              <AppInput
-                prefix={<SearchOutlined className="text-slate-400" />}
-                placeholder="Search code or desc..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-              />
-            </div>
-
-            {/* Type Filter */}
-            <div className="w-full sm:w-[140px]">
-              <AppSelect
-                value={typeFilter}
-                onChange={(val) => {
-                  setTypeFilter(val as string);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { label: 'All Types', value: 'all' },
-                  { label: 'Percentage (%)', value: 'percentage' },
-                  { label: 'Fixed Amount ($)', value: 'fixed_amount' },
-                ]}
-              />
-            </div>
-
-            {/* Status Filter */}
-            <div className="w-full sm:w-[130px]">
-              <AppSelect
-                value={statusFilter}
-                onChange={(val) => {
-                  setStatusFilter(val as string);
-                  setCurrentPage(1);
-                }}
-                options={[
-                  { label: 'All Statuses', value: 'all' },
-                  { label: 'Active Codes', value: 'active' },
-                  { label: 'Disabled', value: 'inactive' },
-                  { label: 'Expired', value: 'expired' },
-                ]}
-              />
-            </div>
-
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={openAddModal}
-              style={{ backgroundColor: '#0096C7' }}
-            >
-              Add Discount
-            </AppButton>
-          </div>
-        </div>
-
-        {/* Table Body */}
-        <div className="overflow-hidden">
+          {/* Table Body (Independent Scroll Area) */}
+          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll">
           <AppTable>
             <thead>
               <tr>
@@ -490,7 +483,7 @@ export const DiscountManagement: React.FC = () => {
         </div>
 
         {/* Table Footer: Count on Left, Pagination on Right */}
-        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
           {/* Left Side: Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Discounts:</span>
@@ -500,25 +493,35 @@ export const DiscountManagement: React.FC = () => {
           </div>
 
           {/* Right Side: Pagination Controls */}
-          {totalCount > 10 && (
+          {totalCount > 0 && (
             <div className="flex items-center gap-2.5 leading-none">
-              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
-                <span>Rows:</span>
-                <div className="relative">
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
+              <div className="flex items-center gap-1.5 text-[10px] text-white/95 font-medium leading-none">
+                <span>Items:</span>
+                <Dropdown
+                  menu={{
+                    items: [
+                      { key: '10', label: <span className="font-semibold text-xs text-slate-800">10 / page</span> },
+                      { key: '20', label: <span className="font-semibold text-xs text-slate-800">20 / page</span> },
+                      { key: '50', label: <span className="font-semibold text-xs text-slate-800">50 / page</span> },
+                    ],
+                    selectedKeys: [String(pageSize)],
+                    onClick: ({ key }) => {
+                      setPageSize(Number(key));
                       setCurrentPage(1);
-                    }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                    },
+                  }}
+                  trigger={['click']}
+                  placement="topRight"
+                >
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 active:bg-white/40 border border-white/35 text-white font-bold text-[10px] rounded px-1.5 h-[20px] outline-none cursor-pointer transition-all leading-none"
+                    title="Change page size"
                   >
-                    <option value={10} className="bg-slate-800 text-white">10</option>
-                    <option value={20} className="bg-slate-800 text-white">20</option>
-                    <option value={50} className="bg-slate-800 text-white">50</option>
-                  </select>
-                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
-                </div>
+                    <span>{pageSize}</span>
+                    <DownOutlined className="text-[7px] text-white/85" />
+                  </button>
+                </Dropdown>
               </div>
 
               <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
@@ -532,7 +535,7 @@ export const DiscountManagement: React.FC = () => {
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   title="Previous page"
-                  className="w-5 h-5 rounded flex items-center justify-center bg-white/15 hover:bg-white/30 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors cursor-pointer"
+                  className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
                 >
                   <LeftOutlined className="text-[8px]" />
                 </button>
@@ -541,7 +544,7 @@ export const DiscountManagement: React.FC = () => {
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   title="Next page"
-                  className="w-5 h-5 rounded flex items-center justify-center bg-white/15 hover:bg-white/30 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors cursor-pointer"
+                  className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
                 >
                   <RightOutlined className="text-[8px]" />
                 </button>
@@ -550,6 +553,106 @@ export const DiscountManagement: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Right Column: Add Discount Card + Campaign Summary Metrics (Independent Scroll Area) */}
+      <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
+        {/* Card 1: Add New Discount */}
+        <div className="bg-white rounded-2xl shadow-xs px-4 py-3 flex items-center">
+          <button
+            type="button"
+            onClick={openAddModal}
+            className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+          >
+            <PlusOutlined className="text-xs" />
+            <span>Add New Discount</span>
+          </button>
+        </div>
+
+        {/* Card 2: Campaign Summary (Static Clean View) */}
+        <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+          <div className="flex items-center justify-between pb-1">
+            <h4 className="text-xs font-bold text-slate-900">Campaign Summary</h4>
+            <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
+              Live Promotions
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            {/* Metric 1: Total Coupons */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Total Coupons
+                </span>
+                <span className="text-2xl font-black text-slate-900 leading-tight block">
+                  {totalCount}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Configured rules
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0">
+                <TagOutlined />
+              </div>
+            </div>
+
+            {/* Metric 2: Active Campaigns */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Active Campaigns
+                </span>
+                <span className="text-2xl font-black text-emerald-600 leading-tight block">
+                  {activeDiscounts}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Live promo codes
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                <CheckOutlined />
+              </div>
+            </div>
+
+            {/* Metric 3: Total Redemptions */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Total Redemptions
+                </span>
+                <span className="text-2xl font-black text-purple-600 leading-tight block">
+                  {totalRedemptions}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Customer checkouts
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg shrink-0">
+                <GiftOutlined />
+              </div>
+            </div>
+
+            {/* Metric 4: Expired Codes */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Expired Codes
+                </span>
+                <span className="text-2xl font-black text-rose-600 leading-tight block">
+                  {expiredDiscounts}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Past end date
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg shrink-0">
+                <CalendarOutlined />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
       {/* Add / Edit Discount Modal */}
       {isModalOpen && (

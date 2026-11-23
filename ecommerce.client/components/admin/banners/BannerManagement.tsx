@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   PictureOutlined,
   PlusOutlined,
@@ -15,6 +16,9 @@ import {
   RiseOutlined,
   UploadOutlined,
   LoadingOutlined,
+  DownOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
 import {
   Tag,
@@ -28,6 +32,7 @@ import {
   Upload,
   Tabs,
   Tooltip,
+  Dropdown,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -38,6 +43,8 @@ import {
   AppCard,
   AppButton,
   AppInput,
+  AppSelect,
+  AppImageUpload,
   AppTable,
   AppModal,
 } from 'shared-components';
@@ -76,6 +83,7 @@ export const BannerManagement: React.FC = () => {
     subtitle: '',
     badgeText: '',
     imageUrl: '',
+    publicId: '',
     ctaText: 'Shop Now',
     ctaLink: '/#catalog',
     secondaryCtaText: '',
@@ -133,6 +141,7 @@ export const BannerManagement: React.FC = () => {
       subtitle: '',
       badgeText: 'Handcrafted in Nepal • Ethically Sourced',
       imageUrl: '',
+      publicId: '',
       ctaText: 'Shop Now',
       ctaLink: '/#catalog',
       secondaryCtaText: '',
@@ -159,6 +168,7 @@ export const BannerManagement: React.FC = () => {
       subtitle: banner.subtitle || '',
       badgeText: banner.badgeText || '',
       imageUrl: banner.imageUrl,
+      publicId: '',
       ctaText: banner.ctaText || 'Shop Now',
       ctaLink: banner.ctaLink || '/#catalog',
       secondaryCtaText: banner.secondaryCtaText || '',
@@ -193,7 +203,6 @@ export const BannerManagement: React.FC = () => {
     } finally {
       setUploadingImage(false);
     }
-    return false;
   };
 
   const handleToggleActive = async (banner: BannerItem) => {
@@ -239,11 +248,26 @@ export const BannerManagement: React.FC = () => {
 
     setSubmitting(true);
     try {
+      let finalImageUrl = formData.imageUrl.trim();
+      if (
+        formData.publicId &&
+        (formData.publicId.includes('/Temporary/') || formData.publicId.startsWith('HimalayaOnlineShop/Temporary'))
+      ) {
+        try {
+          const commitRes = await ecommerceService.commitImage(formData.publicId, 'Admin/Banners');
+          if (commitRes.success && commitRes.data?.url) {
+            finalImageUrl = commitRes.data.url;
+          }
+        } catch (err) {
+          console.warn('Commit banner image notice:', err);
+        }
+      }
+
       const payload: Partial<BannerItem> = {
         title: formData.title.trim(),
         subtitle: formData.subtitle.trim(),
         badgeText: formData.badgeText.trim(),
-        imageUrl: formData.imageUrl.trim(),
+        imageUrl: finalImageUrl,
         ctaText: formData.ctaText.trim(),
         ctaLink: formData.ctaLink.trim(),
         secondaryCtaText: formData.secondaryCtaText.trim(),
@@ -512,188 +536,269 @@ export const BannerManagement: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto space-y-6">
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb
-        items={[
-          { title: <span className="text-slate-400">Admin</span> },
-          { title: <span className="font-semibold text-slate-700">Hero & Banner Management</span> },
-        ]}
-      />
-
-      {/* Header & Metric Cards */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-              <PictureOutlined className="text-sky-600" />
-              Hero Section & Promotional Banners
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Design, schedule, and automate promotional hero banners with real-time schedule, day slots, and campaign priorities.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <AppButton
-              type="primary"
-              onClick={handleOpenCreateModal}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-sm"
-            >
-              <PlusOutlined />
-              <span>Create Banner</span>
-            </AppButton>
-          </div>
-        </div>
-
-        {/* 4 KPI Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2 border-t border-slate-100">
-          <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-100">
-            <div className="flex items-center justify-between text-xs font-bold text-emerald-800 mb-1">
-              <span>Active Right Now</span>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            </div>
-            <div className="text-2xl font-black text-emerald-950">{stats.activeNowCount}</div>
-            <div className="text-[11px] text-emerald-700/80 mt-0.5">Currently serving shoppers</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-sky-50/60 border border-sky-100">
-            <div className="flex items-center justify-between text-xs font-bold text-sky-800 mb-1">
-              <span>Scheduled Upcoming</span>
-              <ClockCircleOutlined className="text-sky-600" />
-            </div>
-            <div className="text-2xl font-black text-sky-950">{stats.scheduledCount}</div>
-            <div className="text-[11px] text-sky-700/80 mt-0.5">Automated future releases</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-100">
-            <div className="flex items-center justify-between text-xs font-bold text-purple-800 mb-1">
-              <span>Total Impressions</span>
-              <EyeOutlined className="text-purple-600" />
-            </div>
-            <div className="text-2xl font-black text-purple-950">{stats.totalImpressions.toLocaleString()}</div>
-            <div className="text-[11px] text-purple-700/80 mt-0.5">Storefront hero views</div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-100">
-            <div className="flex items-center justify-between text-xs font-bold text-amber-800 mb-1">
-              <span>Clicks & CTR</span>
-              <RiseOutlined className="text-amber-600" />
-            </div>
-            <div className="text-2xl font-black text-amber-950">
-              {stats.totalClicks.toLocaleString()} <span className="text-sm font-bold text-amber-700">({stats.avgCtr}%)</span>
-            </div>
-            <div className="text-[11px] text-amber-700/80 mt-0.5">Average conversion rate</div>
-          </div>
-        </div>
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
+      {/* Top Bar: Breadcrumb */}
+      <div className="shrink-0">
+        <Breadcrumb
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
+          items={[
+            {
+              title: (
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
+                  Admin
+                </Link>
+              ),
+            },
+            {
+              title: <span className="text-slate-800 font-bold">Hero Banners</span>,
+            },
+          ]}
+        />
       </div>
 
-      {/* Filters Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
-        <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
-          <div className="relative w-full max-w-sm">
-            <SearchOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-            <input
-              type="text"
-              placeholder="Search by title, subtitle, or badge..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
+      {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions (Independent Scroll) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
+        {/* Left Column: Hero & Banners Directory Table */}
+        <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
+          {/* Header Toolbar: Title + Search + Filters */}
+          <div className="pl-0 pr-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
+            <div className="shrink-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
+                Hero Banners
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              {/* Search Input */}
+              <div className="w-full sm:w-[190px]">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  placeholder="Search by title, subtitle..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  allowClear
+                />
+              </div>
+
+              {/* Position Filter */}
+              <div className="w-[145px] shrink-0">
+                <AppSelect
+                  value={positionFilter}
+                  onChange={(val) => {
+                    setPositionFilter(val as string);
+                    setPage(1);
+                  }}
+                  options={[
+                    { label: 'All Positions', value: 'all' },
+                    { label: 'Hero Main', value: 'hero_main' },
+                    { label: 'Secondary Hero', value: 'hero_secondary' },
+                    { label: 'Top Announcement', value: 'top_announcement' },
+                    { label: 'Flash Sale', value: 'flash_sale' },
+                  ]}
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="w-[130px] shrink-0">
+                <AppSelect
+                  value={statusFilter}
+                  onChange={(val) => {
+                    setStatusFilter(val as string);
+                    setPage(1);
+                  }}
+                  options={[
+                    { label: 'All Statuses', value: 'all' },
+                    { label: 'Live Right Now', value: 'active_now' },
+                    { label: 'Scheduled', value: 'scheduled' },
+                    { label: 'Expired', value: 'expired' },
+                    { label: 'Inactive / Paused', value: 'inactive' },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Table Body (Independent Scroll Area) */}
+          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll">
+            <AppTable
+              columns={columns}
+              data={banners}
+              loading={loading}
+              rowKey="_id"
+              pagination={false}
             />
           </div>
 
-          <Select
-            value={positionFilter}
-            onChange={(val) => {
-              setPositionFilter(val);
-              setPage(1);
-            }}
-            className="w-48 text-xs"
-            options={[
-              { label: 'All Positions', value: 'all' },
-              { label: 'Hero Main (Storefront)', value: 'hero_main' },
-              { label: 'Secondary Hero', value: 'hero_secondary' },
-              { label: 'Top Announcement', value: 'top_announcement' },
-              { label: 'Flash Sale Banner', value: 'flash_sale' },
-            ]}
-          />
-
-          <Select
-            value={statusFilter}
-            onChange={(val) => {
-              setStatusFilter(val);
-              setPage(1);
-            }}
-            className="w-44 text-xs"
-            options={[
-              { label: 'All Statuses', value: 'all' },
-              { label: 'Live Right Now', value: 'active_now' },
-              { label: 'Scheduled Upcoming', value: 'scheduled' },
-              { label: 'Expired', value: 'expired' },
-              { label: 'Inactive / Paused', value: 'inactive' },
-            ]}
-          />
-        </div>
-
-        <div className="text-xs text-slate-500 font-medium">
-          Showing <span className="font-bold text-slate-800">{banners.length}</span> of {total} banners
-        </div>
-      </div>
-
-      {/* AppTable with Cyan Footer & Paginator */}
-      <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <AppTable
-          columns={columns}
-          data={banners}
-          loading={loading}
-          rowKey="_id"
-          pagination={false}
-        />
-
-        {/* Signature Cyan 30px Footer */}
-        <div className="h-[30px] bg-[#0096C7] px-4 flex items-center justify-between text-white text-xs select-none">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold uppercase tracking-wider text-[11px]">Banners: {total}</span>
-            <span className="text-white/60">•</span>
-            <span className="text-[11px] text-white/90">Page {page} of {Math.ceil(total / limit) || 1}</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-[11px]">
-              <span>Rows:</span>
-              <select
-                value={limit}
-                onChange={(e) => {
-                  setLimit(Number(e.target.value));
-                  setPage(1);
-                }}
-                className="bg-white/20 text-white font-semibold text-[11px] rounded px-1.5 py-0.5 border-none outline-none cursor-pointer"
-              >
-                <option value={5} className="text-slate-800">5</option>
-                <option value={10} className="text-slate-800">10</option>
-                <option value={20} className="text-slate-800">20</option>
-                <option value={50} className="text-slate-800">50</option>
-              </select>
+          {/* Table Footer: Matching Brand pagination footer */}
+          <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
+            {/* Left Side: Count */}
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="font-medium text-white/90 text-[11px] leading-none">Total Banners:</span>
+              <span className="font-bold text-white text-[11px] leading-none">
+                {total} Items
+              </span>
             </div>
 
-            <div className="flex items-center gap-1">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-2 py-0.5 bg-white/20 hover:bg-white/30 disabled:opacity-40 rounded text-[11px] font-bold cursor-pointer transition-colors"
-              >
-                ‹ Prev
-              </button>
-              <button
-                disabled={page >= Math.ceil(total / limit)}
-                onClick={() => setPage((p) => p + 1)}
-                className="px-2 py-0.5 bg-white/20 hover:bg-white/30 disabled:opacity-40 rounded text-[11px] font-bold cursor-pointer transition-colors"
-              >
-                Next ›
-              </button>
+            {/* Right Side: Pagination Controls */}
+            {total > 0 && (
+              <div className="flex items-center gap-2.5 leading-none">
+                <div className="flex items-center gap-1.5 text-[10px] text-white/95 font-medium leading-none">
+                  <span>Items:</span>
+                  <Dropdown
+                    menu={{
+                      items: [
+                        { key: '5', label: <span className="font-semibold text-xs text-slate-800">5 / page</span> },
+                        { key: '10', label: <span className="font-semibold text-xs text-slate-800">10 / page</span> },
+                        { key: '20', label: <span className="font-semibold text-xs text-slate-800">20 / page</span> },
+                        { key: '50', label: <span className="font-semibold text-xs text-slate-800">50 / page</span> },
+                      ],
+                      selectedKeys: [String(limit)],
+                      onClick: ({ key }) => {
+                        setLimit(Number(key));
+                        setPage(1);
+                      },
+                    }}
+                    trigger={['click']}
+                    placement="topRight"
+                  >
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 active:bg-white/40 border border-white/35 text-white font-bold text-[10px] rounded px-1.5 h-[20px] outline-none cursor-pointer transition-all leading-none"
+                      title="Change page size"
+                    >
+                      <span>{limit}</span>
+                      <DownOutlined className="text-[7px] text-white/85" />
+                    </button>
+                  </Dropdown>
+                </div>
+
+                <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                  {total > 0 ? (page - 1) * limit + 1 : 0}-{Math.min(page * limit, total)} of {total}
+                </span>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    title="Previous page"
+                    className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
+                  >
+                    <LeftOutlined className="text-[8px]" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={page >= Math.ceil(total / limit)}
+                    onClick={() => setPage((p) => p + 1)}
+                    title="Next page"
+                    className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
+                  >
+                    <RightOutlined className="text-[8px]" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Create Banner Card + Performance Summary Metrics (Independent Scroll Area) */}
+        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
+          {/* Card 1: Create New Banner */}
+          <div className="bg-white rounded-2xl shadow-xs px-4 py-3 flex items-center">
+            <button
+              type="button"
+              onClick={handleOpenCreateModal}
+              className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+            >
+              <PlusOutlined className="text-xs" />
+              <span>Create New Banner</span>
+            </button>
+          </div>
+
+          {/* Card 2: Performance Summary (Static Clean View) */}
+          <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+            <div className="flex items-center justify-between pb-1">
+              <h4 className="text-xs font-bold text-slate-900">Hero Summary</h4>
+              <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
+                Live Stats
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              {/* Metric 1: Active Right Now */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Active Right Now
+                  </span>
+                  <span className="text-2xl font-black text-emerald-600 leading-tight block">
+                    {stats.activeNowCount}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Serving shoppers
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                  <PictureOutlined />
+                </div>
+              </div>
+
+              {/* Metric 2: Scheduled Upcoming */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Scheduled Upcoming
+                  </span>
+                  <span className="text-2xl font-black text-slate-900 leading-tight block">
+                    {stats.scheduledCount}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Automated releases
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0">
+                  <ClockCircleOutlined />
+                </div>
+              </div>
+
+              {/* Metric 3: Total Impressions */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Impressions
+                  </span>
+                  <span className="text-2xl font-black text-purple-600 leading-tight block">
+                    {stats.totalImpressions.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Storefront hero views
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg shrink-0">
+                  <EyeOutlined />
+                </div>
+              </div>
+
+              {/* Metric 4: Clicks & CTR */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Clicks (CTR {stats.avgCtr}%)
+                  </span>
+                  <span className="text-2xl font-black text-amber-600 leading-tight block">
+                    {stats.totalClicks.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Avg conversion rate
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                  <RiseOutlined />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -780,47 +885,20 @@ export const BannerManagement: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Image URL & Upload */}
+                    {/* Banner Image Dropzone with AppImageUpload */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Banner Image <span className="text-rose-500">*</span>
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="https://images.unsplash.com/... or upload via Cloudinary"
-                          value={formData.imageUrl}
-                          onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                          required
-                          className="flex-1 px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
-                        />
-                        <Upload
-                          beforeUpload={(file) => {
-                            handleImageUpload(file);
-                            return false;
-                          }}
-                          showUploadList={false}
-                          accept="image/*"
-                        >
-                          <AppButton
-                            disabled={uploadingImage}
-                            className="px-3 py-2 text-xs flex items-center gap-1.5"
-                          >
-                            {uploadingImage ? <LoadingOutlined /> : <UploadOutlined />}
-                            <span>Upload</span>
-                          </AppButton>
-                        </Upload>
-                      </div>
-
-                      {formData.imageUrl && (
-                        <div className="mt-2 relative w-full h-24 rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
-                          <img
-                            src={formData.imageUrl}
-                            alt="Banner preview"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
+                      <AppImageUpload
+                        label="Banner Background Image"
+                        value={formData.imageUrl}
+                        onChange={(url: string) => {
+                          setFormData((prev) => ({
+                            ...prev,
+                            imageUrl: url,
+                          }));
+                        }}
+                        onUpload={handleImageUpload}
+                        loading={uploadingImage}
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
