@@ -618,7 +618,7 @@ export const PermissionManagement: React.FC = () => {
               </span>
             )}
             <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
-              <span>Role: <strong className="text-slate-800 uppercase">{selectedRoleId}</strong></span>
+              <strong className="text-slate-800 uppercase">{selectedRoleId}</strong>
               <span className="px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700 text-[10px] font-mono font-bold">
                 {assignedCodes.has('*') ? 'Wildcard (*)' : `${assignedCodes.size} assigned`}
               </span>
@@ -628,7 +628,6 @@ export const PermissionManagement: React.FC = () => {
           {/* Right Side: Quick Batch Actions + Reset & Save Policy Buttons */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-slate-500 text-[11px] font-medium mr-1">Quick Batch:</span>
               <button
                 type="button"
                 onClick={handleGrantAllRead}
