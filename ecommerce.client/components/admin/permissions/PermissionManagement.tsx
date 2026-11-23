@@ -607,9 +607,9 @@ export const PermissionManagement: React.FC = () => {
           </div>
         </div>
 
-        {/* Secondary Action Strip: Role Status & Quick Batch Actions */}
+        {/* Secondary Action Strip: Quick Batch Actions & Save Policy */}
         <div className="px-6 py-2 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3 text-xs">
-          {/* Left Side: Role Identity & Status Badge (Swapped to Left) */}
+          {/* Left Side: Super Admin indicator if active */}
           <div className="flex items-center gap-2">
             {isSuperAdminRole && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-semibold">
@@ -617,16 +617,10 @@ export const PermissionManagement: React.FC = () => {
                 Super Admin: Unrestricted Root Access (*)
               </span>
             )}
-            <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
-              <strong className="text-slate-800 uppercase">{selectedRoleId}</strong>
-              <span className="px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700 text-[10px] font-mono font-bold">
-                {assignedCodes.has('*') ? 'Wildcard (*)' : `${assignedCodes.size} assigned`}
-              </span>
-            </div>
           </div>
 
           {/* Right Side: Quick Batch Actions + Reset & Save Policy Buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap ml-auto">
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 type="button"
