@@ -523,7 +523,6 @@ export const MenuManagement: React.FC = () => {
                   { label: 'All Menus & Submenus', value: 'all' },
                   { label: 'Root Menus Only', value: 'root' },
                   { label: 'Submenus Only', value: 'sub' },
-                  { label: 'Primary Menus Only', value: 'primary' },
                   { label: 'Single Page Only', value: 'single' },
                   ...rootMenusList.map((r) => ({
                     label: `Submenus of: ${r.name}`,
@@ -613,11 +612,6 @@ export const MenuManagement: React.FC = () => {
                           <div className="min-w-0">
                             <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
                               <span>{m.name}</span>
-                              {m.isPrimary && (
-                                <Tag className="m-0 text-[9px] font-bold px-1 py-0 rounded bg-amber-50 text-amber-700 border-0">
-                                  Primary
-                                </Tag>
-                              )}
                             </div>
                             <div className="text-[10px] text-slate-400 font-mono">
                               icon: {m.icon}
@@ -948,7 +942,7 @@ export const MenuManagement: React.FC = () => {
                             ).toString();
                             return {
                               filterValue: `${r.name} ${r.path} ${valStr}`,
-                              label: `${r.menuId ? `[${r.menuId}] ` : ''}${r.name} (${r.path})`,
+                              label: r.name,
                               value: valStr,
                             };
                           }),
@@ -999,7 +993,7 @@ export const MenuManagement: React.FC = () => {
                             ).toString();
                             return {
                               filterValue: `${m.name} ${m.path} ${valStr}`,
-                              label: `${m.menuId ? `[${m.menuId}] ` : ''}${m.name} (${m.path})`,
+                              label: m.name,
                               value: valStr,
                             };
                           }),
