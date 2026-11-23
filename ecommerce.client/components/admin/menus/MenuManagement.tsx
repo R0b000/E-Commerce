@@ -466,39 +466,34 @@ export const MenuManagement: React.FC = () => {
   const paginatedItems = filteredList.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif]">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
       {/* Breadcrumb Navigation */}
-      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-2">
+      <div className="px-2 flex items-center justify-between gap-1.5 text-[11px] leading-none text-slate-500 font-semibold shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Admin
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Menu Setup</span>,
+              title: <span className="text-slate-700 font-semibold">Menu Setup</span>,
             },
           ]}
         />
       </div>
 
       {/* Main Menu Directory Card */}
-      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs border border-slate-200/80">
+      <div className="flex-1 min-h-0 bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
         {/* Table Top Controls */}
-        <div className="pl-0 pr-4 py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+        <div className="pl-0 pr-4 py-3 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl shrink-0">
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Menu Setup & Hierarchy
-              </h3>
-              <Tag className="m-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 text-[#0096C7] border-cyan-200">
-                Menu Management
-              </Tag>
-            </div>
+            <h3 className="text-base font-bold text-slate-900 tracking-tight">
+              Menu Setup
+            </h3>
           </div>
 
           {/* Action Toolbar on Right */}
@@ -550,7 +545,7 @@ export const MenuManagement: React.FC = () => {
         </div>
 
         {/* Table Body */}
-        <div className="overflow-x-auto">
+        <div className="flex-1 min-h-0 overflow-auto">
           <AppTable>
             <thead>
               <tr>
@@ -586,7 +581,7 @@ export const MenuManagement: React.FC = () => {
                     >
                       {/* Menu ID */}
                       <td className="py-3 px-4 font-mono font-bold text-slate-700">
-                        <Tag className="m-0 font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border-slate-200">
+                        <Tag className="m-0 font-mono text-[11px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border-0">
                           {m.menuId !== null && m.menuId !== undefined ? m.menuId : m._id.slice(-4)}
                         </Tag>
                       </td>
@@ -607,10 +602,10 @@ export const MenuManagement: React.FC = () => {
                       <td className="py-3 px-4">
                         <div className={`flex items-center gap-2.5 ${isSubmenu ? 'pl-3' : ''}`}>
                           <div
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-base border shrink-0 ${
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center text-base shrink-0 ${
                               isSubmenu
-                                ? 'bg-purple-50 text-purple-600 border-purple-100'
-                                : 'bg-sky-50 text-[#0096C7] border-sky-100'
+                                ? 'bg-purple-50 text-purple-600'
+                                : 'bg-sky-50 text-[#0096C7]'
                             }`}
                           >
                             {getMenuIconElement(m.icon)}
@@ -619,7 +614,7 @@ export const MenuManagement: React.FC = () => {
                             <div className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
                               <span>{m.name}</span>
                               {m.isPrimary && (
-                                <Tag className="m-0 text-[9px] font-bold px-1 py-0 rounded bg-amber-50 text-amber-700 border-amber-200">
+                                <Tag className="m-0 text-[9px] font-bold px-1 py-0 rounded bg-amber-50 text-amber-700 border-0">
                                   Primary
                                 </Tag>
                               )}
@@ -633,7 +628,7 @@ export const MenuManagement: React.FC = () => {
 
                       {/* Route Path */}
                       <td className="py-3 px-4 font-mono text-slate-700">
-                        <span className="bg-slate-50 px-2 py-0.5 rounded border border-slate-200/60">
+                        <span className="bg-slate-50 px-2 py-0.5 rounded">
                           {m.path}
                         </span>
                       </td>
@@ -641,14 +636,14 @@ export const MenuManagement: React.FC = () => {
                       {/* Hierarchy Level */}
                       <td className="py-3 px-4">
                         {isSubmenu ? (
-                          <Tag className="m-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border-purple-200 inline-flex items-center gap-1">
+                          <Tag className="m-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border-0 inline-flex items-center gap-1">
                             <BranchesOutlined className="text-[10px]" />
                             <span>
                               Submenu of: <strong>{parentName || 'Parent'}</strong>
                             </span>
                           </Tag>
                         ) : (
-                          <Tag className="m-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border-blue-200 inline-flex items-center gap-1">
+                          <Tag className="m-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border-0 inline-flex items-center gap-1">
                             <FolderOutlined className="text-[10px]" />
                             <span>
                               {subCount && subCount > 0
@@ -663,11 +658,11 @@ export const MenuManagement: React.FC = () => {
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-1">
                           {m.isSinglePage ? (
-                            <Tag className="m-0 text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
+                            <Tag className="m-0 text-[10px] bg-emerald-50 text-emerald-700 border-0">
                               Single Page
                             </Tag>
                           ) : (
-                            <Tag className="m-0 text-[10px] bg-slate-50 text-slate-500 border-slate-200">
+                            <Tag className="m-0 text-[10px] bg-slate-50 text-slate-500 border-0">
                               Group
                             </Tag>
                           )}
@@ -735,7 +730,7 @@ export const MenuManagement: React.FC = () => {
         </div>
 
         {/* Table Footer */}
-        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+        <div className="px-6 h-[32px] min-h-[32px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Menus:</span>
             <span className="font-bold text-white text-[11px] leading-none">
