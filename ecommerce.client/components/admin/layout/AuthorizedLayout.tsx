@@ -718,7 +718,8 @@ export const AuthorizedLayout: React.FC = () => {
     location.pathname.startsWith('/admin/reviews') ||
     location.pathname.startsWith('/admin/discounts') ||
     location.pathname.startsWith('/admin/banners') ||
-    location.pathname.startsWith('/admin/customers');
+    location.pathname.startsWith('/admin/customers') ||
+    location.pathname.startsWith('/admin/audit-logs');
 
   return (
     <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Poppins','Inter',sans-serif] antialiased overflow-hidden">
