@@ -16,13 +16,15 @@ import {
   PictureOutlined,
   ShoppingOutlined,
   CheckCircleOutlined,
+  QrcodeOutlined,
 } from '@ant-design/icons';
-import { Tag, Checkbox, Spin, Popconfirm, Breadcrumb, Upload, Dropdown } from 'antd';
+import { Tag, Checkbox, Spin, Popconfirm, Breadcrumb, Upload, Dropdown, Tooltip } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Product, Category } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { usePermissions } from '../../../context/PermissionContext';
+import { ProductQrModal } from './ProductQrModal';
 import {
   AppTable,
   AppButton,
@@ -77,6 +79,7 @@ export const ProductManagement: React.FC = () => {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [qrProduct, setQrProduct] = useState<Product | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Form State
@@ -602,7 +605,19 @@ export const ProductManagement: React.FC = () => {
 
                         {/* Actions */}
                         <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Tooltip title="Advertisement QR Hub (Product View & Website)">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setQrProduct(p);
+                                }}
+                                className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-[#0096C7] hover:border-[#0096C7] hover:bg-sky-50 transition-colors cursor-pointer"
+                              >
+                                <QrcodeOutlined className="text-xs" />
+                              </button>
+                            </Tooltip>
                             {canEdit && (
                               <AppButton
                                 size="small"
@@ -1114,6 +1129,13 @@ export const ProductManagement: React.FC = () => {
           </div>
         </form>
       </AppModal>
+
+      {/* Product Marketing & Advertisement QR Hub */}
+      <ProductQrModal
+        product={qrProduct}
+        open={Boolean(qrProduct)}
+        onClose={() => setQrProduct(null)}
+      />
     </div>
   );
 };
