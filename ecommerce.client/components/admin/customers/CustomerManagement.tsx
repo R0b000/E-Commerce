@@ -33,6 +33,7 @@ import {
   AppTable,
   AppButton,
   AppInput,
+  AppSelect,
   AppModal,
   PageHeader,
   TableSkeleton,
@@ -189,39 +190,29 @@ export const CustomerManagement: React.FC = () => {
                 />
               </form>
 
-              {/* Role Filter Tabs */}
-              <div className="flex items-center gap-1 overflow-x-auto">
-                {[
-                  { key: 'all', label: 'All Accounts', icon: null },
-                  { key: 'customer', label: 'Customers', icon: <ShoppingOutlined /> },
-                  { key: 'seller', label: 'Sellers', icon: <ShopOutlined /> },
-                  { key: 'support', label: 'Support', icon: <CustomerServiceOutlined /> },
-                  { key: 'manager', label: 'Managers', icon: <AppstoreOutlined /> },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => {
-                      setSelectedRoleFilter(tab.key);
-                      setCurrentPage(1);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1 ${
-                      selectedRoleFilter === tab.key
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
+              {/* Role Filter Dropdown */}
+              <div className="w-full sm:w-[160px] shrink-0">
+                <AppSelect
+                  value={selectedRoleFilter}
+                  onChange={(val) => {
+                    setSelectedRoleFilter(val as string);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { label: 'All Accounts', value: 'all' },
+                    { label: 'Customers', value: 'customer' },
+                    { label: 'Sellers', value: 'seller' },
+                    { label: 'Support', value: 'support' },
+                    { label: 'Managers', value: 'manager' },
+                  ]}
+                />
               </div>
             </div>
           </div>
 
           {/* Table Content Canvas (independent scroll) */}
-          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll">
-            <AppTable>
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <AppTable wrapperClassName="h-full flex-1 flex flex-col min-h-0" className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">User / Merchant</th>
@@ -387,7 +378,7 @@ export const CustomerManagement: React.FC = () => {
         </div>
 
         {/* Signature Cyan Footer Toolbar (Fixed at Bottom of Column) */}
-        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
           {/* Left Side: Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Accounts:</span>
