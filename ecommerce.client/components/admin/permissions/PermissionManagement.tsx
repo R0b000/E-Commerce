@@ -176,7 +176,7 @@ export const PermissionManagement: React.FC = () => {
         order: 3,
         category: 'Sales',
         children: [
-          { name: 'Customer Orders', types: ['Read', 'Update', 'Delete'], codePrefix: 'orders' },
+          { name: 'Customer Orders', types: ['Read', 'Update'], codePrefix: 'orders' },
           { name: 'Order Status & Tracking', types: ['Read', 'Update'], codePrefix: 'orders' },
           { name: 'Customer Reviews', types: ['Read', 'Update', 'Delete'], codePrefix: 'reviews' },
         ],

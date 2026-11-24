@@ -29,10 +29,4 @@ orderRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'seller
   res.status(result.statusCode || 200).json(result);
 });
 
-// Admin: Delete order
-orderRouter.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
-  const result = await orderService.deleteOrder(req.params.id, req.user);
-  res.status(result.statusCode || 200).json(result);
-});
-
 module.exports = { orderRouter };

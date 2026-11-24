@@ -37,7 +37,6 @@ async function seedData() {
       { code: 'pages:categories', name: 'Categories Page', module: 'Catalog', description: 'Manage department classifications' },
       { code: 'pages:orders', name: 'Orders Page', module: 'Orders', description: 'Access order fulfillment and customer transactions' },
       { code: 'orders:update_status', name: 'Update Order Status', module: 'Orders', description: 'Update dispatch tracking numbers and order state' },
-      { code: 'orders:delete', name: 'Delete Order', module: 'Orders', description: 'Permanently remove orders (Admin only)' },
       { code: 'pages:customers', name: 'Customer Directory', module: 'Directory', description: 'View registered shopper profiles' },
       { code: 'pages:roles', name: 'Role Management', module: 'Access Control', description: 'Manage customer and seller role permissions' },
       { code: 'pages:permissions', name: 'Permission Management', module: 'Access Control', description: 'Grant special user permissions and create permissions' },

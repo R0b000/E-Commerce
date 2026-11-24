@@ -174,24 +174,6 @@ export const BillingManagement: React.FC = () => {
     }
   };
 
-  // Delete invoice
-  const handleDeleteInvoice = async (inv: BillingRecord) => {
-    const invId = inv._id || inv.id;
-    if (!invId) return;
-
-    try {
-      const res = await ecommerceService.deleteBilling(invId);
-      if (res.success) {
-        showToast(`Invoice ${inv.invoiceNumber} voided`, 'success');
-        loadBillingData();
-      } else {
-        showToast(res.messages?.[0] || 'Failed to delete invoice', 'error');
-      }
-    } catch {
-      showToast('Error deleting invoice', 'error');
-    }
-  };
-
   // Handle Create Invoice Submission
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -472,23 +454,6 @@ export const BillingManagement: React.FC = () => {
                                 />
                               </Popconfirm>
                             )}
-
-                            {/* Delete / Void Invoice */}
-                            <Popconfirm
-                              title="Void Invoice"
-                              description={`Are you sure you want to delete invoice "${inv.invoiceNumber}"?`}
-                              onConfirm={() => handleDeleteInvoice(inv)}
-                              okText="Yes, Void"
-                              cancelText="Cancel"
-                              okButtonProps={{ danger: true }}
-                            >
-                              <AppButton
-                                size="small"
-                                danger
-                                icon={<DeleteOutlined />}
-                                title="Void Invoice"
-                              />
-                            </Popconfirm>
                           </div>
                         </td>
                       </tr>

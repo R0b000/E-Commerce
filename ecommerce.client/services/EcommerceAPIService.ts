@@ -116,11 +116,6 @@ export class EcommerceAPIService {
     return res.data;
   }
 
-  async deleteOrder(id: string) {
-    const res = await axiosConfig.delete<{ success: boolean; messages: string[] }>(`/ecommerce/orders/${id}`);
-    return res.data;
-  }
-
   // Dashboard Metrics
   async getDashboardMetrics() {
     const res = await axiosConfig.get<{ success: boolean; data: DashboardMetrics }>('/ecommerce/dashboard/overview');
@@ -286,11 +281,6 @@ export class EcommerceAPIService {
 
   async updateBillingStatus(id: string, data: { paymentStatus?: string; paymentMethod?: string; notes?: string }) {
     const res = await axiosConfig.patch<{ success: boolean; data: BillingRecord; messages?: string[] }>(`/ecommerce/billing/${id}/status`, data);
-    return res.data;
-  }
-
-  async deleteBilling(id: string) {
-    const res = await axiosConfig.delete<{ success: boolean; messages: string[] }>(`/ecommerce/billing/${id}`);
     return res.data;
   }
 

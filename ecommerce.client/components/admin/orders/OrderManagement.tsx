@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import {
   SearchOutlined,
   EyeOutlined,
-  DeleteOutlined,
   SyncOutlined,
   UserOutlined,
   EnvironmentOutlined,
@@ -16,7 +15,7 @@ import {
   CheckCircleOutlined,
   DollarOutlined,
 } from '@ant-design/icons';
-import { Popconfirm, Spin, Tag, Breadcrumb, Dropdown } from 'antd';
+import { Spin, Tag, Breadcrumb, Dropdown } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Order } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -38,7 +37,6 @@ export const OrderManagement: React.FC = () => {
   const { can } = usePermissions();
 
   const canEditOrders = can('edit', 'orders');
-  const canDeleteOrders = can('delete', 'orders');
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,26 +170,6 @@ export const OrderManagement: React.FC = () => {
       showToast('Failed to update order status', 'error');
     } finally {
       setUpdatingStatus(false);
-    }
-  };
-
-  const handleDeleteOrder = async (order: Order) => {
-    if (!canDeleteOrders) {
-      showToast('Permission denied: You do not have permission to delete orders', 'error');
-      return;
-    }
-    const orderId = order._id || order.id;
-    try {
-      const res = await ecommerceService.deleteOrder(orderId!);
-      if (res.success) {
-        showToast('Order removed', 'success');
-        setOrders((prev) => prev.filter((o) => (o._id || o.id) !== orderId));
-        if (selectedOrder && (selectedOrder._id || selectedOrder.id) === orderId) {
-          setSelectedOrder(null);
-        }
-      }
-    } catch (err: any) {
-      showToast(err.response?.data?.messages?.[0] || 'Failed to delete order', 'error');
     }
   };
 
@@ -367,22 +345,6 @@ export const OrderManagement: React.FC = () => {
                               style={{ backgroundColor: '#0096c7' }}
                               title="Track & Map"
                             />
-                            {canDeleteOrders && !isSeller && (
-                              <Popconfirm
-                                title="Delete Order"
-                                description={`Delete order ${order.orderNumber}?`}
-                                onConfirm={() => handleDeleteOrder(order)}
-                                okText="Yes, Delete"
-                                cancelText="Cancel"
-                                okButtonProps={{ danger: true }}
-                              >
-                                <AppButton
-                                  size="small"
-                                  danger
-                                  icon={<DeleteOutlined />}
-                                />
-                              </Popconfirm>
-                            )}
                           </div>
                         </td>
                       </tr>

@@ -359,21 +359,6 @@ class BillingService {
       return ApiResponse.fail(error.message, [error.message], 500);
     }
   }
-
-  /**
-   * Delete or void an invoice
-   */
-  async deleteBilling(id, user = null) {
-    try {
-      const invoice = await Billing.findByIdAndDelete(id);
-      if (!invoice) {
-        return ApiResponse.fail('Invoice not found', [], 404);
-      }
-      return ApiResponse.success({ id }, ['Invoice deleted successfully']);
-    } catch (error) {
-      return ApiResponse.fail(error.message, [error.message], 500);
-    }
-  }
 }
 
 module.exports = { BillingService };
