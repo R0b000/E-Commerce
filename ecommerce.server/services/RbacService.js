@@ -279,20 +279,53 @@ class RbacService {
           isActive: true,
         },
 
-        // 5. Accounts (Single Page)
+        // 5. Accounts (Parent Menu)
         {
           menuId: 5,
           name: 'Accounts',
-          menuNameNepali: '',
-          path: '/admin/customers',
+          menuNameNepali: 'खाताहरू',
+          path: '/admin/accounts/employees',
           icon: 'groups',
           order: 5,
           parentId: null,
+          isSinglePage: false,
+          isPrimary: false,
+          isNotParent: false,
+          isNotChild: true,
+          roles: ['admin', 'manager', 'support'],
+          isActive: true,
+        },
+        // 5.1 Accounts Submenus
+        {
+          menuId: 51,
+          name: 'Employee',
+          menuNameNepali: 'कर्मचारीहरू',
+          path: '/admin/accounts/employees',
+          icon: 'badge',
+          order: 1,
+          parentId: 5,
           isSinglePage: true,
           isPrimary: false,
+          isChild: true,
           isNotParent: true,
-          isNotChild: true,
-          roles: ['admin', 'seller', 'support', 'manager'],
+          isNotChild: false,
+          roles: ['admin', 'manager', 'support'],
+          isActive: true,
+        },
+        {
+          menuId: 52,
+          name: 'Client',
+          menuNameNepali: 'ग्राहक तथा बिक्रेता',
+          path: '/admin/accounts/clients',
+          icon: 'groups',
+          order: 2,
+          parentId: 5,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin', 'manager', 'support', 'seller'],
           isActive: true,
         },
 
@@ -587,7 +620,7 @@ class RbacService {
 
       // Filter out empty parent categories if user has no access to any of its children
       const finalRoots = roots.filter((root) => {
-        if (['Account', 'Logs', 'Setting'].includes(root.name) && (!root.subItems || root.subItems.length === 0)) {
+        if (['Account', 'Accounts', 'Logs', 'Setting'].includes(root.name) && (!root.subItems || root.subItems.length === 0)) {
           return false;
         }
         return true;

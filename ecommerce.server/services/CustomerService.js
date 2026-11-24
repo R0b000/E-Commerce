@@ -7,11 +7,15 @@ const { emitNotification } = require('../socket/SocketServer');
 class CustomerService {
   async getCustomers(queryParams = {}) {
     try {
-      const { search, role } = queryParams;
+      const { search, role, type } = queryParams;
       const filter = {};
 
       if (role && role !== 'all') {
         filter.role = role.toLowerCase();
+      } else if (type === 'employee') {
+        filter.role = { $nin: ['customer', 'user', 'seller'] };
+      } else if (type === 'client') {
+        filter.role = { $in: ['customer', 'user', 'seller'] };
       }
 
       if (search) {

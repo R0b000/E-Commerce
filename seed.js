@@ -106,8 +106,10 @@ async function seedData() {
       { menuId: 41, name: 'Discounts & Coupons', menuNameNepali: 'छुट र कुपन', path: '/admin/discounts', icon: 'tune', order: 1, parentId: 4, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager'], isActive: true },
       { menuId: 42, name: 'Hero Banners', menuNameNepali: 'ब्यानरहरू', path: '/admin/banners', icon: 'photo_camera', order: 2, parentId: 4, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager'], isActive: true },
 
-      // 5. Accounts (Single Page)
-      { menuId: 5, name: 'Accounts', menuNameNepali: 'खाताहरू', path: '/admin/customers', icon: 'groups', order: 5, parentId: null, isSinglePage: true, isPrimary: false, isNotParent: true, isNotChild: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
+      // 5. Accounts (Parent Menu)
+      { menuId: 5, name: 'Accounts', menuNameNepali: 'खाताहरू', path: '/admin/accounts/employees', icon: 'groups', order: 5, parentId: null, isSinglePage: false, isPrimary: false, isNotParent: false, isNotChild: true, roles: ['admin', 'manager', 'support'], isActive: true },
+      { menuId: 51, name: 'Employee', menuNameNepali: 'कर्मचारीहरू', path: '/admin/accounts/employees', icon: 'badge', order: 1, parentId: 5, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager', 'support'], isActive: true },
+      { menuId: 52, name: 'Client', menuNameNepali: 'ग्राहक तथा बिक्रेता', path: '/admin/accounts/clients', icon: 'groups', order: 2, parentId: 5, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager', 'support', 'seller'], isActive: true },
 
       // 6. Auth (Parent Menu)
       { menuId: 10, name: 'Auth', menuNameNepali: 'प्रमाणीकरण', path: '/admin/auth', icon: 'shield', order: 6, parentId: null, isSinglePage: false, isPrimary: false, isNotParent: false, isNotChild: true, roles: ['admin'], isActive: true },

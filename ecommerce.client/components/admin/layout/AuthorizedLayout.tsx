@@ -719,6 +719,9 @@ export const AuthorizedLayout: React.FC = () => {
     location.pathname.startsWith('/admin/discounts') ||
     location.pathname.startsWith('/admin/banners') ||
     location.pathname.startsWith('/admin/customers') ||
+    location.pathname.startsWith('/admin/accounts') ||
+    location.pathname.startsWith('/admin/employees') ||
+    location.pathname.startsWith('/admin/clients') ||
     location.pathname.startsWith('/admin/audit-logs') ||
     location.pathname.startsWith('/admin/security') ||
     location.pathname.startsWith('/admin/roles') ||

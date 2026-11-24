@@ -29,7 +29,18 @@ export const normalizeModuleName = (moduleOrPath: string): string => {
   
   if (clean === 'audit_log' || clean === 'audit') return 'audit';
   if (clean === 'review' || clean === 'customer_reviews') return 'reviews';
-  if (clean === 'customer') return 'customers';
+  if (
+    clean === 'customer' ||
+    clean === 'customers' ||
+    clean === 'client' ||
+    clean === 'clients' ||
+    clean === 'employee' ||
+    clean === 'employees' ||
+    clean === 'accounts' ||
+    clean.startsWith('accounts')
+  ) {
+    return 'customers';
+  }
   if (clean === 'order') return 'orders';
   if (clean === 'product') return 'products';
   if (clean === 'category') return 'categories';
