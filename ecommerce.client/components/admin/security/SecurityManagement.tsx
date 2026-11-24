@@ -336,129 +336,70 @@ export default function SecurityManagement() {
   };
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif]">
-      {/* Breadcrumb Navigation */}
-      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
+      {/* Top Bar: Breadcrumb Navigation */}
+      <div className="px-2 flex items-center justify-between gap-1.5 text-[11px] leading-none text-slate-500 font-semibold shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Admin
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Security</span>,
+              title: <span className="text-slate-700 font-semibold">Security & Device Management</span>,
             },
           ]}
         />
       </div>
 
-      {/* KPI Overview Metric Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 my-2">
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              Biometric Keys
+      {/* Main Two-Column Split (fills remaining vertical space) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
+        {/* Left Column: Security Management Tabs Canvas (fills space, independent scroll) */}
+        <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
+          {/* Table Top Controls & Integrated Header */}
+          <div className="pl-0 pr-4 py-3 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl shrink-0">
+            <div className="flex flex-col min-w-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Security & Device Management
+              </h3>
             </div>
-            <div className="text-xl font-black text-slate-900 mt-1">{passkeys.length} Registered</div>
-            <div className="text-[10px] text-slate-400">FIDO2 / WebAuthn passkeys</div>
-          </div>
-          <div className="w-9 h-9 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-lg font-bold">
-            <KeyOutlined />
-          </div>
-        </div>
 
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              Active Sessions
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Pill Tab Selectors */}
+              <div className="flex items-center gap-1 overflow-x-auto">
+                {[
+                  { key: 'passkeys', label: `Passkeys (${passkeys.length})`, icon: <KeyOutlined /> },
+                  { key: 'sessions', label: `Active Sessions (${sessions.length})`, icon: <DesktopOutlined /> },
+                  { key: '2fa', label: 'Two-Factor (TOTP)', icon: <SafetyCertificateOutlined /> },
+                  { key: 'password', label: 'Password & Alerts', icon: <LockOutlined /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setActiveTab(tab.key as any)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
+                      activeTab === tab.key
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="text-xl font-black text-slate-900 mt-1">{sessions.length} Devices</div>
-            <div className="text-[10px] text-slate-400">Authenticated clients</div>
-          </div>
-          <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg font-bold">
-            <DesktopOutlined />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              Two-Factor Auth
-            </div>
-            <div className="text-xl font-black text-slate-900 mt-1">
-              {twoFactorEnabled ? (
-                <span className="text-emerald-600">Active</span>
-              ) : (
-                <span className="text-slate-400">Disabled</span>
-              )}
-            </div>
-            <div className="text-[10px] text-slate-400">Time-based OTP token</div>
-          </div>
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
-            <SafetyCertificateOutlined />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-              Session Expiry
-            </div>
-            <div className="text-base font-black text-slate-900 mt-1 truncate">
-              {formattedExpiry || '24h Active'}
-            </div>
-            <div className="text-[10px] text-slate-400">Active token duration</div>
-          </div>
-          <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-lg font-bold">
-            <ClockCircleOutlined />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Integrated Security Card */}
-      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
-        {/* Table Top Controls & Integrated Header */}
-        <div className="pl-0 pr-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
-          <div className="flex flex-col min-w-0">
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Security & Device Management
-            </h3>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Pill Tab Selectors */}
-            <div className="flex items-center gap-1 overflow-x-auto">
-              {[
-                { key: 'passkeys', label: `Passkeys (${passkeys.length})`, icon: <KeyOutlined /> },
-                { key: 'sessions', label: `Active Sessions (${sessions.length})`, icon: <DesktopOutlined /> },
-                { key: '2fa', label: 'Two-Factor (TOTP)', icon: <SafetyCertificateOutlined /> },
-                { key: 'password', label: 'Password & Alerts', icon: <LockOutlined /> },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => setActiveTab(tab.key as any)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1.5 ${
-                    activeTab === tab.key
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Tab 1: Biometric Passkeys (AppTable Architecture) */}
-        {activeTab === 'passkeys' && (
-          <div>
+          {/* Tab Content Canvas (independent scroll) */}
+          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll flex flex-col justify-between">
+            {/* Tab 1: Biometric Passkeys (AppTable Architecture) */}
+            {activeTab === 'passkeys' && (
+              <div className="flex-1 flex flex-col justify-between min-h-0">
             {/* Sub-header Action Strip */}
             <div className="px-6 py-2.5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div>
@@ -595,7 +536,7 @@ export default function SecurityManagement() {
 
         {/* Tab 2: Active Sessions (AppTable Architecture) */}
         {activeTab === 'sessions' && (
-          <div>
+          <div className="flex-1 flex flex-col justify-between min-h-0">
             {/* Sub-header Action Strip */}
             <div className="px-6 py-2.5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2 text-xs">
               <div>
@@ -811,7 +752,7 @@ export default function SecurityManagement() {
         {/* Tab 4: Password & Alerts */}
         {activeTab === 'password' && (
           <div className="p-6 max-w-xl space-y-6">
-            <form onSubmit={handleChangePassword} className="space-y-4">
+            <form id="password-change-form" onSubmit={handleChangePassword} className="space-y-4">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <LockOutlined className="text-[#0096C7]" />
                 <span>Update Account Password</span>
@@ -891,6 +832,165 @@ export default function SecurityManagement() {
             </div>
           </div>
         )}
+          </div>
+        </div>
+
+        {/* Right Column: Contextual Action + Security Health Summary (Independent Scroll Area) */}
+        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
+          {/* Card 1: Contextual Action Button */}
+          <div className="bg-white rounded-2xl shadow-xs px-4 py-3 flex items-center">
+            {activeTab === 'passkeys' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewPasskeyName('');
+                  setIsRegisterPasskeyModalOpen(true);
+                }}
+                className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+              >
+                <PlusOutlined className="text-xs" />
+                <span>Add New Passkey</span>
+              </button>
+            )}
+            {activeTab === 'sessions' && (
+              <button
+                type="button"
+                onClick={loadSessions}
+                className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+              >
+                <SyncOutlined className={`text-xs ${loadingSessions ? 'animate-spin' : ''}`} />
+                <span>Refresh Sessions</span>
+              </button>
+            )}
+            {activeTab === '2fa' && (
+              twoFactorEnabled ? (
+                <Popconfirm
+                  title="Disable Two-Factor Authentication"
+                  description="Are you sure you want to disable 2FA? This will reduce the security level of your account."
+                  onConfirm={handleDisable2FA}
+                  okText="Yes, Disable"
+                  cancelText="Cancel"
+                  okButtonProps={{ danger: true }}
+                >
+                  <button
+                    type="button"
+                    className="w-full h-[32px] flex items-center justify-center gap-1.5 font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer text-white bg-rose-600 hover:bg-rose-700 active:bg-rose-800"
+                  >
+                    <SafetyCertificateOutlined className="text-xs" />
+                    <span>Disable 2FA</span>
+                  </button>
+                </Popconfirm>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleStart2FASetup}
+                  className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+                >
+                  <SafetyCertificateOutlined className="text-xs" />
+                  <span>Set Up Two-Factor</span>
+                </button>
+              )
+            )}
+            {activeTab === 'password' && (
+              <button
+                type="button"
+                onClick={() => {
+                  const form = document.getElementById('password-change-form') as HTMLFormElement;
+                  if (form) form.requestSubmit();
+                }}
+                disabled={changingPassword}
+                className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+              >
+                <LockOutlined className="text-xs" />
+                <span>{changingPassword ? 'Updating...' : 'Save New Password'}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Card 2: Security Health Summary (Static Clean View) */}
+          <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+            <div className="flex items-center justify-between pb-1">
+              <h4 className="text-xs font-bold text-slate-900">Security Health</h4>
+              <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
+                Protected
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              {/* Metric 1: Biometric Keys */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Biometric Keys
+                  </span>
+                  <span className="text-2xl font-black text-slate-900 leading-tight block">
+                    {passkeys.length}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    FIDO2 / WebAuthn passkeys
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-lg shrink-0">
+                  <KeyOutlined />
+                </div>
+              </div>
+
+              {/* Metric 2: Active Sessions */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Active Sessions
+                  </span>
+                  <span className="text-2xl font-black text-[#0284c7] leading-tight block">
+                    {sessions.length}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Authenticated clients
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg shrink-0">
+                  <DesktopOutlined />
+                </div>
+              </div>
+
+              {/* Metric 3: Two-Factor Auth */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Two-Factor Auth
+                  </span>
+                  <span className={`text-2xl font-black leading-tight block ${twoFactorEnabled ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    {twoFactorEnabled ? 'Active' : 'Disabled'}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Time-based OTP token
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                  <SafetyCertificateOutlined />
+                </div>
+              </div>
+
+              {/* Metric 4: Session Expiry */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Session Expiry
+                  </span>
+                  <span className="text-base font-black text-slate-900 leading-tight block truncate max-w-[170px]" title={formattedExpiry || '24h Active'}>
+                    {formattedExpiry || '24h Active'}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Active token duration
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-lg shrink-0">
+                  <ClockCircleOutlined />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Modal: Register Passkey */}

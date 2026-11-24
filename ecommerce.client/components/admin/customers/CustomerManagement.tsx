@@ -22,7 +22,7 @@ import {
   RightOutlined,
   DownOutlined,
 } from '@ant-design/icons';
-import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio, Breadcrumb } from 'antd';
+import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio, Breadcrumb, Dropdown } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Customer } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -142,133 +142,86 @@ export const CustomerManagement: React.FC = () => {
   const paginatedCustomers = customers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif]">
-      {/* Breadcrumb Navigation */}
-      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
+      {/* Top Bar: Breadcrumb Navigation */}
+      <div className="px-2 flex items-center justify-between gap-1.5 text-[11px] leading-none text-slate-500 font-semibold shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Admin
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Accounts</span>,
+              title: <span className="text-slate-700 font-semibold">Accounts & Customers</span>,
             },
           ]}
         />
       </div>
 
-      {/* Customer Overview Metric Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 my-2">
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
-          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Total Buyers
-          </div>
-          <div className="text-xl font-bold text-blue-600 mt-1">{customersCount}</div>
-          <div className="text-[10px] text-slate-400">Verified buyer accounts</div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
-          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Active Sellers / Stores
-          </div>
-          <div className="text-xl font-bold text-orange-600 mt-1">{sellersCount}</div>
-          <div className="text-[10px] text-slate-400">Authorized store vendors</div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
-          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Total Orders Placed
-          </div>
-          <div className="text-xl font-bold text-slate-900 mt-1">{totalOrdersAll}</div>
-          <div className="text-[10px] text-slate-400">Across active accounts</div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200/80 p-3.5 shadow-2xs">
-          <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-            Cumulative Revenue
-          </div>
-          <div className="text-xl font-bold text-[#0284c7] mt-1">
-            ${totalSpendAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
-          <div className="text-[10px] text-slate-400">Platform lifetime volume</div>
-        </div>
-      </div>
-
-      {/* Main Accounts Directory Card with Integrated Header */}
-      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
-        {/* Table Top Controls & Integrated Header (relative z-20 so dropdown floats cleanly over table) */}
-        <div className="pl-0 pr-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
-          <div className="flex flex-col min-w-0">
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Accounts & Directory
-            </h3>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Search Input */}
-            <form onSubmit={handleSearch} className="w-full sm:w-[220px] shrink-0">
-              <AppInput
-                prefix={<SearchOutlined className="text-slate-400" />}
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                placeholder="Search accounts..."
-                allowClear
-              />
-            </form>
-
-            {/* Role Filter Tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto">
-              {[
-                { key: 'all', label: 'All Accounts', icon: null },
-                { key: 'customer', label: 'Customers', icon: <ShoppingOutlined /> },
-                { key: 'seller', label: 'Sellers', icon: <ShopOutlined /> },
-                { key: 'support', label: 'Support', icon: <CustomerServiceOutlined /> },
-                { key: 'manager', label: 'Managers', icon: <AppstoreOutlined /> },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => {
-                    setSelectedRoleFilter(tab.key);
-                    setCurrentPage(1);
-                  }}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1 ${
-                    selectedRoleFilter === tab.key
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+      {/* Main Two-Column Split (fills remaining vertical space) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
+        {/* Left Column: Accounts Directory Table Canvas (fills space, independent scroll) */}
+        <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
+          {/* Table Top Controls & Integrated Header */}
+          <div className="pl-0 pr-4 py-3 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl shrink-0">
+            <div className="flex flex-col min-w-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                Accounts & Directory
+              </h3>
             </div>
 
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                form.setFieldsValue({ role: 'customer', agreementAccepted: true });
-                setIsModalOpen(true);
-              }}
-              className="shrink-0"
-              style={{ backgroundColor: '#0284c7' }}
-            >
-              Add Account
-            </AppButton>
-          </div>
-        </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Search Input */}
+              <form onSubmit={handleSearch} className="w-full sm:w-[200px] shrink-0">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  placeholder="Search accounts..."
+                  allowClear
+                />
+              </form>
 
-        {/* Customers Table Wrapper */}
-        <div className="overflow-hidden">
-          <AppTable>
+              {/* Role Filter Tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto">
+                {[
+                  { key: 'all', label: 'All Accounts', icon: null },
+                  { key: 'customer', label: 'Customers', icon: <ShoppingOutlined /> },
+                  { key: 'seller', label: 'Sellers', icon: <ShopOutlined /> },
+                  { key: 'support', label: 'Support', icon: <CustomerServiceOutlined /> },
+                  { key: 'manager', label: 'Managers', icon: <AppstoreOutlined /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => {
+                      setSelectedRoleFilter(tab.key);
+                      setCurrentPage(1);
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1 ${
+                      selectedRoleFilter === tab.key
+                        ? 'bg-slate-900 text-white shadow-xs'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Table Content Canvas (independent scroll) */}
+          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll">
+            <AppTable>
             <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">User / Merchant</th>
@@ -433,8 +386,8 @@ export const CustomerManagement: React.FC = () => {
           </AppTable>
         </div>
 
-        {/* Table Footer: Count on Left, Pagination on Right (Matching Header Height ~30px & Subtle Roundness rounded-b-md) */}
-        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+        {/* Signature Cyan Footer Toolbar (Fixed at Bottom of Column) */}
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
           {/* Left Side: Count */}
           <div className="flex items-center gap-1.5 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Accounts:</span>
@@ -443,27 +396,37 @@ export const CustomerManagement: React.FC = () => {
             </span>
           </div>
 
-          {/* Right Side: Pagination Controls (Rendered ONLY if customers > 10) */}
-          {customers.length > 10 && (
+          {/* Right Side: Pagination Controls */}
+          {customers.length > 0 && (
             <div className="flex items-center gap-2.5 leading-none">
-              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
-                <span>Rows:</span>
-                <div className="relative">
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
+              <div className="flex items-center gap-1.5 text-[10px] text-white/95 font-medium leading-none">
+                <span>Items:</span>
+                <Dropdown
+                  menu={{
+                    items: [
+                      { key: '10', label: <span className="font-semibold text-xs text-slate-800">10 / page</span> },
+                      { key: '20', label: <span className="font-semibold text-xs text-slate-800">20 / page</span> },
+                      { key: '50', label: <span className="font-semibold text-xs text-slate-800">50 / page</span> },
+                      { key: '100', label: <span className="font-semibold text-xs text-slate-800">100 / page</span> },
+                    ],
+                    selectedKeys: [String(pageSize)],
+                    onClick: ({ key }) => {
+                      setPageSize(Number(key));
                       setCurrentPage(1);
-                    }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                    },
+                  }}
+                  trigger={['click']}
+                  placement="topRight"
+                >
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 active:bg-white/40 border border-white/35 text-white font-bold text-[10px] rounded px-1.5 h-[20px] outline-none cursor-pointer transition-all leading-none"
+                    title="Change page size"
                   >
-                    <option value={10} className="bg-slate-800 text-white">10</option>
-                    <option value={20} className="bg-slate-800 text-white">20</option>
-                    <option value={50} className="bg-slate-800 text-white">50</option>
-                    <option value={100} className="bg-slate-800 text-white">100</option>
-                  </select>
-                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
-                </div>
+                    <span>{pageSize}</span>
+                    <DownOutlined className="text-[7px] text-white/85" />
+                  </button>
+                </Dropdown>
               </div>
 
               <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
@@ -476,7 +439,7 @@ export const CustomerManagement: React.FC = () => {
                   disabled={currentPage <= 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   title="Previous page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
                 >
                   <LeftOutlined className="text-[8px]" />
                 </button>
@@ -485,7 +448,7 @@ export const CustomerManagement: React.FC = () => {
                   disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   title="Next page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
+                  className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
                 >
                   <RightOutlined className="text-[8px]" />
                 </button>
@@ -494,6 +457,109 @@ export const CustomerManagement: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Right Column: Contextual Action + Account Overview (Independent Scroll Area) */}
+      <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
+        {/* Card 1: Add New Account Button */}
+        <div className="bg-white rounded-2xl shadow-xs px-4 py-3 flex items-center">
+          <button
+            type="button"
+            onClick={() => {
+              form.setFieldsValue({ role: 'customer', agreementAccepted: true });
+              setIsModalOpen(true);
+            }}
+            className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+          >
+            <PlusOutlined className="text-xs" />
+            <span>Add New Account</span>
+          </button>
+        </div>
+
+        {/* Card 2: Account Directory Overview (Static Clean View) */}
+        <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+          <div className="flex items-center justify-between pb-1">
+            <h4 className="text-xs font-bold text-slate-900">Directory Summary</h4>
+            <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
+              Live Data
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            {/* Metric 1: Total Buyers */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Total Buyers
+                </span>
+                <span className="text-2xl font-black text-[#0284c7] leading-tight block">
+                  {customersCount}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Verified buyer accounts
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg shrink-0">
+                <ShoppingOutlined />
+              </div>
+            </div>
+
+            {/* Metric 2: Active Sellers / Stores */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Active Sellers
+                </span>
+                <span className="text-2xl font-black text-orange-600 leading-tight block">
+                  {sellersCount}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Authorized store vendors
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-lg shrink-0">
+                <ShopOutlined />
+              </div>
+            </div>
+
+            {/* Metric 3: Total Orders Placed */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Orders Placed
+                </span>
+                <span className="text-2xl font-black text-slate-900 leading-tight block">
+                  {totalOrdersAll}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Across active accounts
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-lg shrink-0">
+                <FileTextOutlined />
+              </div>
+            </div>
+
+            {/* Metric 4: Cumulative Revenue */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div>
+                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                  Platform Volume
+                </span>
+                <span className="text-xl font-black text-emerald-600 leading-tight block truncate max-w-[170px]" title={`$${totalSpendAll.toFixed(2)}`}>
+                  ${totalSpendAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span className="text-xs text-slate-500 font-medium">
+                  Lifetime cumulative GMV
+                </span>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                <SafetyCertificateOutlined />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
       {/* Add New Account Modal */}
       <AppModal

@@ -19,7 +19,7 @@ import {
   ExclamationCircleOutlined,
   BankOutlined,
 } from '@ant-design/icons';
-import { Tag, Spin, Breadcrumb, Popconfirm } from 'antd';
+import { Tag, Spin, Breadcrumb, Popconfirm, Dropdown } from 'antd';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { BillingRecord, BillingStats } from '../../../types/ecommerce.types';
@@ -28,6 +28,7 @@ import {
   AppTable,
   AppButton,
   AppInput,
+  AppSelect,
   AppModal,
   TableSkeleton,
 } from 'shared-components';
@@ -274,379 +275,396 @@ export const BillingManagement: React.FC = () => {
   };
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif]">
-      {/* Breadcrumb Navigation */}
-      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
+      {/* Top Bar: Breadcrumb */}
+      <div className="shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   {isSeller ? 'Seller' : 'Admin'}
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Billing & Invoices</span>,
+              title: <span className="text-slate-800 font-bold">Billing & Invoices</span>,
             },
           ]}
         />
       </div>
 
-      {/* 4 KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-2">
-        {/* Card 1: Gross Billed */}
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Total Billed
-            </div>
-            <div className="text-lg font-bold text-slate-900 mt-0.5">
-              ${stats ? stats.totalBilled.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
-            </div>
-            <div className="text-[10px] text-slate-400 mt-0.5">
-              Across {stats ? stats.totalInvoices : 0} commercial bills
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg font-bold">
-            <DollarOutlined />
-          </div>
-        </div>
-
-        {/* Card 2: Settled / Paid */}
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Settled Revenue
-            </div>
-            <div className="text-lg font-bold text-emerald-600 mt-0.5">
-              ${stats ? stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
-            </div>
-            <div className="text-[10px] text-emerald-600 font-semibold mt-0.5">
-              {stats ? stats.paidCount : 0} Paid transactions
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg font-bold">
-            <CheckCircleOutlined />
-          </div>
-        </div>
-
-        {/* Card 3: Outstanding Receivables */}
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Outstanding
-            </div>
-            <div className="text-lg font-bold text-amber-600 mt-0.5">
-              ${stats ? (stats.pendingAmount + stats.overdueAmount).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
-            </div>
-            <div className="text-[10px] text-amber-600 font-medium mt-0.5">
-              {stats ? (stats.pendingCount + stats.overdueCount) : 0} Pending & Overdue
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg font-bold">
-            <ClockCircleOutlined />
-          </div>
-        </div>
-
-        {/* Card 4: Tax / VAT Handled */}
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
-          <div>
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              VAT / Tax Collected
-            </div>
-            <div className="text-lg font-bold text-purple-600 mt-0.5">
-              ${stats ? stats.totalTaxCollected.toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
-            </div>
-            <div className="text-[10px] text-purple-600 font-medium mt-0.5">
-              13% Standard National Tax
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg font-bold">
-            <SafetyCertificateOutlined />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Table Card */}
-      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
-        {/* Top Controls Strip */}
-        <div className="pl-0 pr-6 py-3 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white rounded-t-2xl">
-          <div className="flex flex-col min-w-0">
-            <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Commercial Invoices & Billing
-            </h3>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-            {/* Search Input */}
-            <div className="relative min-w-[200px] flex-1 sm:flex-initial">
-              <SearchOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
-              <input
-                type="text"
-                placeholder="Search invoice, order, customer..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#0096c7] focus:bg-white transition-all"
-              />
+      {/* Two-Column Responsive Layout: Left Table Directory + Right Summary & Actions (Independent Scroll) */}
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch gap-3 sm:gap-4 overflow-hidden">
+        {/* Left Column: Commercial Invoices & Billing Table */}
+        <div className="flex-1 min-w-0 h-full bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
+          {/* Header Toolbar: Title + Search + Status Filter */}
+          <div className="pl-0 pr-4 py-3 flex items-center justify-between gap-3 bg-white shrink-0">
+            <div className="shrink-0">
+              <h3 className="text-base font-bold text-slate-900 tracking-tight whitespace-nowrap">
+                Billing & Invoices
+              </h3>
             </div>
 
-            {/* Filter Pills */}
-            <div className="flex items-center gap-1 overflow-x-auto">
-              {[
-                { key: 'all', label: 'All' },
-                { key: 'paid', label: 'Paid' },
-                { key: 'pending', label: 'Pending' },
-                { key: 'overdue', label: 'Overdue' },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
-                  onClick={() => {
-                    setStatusFilter(tab.key);
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
+              {/* Search Input */}
+              <div className="w-full sm:w-[220px]">
+                <AppInput
+                  prefix={<SearchOutlined className="text-slate-400" />}
+                  placeholder="Search invoice, order, customer..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                    statusFilter === tab.key
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+                  allowClear
+                />
+              </div>
+
+              {/* Status Filter */}
+              <div className="w-[140px] shrink-0">
+                <AppSelect
+                  value={statusFilter}
+                  onChange={(val) => {
+                    setStatusFilter(val as string);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { label: 'All Invoices', value: 'all' },
+                    { label: 'Paid', value: 'paid' },
+                    { label: 'Pending', value: 'pending' },
+                    { label: 'Overdue', value: 'overdue' },
+                  ]}
+                />
+              </div>
             </div>
-
-            <AppButton
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsCreateModalOpen(true)}
-              style={{ backgroundColor: '#0096C7' }}
-              size="small"
-            >
-              Create Invoice
-            </AppButton>
           </div>
-        </div>
 
-        {/* Main Invoices Table */}
-        <div className="overflow-hidden">
-          <AppTable>
-            <thead>
-              <tr>
-                <th className="py-2.5 px-6 font-medium text-[12px]">Invoice #</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Order Ref</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Customer</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Issue Date</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Payment Method</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Total Amount</th>
-                <th className="py-2.5 px-4 font-medium text-[12px]">Status</th>
-                <th className="py-2.5 px-6 text-right font-medium text-[12px]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
-              {loading ? (
-                <TableSkeleton columns={8} rows={6} hasAvatar={true} />
-              ) : invoices.length === 0 ? (
+          {/* Main Invoices Table (Independent Scroll Area) */}
+          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll">
+            <AppTable>
+              <thead>
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
-                    <FileTextOutlined className="text-3xl text-slate-300 mb-2 block mx-auto" />
-                    <span className="font-semibold text-slate-700 block">No billing records found</span>
-                    <span className="text-[11px] text-slate-400 mt-1 block">
-                      Invoices will be automatically compiled as customer orders are placed or created manually.
-                    </span>
-                  </td>
+                  <th className="py-2.5 px-6 font-medium text-[12px]">Invoice #</th>
+                  <th className="py-2.5 px-4 font-medium text-[12px]">Order Ref</th>
+                  <th className="py-2.5 px-4 font-medium text-[12px]">Customer</th>
+                  <th className="py-2.5 px-4 font-medium text-[12px]">Issue Date</th>
+                  <th className="py-2.5 px-4 font-medium text-[12px]">Payment Method</th>
+                  <th className="py-2.5 px-4 font-medium text-[12px]">Total Amount</th>
+                  <th className="py-2.5 px-4 font-medium text-[12px]">Status</th>
+                  <th className="py-2.5 px-6 text-right font-medium text-[12px]">Actions</th>
                 </tr>
-              ) : (
-                invoices.map((inv) => {
-                  const invId = inv._id || inv.id;
-                  const isPaid = inv.paymentStatus === 'paid';
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs">
+                {loading ? (
+                  <TableSkeleton columns={8} rows={6} hasAvatar={true} />
+                ) : invoices.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-slate-400">
+                      <FileTextOutlined className="text-3xl text-slate-300 mb-2 block mx-auto" />
+                      <span className="font-semibold text-slate-700 block">No billing records found</span>
+                      <span className="text-[11px] text-slate-400 mt-1 block">
+                        Invoices will be automatically compiled as customer orders are placed or created manually.
+                      </span>
+                    </td>
+                  </tr>
+                ) : (
+                  invoices.map((inv) => {
+                    const invId = inv._id || inv.id;
+                    const isPaid = inv.paymentStatus === 'paid';
 
-                  return (
-                    <tr
-                      key={invId}
-                      className="hover:bg-slate-50/70 transition-colors group cursor-default"
-                    >
-                      {/* Invoice # */}
-                      <td className="py-3.5 px-6 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <FileTextOutlined className="text-[#0096C7] text-sm" />
-                          <span
-                            onClick={() => setSelectedInvoice(inv)}
-                            className="font-mono font-bold text-slate-900 hover:text-[#0096c7] cursor-pointer hover:underline text-xs"
-                          >
-                            {inv.invoiceNumber}
+                    return (
+                      <tr
+                        key={invId}
+                        className="hover:bg-slate-50/70 transition-colors group cursor-default"
+                      >
+                        {/* Invoice # */}
+                        <td className="py-3.5 px-6 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <FileTextOutlined className="text-[#0096C7] text-sm" />
+                            <span
+                              onClick={() => setSelectedInvoice(inv)}
+                              className="font-mono font-bold text-slate-900 hover:text-[#0096c7] cursor-pointer hover:underline text-xs"
+                            >
+                              {inv.invoiceNumber}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Order Ref */}
+                        <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-600">
+                          {inv.orderNumber ? (
+                            <Link to="/admin/orders" className="text-[#0096c7] hover:underline">
+                              {inv.orderNumber}
+                            </Link>
+                          ) : (
+                            <span className="text-slate-400 italic">Direct Bill</span>
+                          )}
+                        </td>
+
+                        {/* Customer */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-bold text-[10px] shrink-0">
+                              {inv.customer?.name?.[0] || 'C'}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-slate-900 text-xs">{inv.customer?.name}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">{inv.customer?.email}</div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Issue Date */}
+                        <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 text-[11px]">
+                          <div>{inv.issuedDate ? new Date(inv.issuedDate).toLocaleDateString() : 'N/A'}</div>
+                          <div className="text-[9px] text-slate-400">Due: {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'Immediate'}</div>
+                        </td>
+
+                        {/* Payment Method */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-mono capitalize">
+                            {inv.paymentMethod === 'bank_transfer' ? <BankOutlined /> : <CreditCardOutlined />}
+                            <span>{inv.paymentMethod?.replace('_', ' ')}</span>
                           </span>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Order Ref */}
-                      <td className="py-3.5 px-4 whitespace-nowrap font-mono text-[11px] text-slate-600">
-                        {inv.orderNumber ? (
-                          <Link to="/admin/orders" className="text-[#0096c7] hover:underline">
-                            {inv.orderNumber}
-                          </Link>
-                        ) : (
-                          <span className="text-slate-400 italic">Direct Bill</span>
-                        )}
-                      </td>
-
-                      {/* Customer */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center font-bold text-[10px] shrink-0">
-                            {inv.customer?.name?.[0] || 'C'}
+                        {/* Financials Total */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="font-bold text-slate-900 text-xs">
+                            ${inv.totalAmount?.toFixed(2)}
                           </div>
-                          <div>
-                            <div className="font-semibold text-slate-900 text-xs">{inv.customer?.name}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">{inv.customer?.email}</div>
+                          <div className="text-[9px] text-slate-400">
+                            (VAT 13%: ${inv.taxAmount?.toFixed(2) || '0.00'})
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Issue Date */}
-                      <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 text-[11px]">
-                        <div>{inv.issuedDate ? new Date(inv.issuedDate).toLocaleDateString() : 'N/A'}</div>
-                        <div className="text-[9px] text-slate-400">Due: {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'Immediate'}</div>
-                      </td>
+                        {/* Status */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          {getStatusBadge(inv.paymentStatus)}
+                        </td>
 
-                      {/* Payment Method */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-mono capitalize">
-                          {inv.paymentMethod === 'bank_transfer' ? <BankOutlined /> : <CreditCardOutlined />}
-                          <span>{inv.paymentMethod?.replace('_', ' ')}</span>
-                        </span>
-                      </td>
+                        {/* Actions: Icon-Only Buttons */}
+                        <td className="py-3.5 px-6 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* View Invoice Receipt Modal */}
+                            <AppButton
+                              size="small"
+                              icon={<EyeOutlined />}
+                              onClick={() => setSelectedInvoice(inv)}
+                              title="View & Print Invoice"
+                            />
 
-                      {/* Financials Total */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="font-bold text-slate-900 text-xs">
-                          ${inv.totalAmount?.toFixed(2)}
-                        </div>
-                        <div className="text-[9px] text-slate-400">
-                          (VAT 13%: ${inv.taxAmount?.toFixed(2) || '0.00'})
-                        </div>
-                      </td>
+                            {/* Quick Mark Paid if not yet paid */}
+                            {!isPaid && (
+                              <Popconfirm
+                                title="Mark Invoice as Paid"
+                                description={`Confirm payment settlement of $${inv.totalAmount?.toFixed(2)} for ${inv.invoiceNumber}?`}
+                                onConfirm={() => handleMarkAsPaid(inv)}
+                                okText="Confirm Paid"
+                                cancelText="Cancel"
+                              >
+                                <AppButton
+                                  size="small"
+                                  icon={<CheckCircleOutlined className="text-emerald-600" />}
+                                  title="Mark as Paid"
+                                />
+                              </Popconfirm>
+                            )}
 
-                      {/* Status */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        {getStatusBadge(inv.paymentStatus)}
-                      </td>
-
-                      {/* Actions: Icon-Only Buttons */}
-                      <td className="py-3.5 px-6 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* View Invoice Receipt Modal */}
-                          <AppButton
-                            size="small"
-                            icon={<EyeOutlined />}
-                            onClick={() => setSelectedInvoice(inv)}
-                            title="View & Print Invoice"
-                          />
-
-                          {/* Quick Mark Paid if not yet paid */}
-                          {!isPaid && (
+                            {/* Delete / Void Invoice */}
                             <Popconfirm
-                              title="Mark Invoice as Paid"
-                              description={`Confirm payment settlement of $${inv.totalAmount?.toFixed(2)} for ${inv.invoiceNumber}?`}
-                              onConfirm={() => handleMarkAsPaid(inv)}
-                              okText="Confirm Paid"
+                              title="Void Invoice"
+                              description={`Are you sure you want to delete invoice "${inv.invoiceNumber}"?`}
+                              onConfirm={() => handleDeleteInvoice(inv)}
+                              okText="Yes, Void"
                               cancelText="Cancel"
+                              okButtonProps={{ danger: true }}
                             >
                               <AppButton
                                 size="small"
-                                icon={<CheckCircleOutlined className="text-emerald-600" />}
-                                title="Mark as Paid"
+                                danger
+                                icon={<DeleteOutlined />}
+                                title="Void Invoice"
                               />
                             </Popconfirm>
-                          )}
-
-                          {/* Delete / Void Invoice */}
-                          <Popconfirm
-                            title="Void Invoice"
-                            description={`Are you sure you want to delete invoice "${inv.invoiceNumber}"?`}
-                            onConfirm={() => handleDeleteInvoice(inv)}
-                            okText="Yes, Void"
-                            cancelText="Cancel"
-                            okButtonProps={{ danger: true }}
-                          >
-                            <AppButton
-                              size="small"
-                              danger
-                              icon={<DeleteOutlined />}
-                              title="Void Invoice"
-                            />
-                          </Popconfirm>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </AppTable>
-        </div>
-
-        {/* Signature Cyan Footer */}
-        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
-          <div className="flex items-center gap-1.5 leading-none">
-            <span className="font-medium text-white/90 text-[11px] leading-none">Total Invoices:</span>
-            <span className="font-bold text-white text-[11px] leading-none">
-              {totalInvoices} Records
-            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </AppTable>
           </div>
 
-          {totalInvoices > 10 && (
-            <div className="flex items-center gap-2.5 leading-none">
-              <div className="flex items-center gap-1 text-[10px] text-white/95 font-medium leading-none">
-                <span>Rows:</span>
-                <div className="relative">
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      setPageSize(Number(e.target.value));
-                      setCurrentPage(1);
+          {/* Signature Cyan Footer: Matching Brand pagination footer */}
+          <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
+            <div className="flex items-center gap-1.5 leading-none">
+              <span className="font-medium text-white/90 text-[11px] leading-none">Total Invoices:</span>
+              <span className="font-bold text-white text-[11px] leading-none">
+                {totalInvoices} Records
+              </span>
+            </div>
+
+            {totalInvoices > 0 && (
+              <div className="flex items-center gap-2.5 leading-none">
+                <div className="flex items-center gap-1.5 text-[10px] text-white/95 font-medium leading-none">
+                  <span>Items:</span>
+                  <Dropdown
+                    menu={{
+                      items: [
+                        { key: '10', label: <span className="font-semibold text-xs text-slate-800">10 / page</span> },
+                        { key: '20', label: <span className="font-semibold text-xs text-slate-800">20 / page</span> },
+                        { key: '50', label: <span className="font-semibold text-xs text-slate-800">50 / page</span> },
+                      ],
+                      selectedKeys: [String(pageSize)],
+                      onClick: ({ key }) => {
+                        setPageSize(Number(key));
+                        setCurrentPage(1);
+                      },
                     }}
-                    className="appearance-none bg-white/15 hover:bg-white/25 border border-white/30 text-white font-bold text-[10px] rounded pl-1.5 pr-4 py-0 outline-none cursor-pointer transition-colors focus:ring-1 focus:ring-white h-[20px] leading-none"
+                    trigger={['click']}
+                    placement="topRight"
                   >
-                    <option value={10} className="bg-slate-800 text-white">10</option>
-                    <option value={20} className="bg-slate-800 text-white">20</option>
-                    <option value={50} className="bg-slate-800 text-white">50</option>
-                  </select>
-                  <DownOutlined className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-[7px] text-white/80" />
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 bg-white/20 hover:bg-white/30 active:bg-white/40 border border-white/35 text-white font-bold text-[10px] rounded px-1.5 h-[20px] outline-none cursor-pointer transition-all leading-none"
+                      title="Change page size"
+                    >
+                      <span>{pageSize}</span>
+                      <DownOutlined className="text-[7px] text-white/85" />
+                    </button>
+                  </Dropdown>
+                </div>
+
+                <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
+                  {totalInvoices > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, totalInvoices)} of {totalInvoices}
+                </span>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    disabled={currentPage <= 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    title="Previous page"
+                    className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
+                  >
+                    <LeftOutlined className="text-[8px]" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={currentPage >= totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    title="Next page"
+                    className="!w-5 !h-5 !min-w-0 !min-h-0 p-0 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20 leading-none"
+                  >
+                    <RightOutlined className="text-[8px]" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Create Invoice Card + Billing Summary Metrics (Independent Scroll Area) */}
+        <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 h-full overflow-y-auto brand-sidebar-scroll space-y-3.5 pr-1">
+          {/* Card 1: Create Invoice */}
+          <div className="bg-white rounded-2xl shadow-xs px-4 py-3 flex items-center">
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
+            >
+              <PlusOutlined className="text-xs" />
+              <span>Create Invoice</span>
+            </button>
+          </div>
+
+          {/* Card 2: Billing Summary (Static Clean View) */}
+          <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
+            <div className="flex items-center justify-between pb-1">
+              <h4 className="text-xs font-bold text-slate-900">Billing Summary</h4>
+              <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
+                Live Financials
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              {/* Metric 1: Gross Billed */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Total Billed
+                  </span>
+                  <span className="text-2xl font-black text-slate-900 leading-tight block">
+                    ${stats ? stats.totalBilled.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    {stats ? stats.totalInvoices : 0} commercial bills
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#0096C7] flex items-center justify-center text-lg shrink-0">
+                  <DollarOutlined />
                 </div>
               </div>
 
-              <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
-                {totalInvoices > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, totalInvoices)} of {totalInvoices}
-              </span>
+              {/* Metric 2: Settled Revenue */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Settled Revenue
+                  </span>
+                  <span className="text-2xl font-black text-emerald-600 leading-tight block">
+                    ${stats ? stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    {stats ? stats.paidCount : 0} Paid transactions
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                  <CheckCircleOutlined />
+                </div>
+              </div>
 
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  disabled={currentPage <= 1}
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  title="Previous page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
-                >
-                  <LeftOutlined className="text-[8px]" />
-                </button>
-                <button
-                  type="button"
-                  disabled={currentPage >= totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  title="Next page"
-                  className="w-5 h-5 flex items-center justify-center rounded bg-white/15 hover:bg-white/25 active:bg-white/30 disabled:opacity-30 disabled:hover:bg-white/15 disabled:cursor-not-allowed text-white transition-all cursor-pointer border border-white/20"
-                >
-                  <RightOutlined className="text-[8px]" />
-                </button>
+              {/* Metric 3: Outstanding */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    Outstanding
+                  </span>
+                  <span className="text-2xl font-black text-amber-600 leading-tight block">
+                    ${stats ? (stats.pendingAmount + stats.overdueAmount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    {stats ? (stats.pendingCount + stats.overdueCount) : 0} Pending & Overdue
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                  <ClockCircleOutlined />
+                </div>
+              </div>
+
+              {/* Metric 4: Tax / VAT Handled */}
+              <div className="py-2.5 flex items-center justify-between">
+                <div>
+                  <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                    VAT / Tax Collected
+                  </span>
+                  <span className="text-2xl font-black text-purple-600 leading-tight block">
+                    ${stats ? stats.totalTaxCollected.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    13% Standard National Tax
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg shrink-0">
+                  <SafetyCertificateOutlined />
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 

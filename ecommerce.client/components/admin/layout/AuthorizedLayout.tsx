@@ -712,7 +712,18 @@ export const AuthorizedLayout: React.FC = () => {
     location.pathname.startsWith('/admin/brands') ||
     location.pathname.startsWith('/admin/products') ||
     location.pathname.startsWith('/admin/categories') ||
-    location.pathname.startsWith('/admin/inventory');
+    location.pathname.startsWith('/admin/inventory') ||
+    location.pathname.startsWith('/admin/orders') ||
+    location.pathname.startsWith('/admin/billing') ||
+    location.pathname.startsWith('/admin/reviews') ||
+    location.pathname.startsWith('/admin/discounts') ||
+    location.pathname.startsWith('/admin/banners') ||
+    location.pathname.startsWith('/admin/customers') ||
+    location.pathname.startsWith('/admin/audit-logs') ||
+    location.pathname.startsWith('/admin/security') ||
+    location.pathname.startsWith('/admin/roles') ||
+    location.pathname.startsWith('/admin/permissions') ||
+    location.pathname.startsWith('/admin/menus');
 
   return (
     <div className="h-screen w-full bg-white text-[#1e293b] flex flex-col font-['Poppins','Inter',sans-serif] antialiased overflow-hidden">
