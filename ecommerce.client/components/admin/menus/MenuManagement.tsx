@@ -889,24 +889,21 @@ export const MenuManagement: React.FC = () => {
                   onChange={(val) => setFormParentId((val as string) || '')}
                   placeholder="Select parent"
                   allowClear
-                  options={[
-                    { label: 'None (Root Menu)', value: '' },
-                    ...rootMenusList
-                      .filter(
-                        (r) =>
-                          (r._id || r.id) !== (editingMenu?._id || editingMenu?.id)
-                      )
-                      .map((r) => {
-                        const valStr = (r.menuId !== null && r.menuId !== undefined
-                          ? r.menuId
-                          : r._id || r.id || ''
-                        ).toString();
-                        return {
-                          label: r.name,
-                          value: valStr,
-                        };
-                      }),
-                  ]}
+                  options={rootMenusList
+                    .filter(
+                      (r) =>
+                        (r._id || r.id) !== (editingMenu?._id || editingMenu?.id)
+                    )
+                    .map((r) => {
+                      const valStr = (r.menuId !== null && r.menuId !== undefined
+                        ? r.menuId
+                        : r._id || r.id || ''
+                      ).toString();
+                      return {
+                        label: r.name,
+                        value: valStr,
+                      };
+                    })}
                 />
               </div>
             </div>
@@ -933,24 +930,21 @@ export const MenuManagement: React.FC = () => {
                   onChange={(val) => setFormChildId((val as string) || '')}
                   placeholder="Select child"
                   allowClear
-                  options={[
-                    { label: 'None', value: '' },
-                    ...menus
-                      .filter(
-                        (m) =>
-                          (m._id || m.id) !== (editingMenu?._id || editingMenu?.id)
-                      )
-                      .map((m) => {
-                        const valStr = (m.menuId !== null && m.menuId !== undefined
-                          ? m.menuId
-                          : m._id || m.id || ''
-                        ).toString();
-                        return {
-                          label: m.name,
-                          value: valStr,
-                        };
-                      }),
-                  ]}
+                  options={menus
+                    .filter(
+                      (m) =>
+                        (m._id || m.id) !== (editingMenu?._id || editingMenu?.id)
+                    )
+                    .map((m) => {
+                      const valStr = (m.menuId !== null && m.menuId !== undefined
+                        ? m.menuId
+                        : m._id || m.id || ''
+                      ).toString();
+                      return {
+                        label: m.name,
+                        value: valStr,
+                      };
+                    })}
                 />
               </div>
             </div>
