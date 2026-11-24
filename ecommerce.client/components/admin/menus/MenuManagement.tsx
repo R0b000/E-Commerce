@@ -899,7 +899,6 @@ export const MenuManagement: React.FC = () => {
                   allowClear
                   className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
                   showSearch
-                  placement="topLeft"
                   getPopupContainer={() => document.body}
                   dropdownStyle={{ zIndex: 1100 }}
                   filterOption={(input, option) =>
@@ -954,7 +953,6 @@ export const MenuManagement: React.FC = () => {
                   allowClear
                   className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
                   showSearch
-                  placement="topLeft"
                   getPopupContainer={() => document.body}
                   dropdownStyle={{ zIndex: 1100 }}
                   filterOption={(input, option) =>
