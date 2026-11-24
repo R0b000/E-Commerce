@@ -504,37 +504,37 @@ export const PermissionManagement: React.FC = () => {
   const isSuperAdminRole = selectedRoleId.toLowerCase() === 'admin';
 
   return (
-    <div className="w-full font-['Poppins','Inter',sans-serif]">
+    <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
       {/* Breadcrumb Navigation */}
-      <div className="px-2 flex items-center gap-1.5 text-[11px] leading-none text-slate-400 mb-0 pb-0">
+      <div className="px-2 flex items-center justify-between gap-1.5 text-[11px] leading-none text-slate-500 font-semibold shrink-0">
         <Breadcrumb
-          className="text-[11px] leading-none text-slate-400 [&_*]:border-0"
+          className="text-[11px] leading-none text-slate-500 [&_*]:border-0 font-semibold"
           items={[
             {
               title: (
-                <Link to="/admin" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Admin
                 </Link>
               ),
             },
             {
               title: (
-                <Link to="/admin/roles" className="text-slate-400 hover:text-[#0096C7] transition-colors">
+                <Link to="/admin/roles" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
                   Roles & Access
                 </Link>
               ),
             },
             {
-              title: <span className="text-slate-600 font-medium">Permissions Matrix</span>,
+              title: <span className="text-slate-700 font-semibold">Permissions Matrix</span>,
             },
           ]}
         />
       </div>
 
       {/* Main Permissions Matrix Card with Integrated Header */}
-      <div className="bg-white rounded-t-2xl rounded-b-md shadow-xs">
+      <div className="flex-1 min-h-0 bg-white rounded-t-2xl rounded-b-[2px] shadow-xs overflow-hidden flex flex-col">
         {/* Table Top Controls & Integrated Header */}
-        <div className="pl-0 pr-2 py-3 sm:py-3.5 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl">
+        <div className="pl-0 pr-4 py-3 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl shrink-0">
           <div className="flex flex-col min-w-0">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Role Permissions & Access Matrix
@@ -608,7 +608,7 @@ export const PermissionManagement: React.FC = () => {
         </div>
 
         {/* Secondary Action Strip: Quick Batch Actions & Save Policy */}
-        <div className="px-6 py-2 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="px-6 py-2 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
           {/* Left Side: Super Admin indicator if active */}
           <div className="flex items-center gap-2">
             {isSuperAdminRole && (
@@ -671,18 +671,18 @@ export const PermissionManagement: React.FC = () => {
           </div>
         </div>
 
-        {/* Matrix Table Wrapper */}
-        <div className="overflow-hidden">
-          <AppTable>
+        {/* Matrix Table Wrapper (Independent Scroll Area) */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <AppTable wrapperClassName="h-full flex-1 flex flex-col min-h-0" className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">Module / Resource</th>
                 <th className="py-2.5 px-4 font-medium text-[12px]">Category</th>
-                <th className="py-2.5 px-3 text-center font-medium text-[12px]">Read / View</th>
-                <th className="py-2.5 px-3 text-center font-medium text-[12px]">Create / Add</th>
-                <th className="py-2.5 px-3 text-center font-medium text-[12px]">Update / Edit</th>
-                <th className="py-2.5 px-3 text-center font-medium text-[12px]">Delete / Remove</th>
-                <th className="py-2.5 px-6 text-right font-medium text-[12px]">Row Action</th>
+                <th className="py-2.5 px-3 !text-center font-medium text-[12px]">Read / View</th>
+                <th className="py-2.5 px-3 !text-center font-medium text-[12px]">Create / Add</th>
+                <th className="py-2.5 px-3 !text-center font-medium text-[12px]">Update / Edit</th>
+                <th className="py-2.5 px-3 !text-center font-medium text-[12px]">Delete / Remove</th>
+                <th className="py-2.5 px-6 !text-right font-medium text-[12px]">Row Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -855,7 +855,7 @@ export const PermissionManagement: React.FC = () => {
         </div>
 
         {/* Table Footer: Count on Left, Pagination on Right */}
-        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
           {/* Left Side: Module & Policy Count */}
           <div className="flex items-center gap-2 leading-none">
             <span className="font-medium text-white/90 text-[11px] leading-none">Total Modules:</span>
