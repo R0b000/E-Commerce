@@ -396,12 +396,12 @@ export default function SecurityManagement() {
           </div>
 
           {/* Tab Content Canvas (independent scroll) */}
-          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll flex flex-col justify-between">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             {/* Tab 1: Biometric Passkeys (AppTable Architecture) */}
             {activeTab === 'passkeys' && (
-              <div className="flex-1 flex flex-col justify-between min-h-0">
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             {/* Sub-header Action Strip */}
-            <div className="px-6 py-2.5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="px-6 py-2.5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
               <div>
                 <span className="font-bold text-slate-800 text-xs">FIDO2 & WebAuthn Passkeys</span>
                 <span className="text-[11px] text-slate-500 ml-2">
@@ -432,8 +432,8 @@ export default function SecurityManagement() {
             </div>
 
             {/* Table */}
-            <div className="overflow-hidden">
-              <AppTable>
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <AppTable wrapperClassName="h-full flex-1 flex flex-col min-h-0" className="w-full border-collapse">
                 <thead>
                   <tr>
                     <th className="py-2.5 px-6 font-medium text-[12px]">Device & Name</th>
@@ -522,7 +522,7 @@ export default function SecurityManagement() {
             </div>
 
             {/* Signature Cyan Footer */}
-            <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+            <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
               <div className="flex items-center gap-1.5 leading-none">
                 <span className="font-medium text-white/90 text-[11px] leading-none">Registered Passkeys:</span>
                 <span className="font-bold text-white text-[11px] leading-none">
@@ -536,9 +536,9 @@ export default function SecurityManagement() {
 
         {/* Tab 2: Active Sessions (AppTable Architecture) */}
         {activeTab === 'sessions' && (
-          <div className="flex-1 flex flex-col justify-between min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             {/* Sub-header Action Strip */}
-            <div className="px-6 py-2.5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="px-6 py-2.5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-2 text-xs shrink-0">
               <div>
                 <span className="font-bold text-slate-800 text-xs">Active Device Sessions</span>
                 <span className="text-[11px] text-slate-500 ml-2">
@@ -573,8 +573,8 @@ export default function SecurityManagement() {
             </div>
 
             {/* Table */}
-            <div className="overflow-hidden">
-              <AppTable>
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+              <AppTable wrapperClassName="h-full flex-1 flex flex-col min-h-0" className="w-full border-collapse">
                 <thead>
                   <tr>
                     <th className="py-2.5 px-6 font-medium text-[12px]">Device & Browser</th>
@@ -668,7 +668,7 @@ export default function SecurityManagement() {
             </div>
 
             {/* Signature Cyan Footer */}
-            <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none">
+            <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
               <div className="flex items-center gap-1.5 leading-none">
                 <span className="font-medium text-white/90 text-[11px] leading-none">Active Devices:</span>
                 <span className="font-bold text-white text-[11px] leading-none">
@@ -682,7 +682,7 @@ export default function SecurityManagement() {
 
         {/* Tab 3: Two-Factor Authenticator (TOTP) */}
         {activeTab === '2fa' && (
-          <div className="p-6 max-w-2xl space-y-5">
+          <div className="flex-1 min-h-0 overflow-y-auto p-6 max-w-2xl space-y-5">
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -751,7 +751,7 @@ export default function SecurityManagement() {
 
         {/* Tab 4: Password & Alerts */}
         {activeTab === 'password' && (
-          <div className="p-6 max-w-xl space-y-6">
+          <div className="flex-1 min-h-0 overflow-y-auto p-6 max-w-xl space-y-6">
             <form id="password-change-form" onSubmit={handleChangePassword} className="space-y-4">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <LockOutlined className="text-[#0096C7]" />
