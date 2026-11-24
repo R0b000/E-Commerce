@@ -33,6 +33,7 @@ import {
   Tabs,
   Tooltip,
   Dropdown,
+  Steps,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
@@ -72,6 +73,7 @@ export const BannerManagement: React.FC = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<BannerItem | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -158,11 +160,13 @@ export const BannerManagement: React.FC = () => {
       priority: 5,
       isActive: true,
     });
+    setCurrentStep(0);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (banner: BannerItem) => {
     setEditingBanner(banner);
+    setCurrentStep(0);
     setFormData({
       title: banner.title,
       subtitle: banner.subtitle || '',
@@ -806,412 +810,536 @@ export const BannerManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Create / Edit Modal */}
+      {/* Create / Edit Modal (Wide Multi-Step Wizard) */}
       <AppModal
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         title={
-          <div className="flex items-center gap-2 text-slate-800 font-bold text-base">
-            <PictureOutlined className="text-sky-600" />
-            <span>{editingBanner ? 'Edit Promotional Banner' : 'Create New Promotional Banner'}</span>
+          <div className="flex items-center justify-between pr-6 w-full">
+            <div className="flex items-center gap-2.5 text-slate-900 font-bold text-base">
+              <div className="w-8 h-8 rounded-lg bg-sky-50 text-[#0096C7] flex items-center justify-center text-base border border-sky-100">
+                <PictureOutlined />
+              </div>
+              <div>
+                <span>{editingBanner ? 'Edit Promotional Banner' : 'Create Promotional Banner'}</span>
+                <span className="block text-[11px] text-slate-400 font-normal">
+                  Step {currentStep + 1} of 4 • {['Content & Placement', 'Media & Actions', 'Scheduling & Priority', 'Live Preview & Confirm'][currentStep]}
+                </span>
+              </div>
+            </div>
+            {editingBanner && (
+              <Tag color="cyan" className="font-semibold text-xs">
+                Editing #{editingBanner._id.slice(-6).toUpperCase()}
+              </Tag>
+            )}
           </div>
         }
         footer={null}
-        width={780}
+        width={1060}
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Tabs
-            defaultActiveKey="content"
-            items={[
-              {
-                key: 'content',
-                label: 'Banner Content & Media',
-                children: (
-                  <div className="space-y-4 pt-1">
+        <div className="space-y-5 py-1">
+          {/* AntD Step Indicator */}
+          <div className="px-2 pt-1 pb-2 border-b border-slate-100">
+            <Steps
+              current={currentStep}
+              onChange={(targetStep) => {
+                if (targetStep > currentStep && currentStep === 0 && !formData.title.trim()) {
+                  showToast('Please enter a headline / title before proceeding', 'error');
+                  return;
+                }
+                setCurrentStep(targetStep);
+              }}
+              items={[
+                {
+                  title: 'Content & Placement',
+                  description: 'Headline & alignment',
+                  icon: <EditOutlined />,
+                },
+                {
+                  title: 'Media & Actions',
+                  description: 'Background & CTAs',
+                  icon: <PictureOutlined />,
+                },
+                {
+                  title: 'Scheduling',
+                  description: 'Active dates & hours',
+                  icon: <ClockCircleOutlined />,
+                },
+                {
+                  title: 'Preview & Launch',
+                  description: 'Storefront check',
+                  icon: <EyeOutlined />,
+                },
+              ]}
+            />
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {/* Step 1: Content & Placement */}
+            {currentStep === 0 && (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Headline / Title <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Authentic Himalayan Craftsmanship, Direct to Your Door"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      required
+                      className="w-full px-3.5 py-2.5 text-xs font-medium border border-slate-200 rounded-xl focus:outline-none focus:border-[#0096C7] focus:ring-1 focus:ring-[#0096C7]"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Subtitle / Narrative Description
+                    </label>
+                    <textarea
+                      rows={2}
+                      placeholder="e.g. Explore hand-hammered singing bowls, organic high-altitude teas, and artisan crafts."
+                      value={formData.subtitle}
+                      onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                      className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-[#0096C7] focus:ring-1 focus:ring-[#0096C7]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Badge / Tagline Chip (Upper Badge)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Handcrafted in Nepal • Ethically Sourced"
+                      value={formData.badgeText}
+                      onChange={(e) => setFormData({ ...formData, badgeText: e.target.value })}
+                      className="w-full px-3.5 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-[#0096C7]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Display Position on Storefront
+                    </label>
+                    <Select
+                      value={formData.position}
+                      onChange={(val) => setFormData({ ...formData, position: val })}
+                      className="w-full h-[34px] text-xs"
+                      options={[
+                        { label: 'Main Hero Section (Storefront Top)', value: 'hero_main' },
+                        { label: 'Secondary Hero Showcase', value: 'hero_secondary' },
+                        { label: 'Top Bar Announcement Banner', value: 'top_announcement' },
+                        { label: 'Flash Sale Section', value: 'flash_sale' },
+                      ]}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Text Alignment
+                    </label>
+                    <Select
+                      value={formData.alignment}
+                      onChange={(val) => setFormData({ ...formData, alignment: val })}
+                      className="w-full h-[34px] text-xs"
+                      options={[
+                        { label: 'Left Aligned (Standard)', value: 'left' },
+                        { label: 'Center Aligned (Symmetric)', value: 'center' },
+                        { label: 'Right Aligned', value: 'right' },
+                      ]}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Dark Contrast Overlay ({formData.overlayOpacity}%)
+                    </label>
+                    <div className="flex items-center gap-3 pt-1">
+                      <input
+                        type="range"
+                        min={0}
+                        max={90}
+                        value={formData.overlayOpacity}
+                        onChange={(e) => setFormData({ ...formData, overlayOpacity: Number(e.target.value) })}
+                        className="w-full accent-[#0096C7]"
+                      />
+                      <span className="text-xs font-mono font-bold text-slate-600 w-10 text-right">
+                        {formData.overlayOpacity}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Media & Actions */}
+            {currentStep === 1 && (
+              <div className="space-y-4 animate-fadeIn">
+                <div>
+                  <AppImageUpload
+                    label="Banner Background Image"
+                    value={formData.imageUrl}
+                    onChange={(url: string) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        imageUrl: url,
+                      }));
+                    }}
+                    onUpload={handleImageUpload}
+                    loading={uploadingImage}
+                  />
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-[11px] text-slate-400">Or direct image URL:</span>
+                    <input
+                      type="text"
+                      placeholder="https://images.unsplash.com/..."
+                      value={formData.imageUrl}
+                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                      className="flex-1 px-3 py-1 text-xs border border-slate-200 rounded-lg text-slate-600 focus:outline-none focus:border-[#0096C7]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-200 space-y-3">
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800">
+                      <LinkOutlined className="text-[#0096C7]" />
+                      <span>Primary CTA Button</span>
+                    </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Headline / Title <span className="text-rose-500">*</span>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        Button Label
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. Authentic Himalayan Craftsmanship, Direct to Your Door"
-                        value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        required
-                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
+                        placeholder="e.g. Shop Now"
+                        value={formData.ctaText}
+                        onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-[#0096C7]"
                       />
                     </div>
-
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Subtitle / Description
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        Target Link / Route
                       </label>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Explore hand-hammered singing bowls, organic high-altitude teas, and artisan crafts."
-                        value={formData.subtitle}
-                        onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
-                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
+                      <input
+                        type="text"
+                        placeholder="e.g. /#catalog or /shop?category=teas"
+                        value={formData.ctaLink}
+                        onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-[#0096C7]"
                       />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Badge / Tagline (Upper Chip)
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Handcrafted in Nepal • Ethically Sourced"
-                          value={formData.badgeText}
-                          onChange={(e) => setFormData({ ...formData, badgeText: e.target.value })}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Display Position
-                        </label>
-                        <Select
-                          value={formData.position}
-                          onChange={(val) => setFormData({ ...formData, position: val })}
-                          className="w-full text-xs"
-                          options={[
-                            { label: 'Main Hero Section (Storefront)', value: 'hero_main' },
-                            { label: 'Secondary Hero', value: 'hero_secondary' },
-                            { label: 'Top Bar Announcement', value: 'top_announcement' },
-                            { label: 'Flash Sale Section', value: 'flash_sale' },
-                          ]}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Banner Image Dropzone with AppImageUpload */}
-                    <div>
-                      <AppImageUpload
-                        label="Banner Background Image"
-                        value={formData.imageUrl}
-                        onChange={(url: string) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            imageUrl: url,
-                          }));
-                        }}
-                        onUpload={handleImageUpload}
-                        loading={uploadingImage}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Primary CTA Button Label
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Shop Now"
-                          value={formData.ctaText}
-                          onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Primary CTA Link URL
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. /#catalog or /shop?category=teas"
-                          value={formData.ctaLink}
-                          onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Secondary CTA Button Label (Optional)
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Featured Items"
-                          value={formData.secondaryCtaText}
-                          onChange={(e) => setFormData({ ...formData, secondaryCtaText: e.target.value })}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Secondary CTA Link URL
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. /#featured"
-                          value={formData.secondaryCtaLink}
-                          onChange={(e) => setFormData({ ...formData, secondaryCtaLink: e.target.value })}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Text Alignment
-                        </label>
-                        <Select
-                          value={formData.alignment}
-                          onChange={(val) => setFormData({ ...formData, alignment: val })}
-                          className="w-full text-xs"
-                          options={[
-                            { label: 'Left Aligned', value: 'left' },
-                            { label: 'Center Aligned', value: 'center' },
-                            { label: 'Right Aligned', value: 'right' },
-                          ]}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Dark Overlay Opacity ({formData.overlayOpacity}%)
-                        </label>
-                        <input
-                          type="range"
-                          min={0}
-                          max={90}
-                          value={formData.overlayOpacity}
-                          onChange={(e) => setFormData({ ...formData, overlayOpacity: Number(e.target.value) })}
-                          className="w-full accent-cyan-600"
-                        />
-                      </div>
                     </div>
                   </div>
-                ),
-              },
-              {
-                key: 'schedule',
-                label: 'Auto Time Scheduling',
-                children: (
-                  <div className="space-y-4 pt-1">
-                    <div className="p-3 bg-sky-50 rounded-xl border border-sky-100 text-xs text-sky-800 flex items-start gap-2">
-                      <ClockCircleOutlined className="text-sky-600 text-sm mt-0.5 shrink-0" />
-                      <div>
-                        <span className="font-bold">Automated Scheduling:</span> The system checks the current server time and automatically displays banners only when their scheduled window is valid.
-                      </div>
-                    </div>
 
+                  <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-200 space-y-3">
+                    <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800">
+                      <LinkOutlined className="text-slate-400" />
+                      <span>Secondary CTA Button (Optional)</span>
+                    </div>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Schedule Mode
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        Button Label
                       </label>
-                      <Select
-                        value={formData.scheduleType}
-                        onChange={(val) => setFormData({ ...formData, scheduleType: val })}
-                        className="w-full text-xs"
-                        options={[
-                          { label: 'Always Active (24/7 without expiration)', value: 'always' },
-                          { label: 'Specific Date & Time Window (e.g. Flash Weekend Sale)', value: 'date_range' },
-                          { label: 'Daily Recurring Hour Slot (e.g. Morning 06:00-12:00 or Evening 18:00-23:00)', value: 'recurring_daily' },
-                          { label: 'Weekly Day Slots (e.g. Weekend Special Fri/Sat/Sun)', value: 'recurring_weekly' },
-                        ]}
+                      <input
+                        type="text"
+                        placeholder="e.g. Explore Artisans"
+                        value={formData.secondaryCtaText}
+                        onChange={(e) => setFormData({ ...formData, secondaryCtaText: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-[#0096C7]"
                       />
                     </div>
-
-                    {(formData.scheduleType === 'date_range' ||
-                      formData.scheduleType === 'recurring_daily' ||
-                      formData.scheduleType === 'recurring_weekly') && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Start Date & Time
-                          </label>
-                          <DatePicker
-                            showTime
-                            value={formData.startDate}
-                            onChange={(date) => setFormData({ ...formData, startDate: date })}
-                            className="w-full text-xs"
-                            placeholder="Start date & time"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">
-                            End Date & Time
-                          </label>
-                          <DatePicker
-                            showTime
-                            value={formData.endDate}
-                            onChange={(date) => setFormData({ ...formData, endDate: date })}
-                            className="w-full text-xs"
-                            placeholder="End date & time"
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {(formData.scheduleType === 'recurring_daily' || formData.scheduleType === 'recurring_weekly') && (
-                      <div className="grid grid-cols-2 gap-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Active Start Hour (24-Hour)
-                          </label>
-                          <Select
-                            value={formData.startHour}
-                            onChange={(val) => setFormData({ ...formData, startHour: val })}
-                            className="w-full text-xs"
-                            options={Array.from({ length: 24 }).map((_, i) => ({
-                              label: `${String(i).padStart(2, '0')}:00 (${i === 0 ? 'Midnight' : i === 12 ? 'Noon' : i > 12 ? `${i - 12} PM` : `${i} AM`})`,
-                              value: i,
-                            }))}
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">
-                            Active End Hour (24-Hour)
-                          </label>
-                          <Select
-                            value={formData.endHour}
-                            onChange={(val) => setFormData({ ...formData, endHour: val })}
-                            className="w-full text-xs"
-                            options={Array.from({ length: 24 }).map((_, i) => ({
-                              label: `${String(i).padStart(2, '0')}:00 (${i === 0 ? 'Midnight' : i === 12 ? 'Noon' : i > 12 ? `${i - 12} PM` : `${i} AM`})`,
-                              value: i,
-                            }))}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {formData.scheduleType === 'recurring_weekly' && (
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Active Days of Week
-                        </label>
-                        <Checkbox.Group
-                          options={daysOfWeek}
-                          value={formData.activeDays}
-                          onChange={(vals) => setFormData({ ...formData, activeDays: vals as number[] })}
-                        />
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-4 pt-2">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">
-                          Priority Rank (Higher shows first)
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          max={100}
-                          value={formData.priority}
-                          onChange={(e) => setFormData({ ...formData, priority: Number(e.target.value) })}
-                          className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
-                        />
-                      </div>
-
-                      <div className="flex flex-col justify-end">
-                        <label className="block text-xs font-bold text-slate-700 mb-2">
-                          Status
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={formData.isActive}
-                            onChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                          />
-                          <span className="text-xs font-semibold text-slate-700">
-                            {formData.isActive ? 'Active & Enabled' : 'Inactive / Paused'}
-                          </span>
-                        </div>
-                      </div>
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        Target Link / Route
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. /#featured"
+                        value={formData.secondaryCtaLink}
+                        onChange={(e) => setFormData({ ...formData, secondaryCtaLink: e.target.value })}
+                        className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-[#0096C7]"
+                      />
                     </div>
                   </div>
-                ),
-              },
-              {
-                key: 'preview',
-                label: 'Storefront Live Preview',
-                children: (
-                  <div className="pt-2">
-                    <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-16/9 sm:aspect-21/9 min-h-[220px] flex items-center p-6 text-white">
-                      <img
-                        src={formData.imageUrl || 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1600&q=80'}
-                        alt="Hero preview"
-                        className="absolute inset-0 w-full h-full object-cover"
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Scheduling & Priority */}
+            {currentStep === 2 && (
+              <div className="space-y-4 animate-fadeIn">
+                <div className="p-3 bg-sky-50 rounded-xl border border-sky-100 text-xs text-sky-800 flex items-start gap-2">
+                  <ClockCircleOutlined className="text-[#0096C7] text-sm mt-0.5 shrink-0" />
+                  <div>
+                    <span className="font-bold">Automated Time Scheduler:</span> The system automatically checks server time and shows this banner only during its scheduled active window.
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Schedule Mode
+                    </label>
+                    <Select
+                      value={formData.scheduleType}
+                      onChange={(val) => setFormData({ ...formData, scheduleType: val })}
+                      className="w-full text-xs"
+                      options={[
+                        { label: 'Always Active (24/7 without expiration)', value: 'always' },
+                        { label: 'Specific Date & Time Window (e.g. Flash Weekend Sale)', value: 'date_range' },
+                        { label: 'Daily Recurring Hour Slot (e.g. Morning 06:00-12:00 or Evening 18:00-23:00)', value: 'recurring_daily' },
+                        { label: 'Weekly Day Slots (e.g. Weekend Special Fri/Sat/Sun)', value: 'recurring_weekly' },
+                      ]}
+                    />
+                  </div>
+
+                  {(formData.scheduleType === 'date_range' ||
+                    formData.scheduleType === 'recurring_daily' ||
+                    formData.scheduleType === 'recurring_weekly') && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Start Date & Time
+                        </label>
+                        <DatePicker
+                          showTime
+                          value={formData.startDate}
+                          onChange={(date) => setFormData({ ...formData, startDate: date })}
+                          className="w-full text-xs"
+                          placeholder="Start date & time"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          End Date & Time
+                        </label>
+                        <DatePicker
+                          showTime
+                          value={formData.endDate}
+                          onChange={(date) => setFormData({ ...formData, endDate: date })}
+                          className="w-full text-xs"
+                          placeholder="End date & time"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {(formData.scheduleType === 'recurring_daily' || formData.scheduleType === 'recurring_weekly') && (
+                    <div className="md:col-span-2 grid grid-cols-2 gap-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Active Start Hour (24-Hour)
+                        </label>
+                        <Select
+                          value={formData.startHour}
+                          onChange={(val) => setFormData({ ...formData, startHour: val })}
+                          className="w-full text-xs"
+                          options={Array.from({ length: 24 }).map((_, i) => ({
+                            label: `${String(i).padStart(2, '0')}:00 (${i === 0 ? 'Midnight' : i === 12 ? 'Noon' : i > 12 ? `${i - 12} PM` : `${i} AM`})`,
+                            value: i,
+                          }))}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 mb-1">
+                          Active End Hour (24-Hour)
+                        </label>
+                        <Select
+                          value={formData.endHour}
+                          onChange={(val) => setFormData({ ...formData, endHour: val })}
+                          className="w-full text-xs"
+                          options={Array.from({ length: 24 }).map((_, i) => ({
+                            label: `${String(i).padStart(2, '0')}:00 (${i === 0 ? 'Midnight' : i === 12 ? 'Noon' : i > 12 ? `${i - 12} PM` : `${i} AM`})`,
+                            value: i,
+                          }))}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.scheduleType === 'recurring_weekly' && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Active Days of Week
+                      </label>
+                      <Checkbox.Group
+                        options={daysOfWeek}
+                        value={formData.activeDays}
+                        onChange={(vals) => setFormData({ ...formData, activeDays: vals as number[] })}
                       />
-                      <div
-                        className="absolute inset-0 bg-black"
-                        style={{ opacity: formData.overlayOpacity / 100 }}
-                      ></div>
-                      <div
-                        className={`relative z-10 max-w-xl space-y-3 ${
-                          formData.alignment === 'center'
-                            ? 'mx-auto text-center'
-                            : formData.alignment === 'right'
-                            ? 'ml-auto text-right'
-                            : 'text-left'
-                        }`}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Priority Rank (Higher numbers display first)
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={formData.priority}
+                      onChange={(e) => setFormData({ ...formData, priority: Number(e.target.value) })}
+                      className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
+                    />
+                  </div>
+
+                  <div className="flex flex-col justify-end">
+                    <label className="block text-xs font-bold text-slate-700 mb-2">
+                      Banner Status
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={formData.isActive}
+                        onChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                      />
+                      <span className="text-xs font-semibold text-slate-700">
+                        {formData.isActive ? 'Active & Published' : 'Inactive / Paused'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Live Storefront Preview & Review */}
+            {currentStep === 3 && (
+              <div className="space-y-4 animate-fadeIn">
+                {/* Summary Configuration Chips */}
+                <div className="flex items-center justify-between flex-wrap gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Tag color="blue" className="font-bold uppercase text-[10px] m-0">
+                      Position: {formData.position}
+                    </Tag>
+                    <Tag color="cyan" className="font-semibold text-[10px] m-0">
+                      Schedule: {formData.scheduleType}
+                    </Tag>
+                    <Tag color="purple" className="font-semibold text-[10px] m-0">
+                      Align: {formData.alignment}
+                    </Tag>
+                    <Tag color={formData.isActive ? 'success' : 'default'} className="font-bold text-[10px] m-0">
+                      {formData.isActive ? 'Status: Active' : 'Status: Inactive'}
+                    </Tag>
+                    <Tag color="orange" className="font-bold text-[10px] m-0">
+                      Priority: {formData.priority}
+                    </Tag>
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    Storefront Visual Simulation
+                  </span>
+                </div>
+
+                {/* Live Responsive Hero Canvas Preview */}
+                <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-16/9 sm:aspect-21/9 min-h-[250px] flex items-center p-8 text-white border border-slate-200">
+                  <img
+                    src={formData.imageUrl || 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1600&q=80'}
+                    alt="Hero preview"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div
+                    className="absolute inset-0 bg-black"
+                    style={{ opacity: formData.overlayOpacity / 100 }}
+                  ></div>
+                  <div
+                    className={`relative z-10 max-w-2xl space-y-3.5 ${
+                      formData.alignment === 'center'
+                        ? 'mx-auto text-center'
+                        : formData.alignment === 'right'
+                        ? 'ml-auto text-right'
+                        : 'text-left'
+                    }`}
+                  >
+                    {formData.badgeText && (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold text-amber-200 border border-white/25">
+                        <ThunderboltFilled className="text-amber-300" />
+                        <span>{formData.badgeText}</span>
+                      </div>
+                    )}
+                    <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                      {formData.title || 'Your Promotional Banner Headline'}
+                    </h2>
+                    {formData.subtitle && (
+                      <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
+                        {formData.subtitle}
+                      </p>
+                    )}
+                    <div className={`pt-2 flex flex-wrap gap-2.5 ${formData.alignment === 'center' ? 'justify-center' : formData.alignment === 'right' ? 'justify-end' : ''}`}>
+                      <button
+                        type="button"
+                        className="px-5 py-2.5 rounded-xl bg-amber-500 font-bold text-xs uppercase tracking-wider text-slate-950 shadow-md transition-transform hover:scale-102"
                       >
-                        {formData.badgeText && (
-                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold text-amber-200 border border-white/25">
-                            <ThunderboltFilled className="text-amber-300" />
-                            <span>{formData.badgeText}</span>
-                          </div>
-                        )}
-                        <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
-                          {formData.title || 'Your Promotional Banner Headline'}
-                        </h2>
-                        {formData.subtitle && (
-                          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
-                            {formData.subtitle}
-                          </p>
-                        )}
-                        <div className={`pt-1 flex flex-wrap gap-2.5 ${formData.alignment === 'center' ? 'justify-center' : formData.alignment === 'right' ? 'justify-end' : ''}`}>
-                          <button
-                            type="button"
-                            className="px-4 py-2 rounded-lg bg-amber-500 font-bold text-xs uppercase tracking-wider text-slate-950 shadow-md"
-                          >
-                            {formData.ctaText || 'Shop Now'} →
-                          </button>
-                          {formData.secondaryCtaText && (
-                            <button
-                              type="button"
-                              className="px-4 py-2 rounded-lg bg-white/20 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md border border-white/30"
-                            >
-                              {formData.secondaryCtaText}
-                            </button>
-                          )}
-                        </div>
-                      </div>
+                        {formData.ctaText || 'Shop Now'} →
+                      </button>
+                      {formData.secondaryCtaText && (
+                        <button
+                          type="button"
+                          className="px-4 py-2.5 rounded-xl bg-white/20 text-white font-bold text-xs uppercase tracking-wider backdrop-blur-md border border-white/30 transition-transform hover:scale-102"
+                        >
+                          {formData.secondaryCtaText}
+                        </button>
+                      )}
                     </div>
                   </div>
-                ),
-              },
-            ]}
-          />
+                </div>
+              </div>
+            )}
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-            <AppButton
-              onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-xs"
-            >
-              Cancel
-            </AppButton>
-            <AppButton
-              type="primary"
-              disabled={submitting}
-              className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-sm"
-            >
-              {submitting ? 'Saving Banner...' : editingBanner ? 'Save Changes' : 'Create Banner'}
-            </AppButton>
-          </div>
-        </form>
+            {/* Stepper Navigation Footer */}
+            <div className="flex items-center justify-between pt-5 mt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <div className="flex items-center gap-2">
+                {currentStep > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep((prev) => prev - 1)}
+                    className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  >
+                    <LeftOutlined className="text-[10px]" />
+                    <span>Previous</span>
+                  </button>
+                )}
+
+                {currentStep < 3 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (currentStep === 0 && !formData.title.trim()) {
+                        showToast('Please enter a headline / title for the banner', 'error');
+                        return;
+                      }
+                      setCurrentStep((prev) => prev + 1);
+                    }}
+                    className="px-5 py-2 text-xs font-semibold text-white bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  >
+                    <span>Next: {['Media & Actions', 'Scheduling', 'Preview & Launch'][currentStep]}</span>
+                    <RightOutlined className="text-[10px]" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="px-6 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                  >
+                    <CheckCircleOutlined />
+                    <span>{submitting ? 'Saving...' : editingBanner ? 'Save Changes' : 'Create & Publish Banner'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+        </div>
       </AppModal>
 
       {/* Standalone Quick Preview Modal */}
