@@ -37,7 +37,7 @@ import {
   ClockCircleOutlined,
   PictureOutlined,
 } from '@ant-design/icons';
-import { Tag, Switch, Popconfirm, Select, Breadcrumb, Tooltip } from 'antd';
+import { Tag, Switch, Popconfirm, Breadcrumb, Tooltip } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -825,20 +825,12 @@ export const MenuManagement: React.FC = () => {
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Menu icon
               </label>
-              <Select
-                value={formIcon || undefined}
-                onChange={(val) => setFormIcon(val)}
+              <AppSelect
+                value={formIcon || ''}
+                onChange={(val) => setFormIcon((val as string) || '')}
                 placeholder="Select an icon"
-                className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
-                showSearch
-                getPopupContainer={() => document.body}
-                filterOption={(input, option) =>
-                  String((option as any)?.filterValue ?? option?.label ?? '')
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+                allowClear
                 options={AVAILABLE_ICONS.map((i) => ({
-                  filterValue: `${i.label} ${i.value}`,
                   label: (
                     <span className="flex items-center gap-2">
                       <span className="text-[#0096C7]">{i.icon}</span>
@@ -874,7 +866,7 @@ export const MenuManagement: React.FC = () => {
           </div>
 
           {/* Row 4: Parent & Child Menus */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 border-t border-slate-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 border-t border-slate-100 pb-16">
             {/* Is Not Parent? and Parent menu */}
             <div className="space-y-1.5">
               <label className="inline-flex items-center gap-2 cursor-pointer select-none">
@@ -891,23 +883,14 @@ export const MenuManagement: React.FC = () => {
               </label>
 
               <div>
-                <Select
+                <AppSelect
                   disabled={!formIsNotParent}
-                  value={formParentId || undefined}
-                  onChange={(val) => setFormParentId(val || '')}
+                  value={formParentId || ''}
+                  onChange={(val) => setFormParentId((val as string) || '')}
                   placeholder="Select parent"
                   allowClear
-                  className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
-                  showSearch
-                  getPopupContainer={() => document.body}
-                  dropdownStyle={{ zIndex: 1100 }}
-                  filterOption={(input, option) =>
-                    String((option as any)?.filterValue ?? option?.label ?? '')
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
                   options={[
-                    { filterValue: 'none root', label: 'None (Root Menu)', value: '' },
+                    { label: 'None (Root Menu)', value: '' },
                     ...rootMenusList
                       .filter(
                         (r) =>
@@ -919,7 +902,6 @@ export const MenuManagement: React.FC = () => {
                           : r._id || r.id || ''
                         ).toString();
                         return {
-                          filterValue: `${r.name} ${r.path} ${valStr}`,
                           label: r.name,
                           value: valStr,
                         };
@@ -945,23 +927,14 @@ export const MenuManagement: React.FC = () => {
               </label>
 
               <div>
-                <Select
+                <AppSelect
                   disabled={!formIsNotChild}
-                  value={formChildId || undefined}
-                  onChange={(val) => setFormChildId(val || '')}
+                  value={formChildId || ''}
+                  onChange={(val) => setFormChildId((val as string) || '')}
                   placeholder="Select child"
                   allowClear
-                  className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
-                  showSearch
-                  getPopupContainer={() => document.body}
-                  dropdownStyle={{ zIndex: 1100 }}
-                  filterOption={(input, option) =>
-                    String((option as any)?.filterValue ?? option?.label ?? '')
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
                   options={[
-                    { filterValue: 'none', label: 'None', value: '' },
+                    { label: 'None', value: '' },
                     ...menus
                       .filter(
                         (m) =>
@@ -973,7 +946,6 @@ export const MenuManagement: React.FC = () => {
                           : m._id || m.id || ''
                         ).toString();
                         return {
-                          filterValue: `${m.name} ${m.path} ${valStr}`,
                           label: m.name,
                           value: valStr,
                         };
