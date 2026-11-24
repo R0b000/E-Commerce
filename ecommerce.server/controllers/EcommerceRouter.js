@@ -12,6 +12,7 @@ const { uploadRouter } = require('./UploadController');
 const { paymentRouter } = require('./PaymentController');
 const { discountRouter } = require('./DiscountController');
 const { bannerRouter } = require('./BannerController');
+const { ttsRouter } = require('./TtsController');
 
 const ecommerceRouter = Router();
 
@@ -28,6 +29,7 @@ ecommerceRouter.use('/upload', uploadRouter);
 ecommerceRouter.use('/payment', paymentRouter);
 ecommerceRouter.use('/discounts', discountRouter);
 ecommerceRouter.use('/banners', bannerRouter);
+ecommerceRouter.use('/tts', ttsRouter);
 ecommerceRouter.use('/menus', (req, res, next) => {
   req.url = '/user-menus';
   rbacRouter(req, res, next);

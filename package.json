@@ -6,6 +6,7 @@
   "scripts": {
     "dev:client": "vite",
     "dev:server": "node --watch index.js",
+    "dev:tts": "cd tts && run.bat",
     "dev": "concurrently \"pnpm dev:client\" \"pnpm dev:server\"",
     "build": "tsc && vite build",
     "start": "node index.js",

@@ -1,0 +1,19 @@
+{
+    "voices": {
+        "en_US-amy-medium": {
+            "lang": "en",
+            "label": "English (US) - Amy",
+            "path": "voices/en_US-amy-medium.onnx"
+        },
+        "ne_NP-google-2": {
+            "lang": "ne",
+            "label": "Nepali - Google voice 2",
+            "path": "voices/ne_NP-google-medium.onnx",
+            "speaker_id": 1
+        }
+    },
+    "default_voices": {
+        "en": "en_US-amy-medium",
+        "ne": "ne_NP-google-2"
+    }
+}
