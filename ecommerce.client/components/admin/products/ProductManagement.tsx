@@ -31,6 +31,7 @@ import {
   AppInput,
   AppSelect,
   AppModal,
+  DeleteConfirmModal,
   StatusBadge,
   TableSkeleton,
 } from 'shared-components';
@@ -80,6 +81,8 @@ export const ProductManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Form State
@@ -314,19 +317,28 @@ export const ProductManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteProduct = async (id: string) => {
+  const handleConfirmDelete = async () => {
+    if (!productToDelete) return;
+    const pId = productToDelete._id || productToDelete.id;
+    if (!pId) return;
     if (!canDelete) {
       showToast('Permission denied: You do not have permission to delete products', 'error');
       return;
     }
+    setDeleting(true);
     try {
-      const res = await ecommerceService.deleteProduct(id);
+      const res = await ecommerceService.deleteProduct(pId);
       if (res.success) {
-        showToast('Product deleted successfully', 'success');
-        setProducts((prev) => prev.filter((p) => (p._id || p.id) !== id));
+        showToast(`Product "${productToDelete.name}" was successfully deleted`, 'success');
+        setProducts((prev) => prev.filter((p) => (p._id || p.id) !== pId));
+        setProductToDelete(null);
+      } else {
+        showToast(res.messages?.[0] || 'Failed to delete product', 'error');
       }
     } catch (err: any) {
       showToast(err.response?.data?.messages?.[0] || 'Failed to delete product', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -627,21 +639,13 @@ export const ProductManagement: React.FC = () => {
                               />
                             )}
                             {canDelete && (
-                              <Popconfirm
+                              <AppButton
+                                size="small"
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => setProductToDelete(p)}
                                 title="Delete Product"
-                                description={`Delete "${p.name}"?`}
-                                onConfirm={() => handleDeleteProduct(pId)}
-                                okText="Yes, Delete"
-                                cancelText="Cancel"
-                                okButtonProps={{ danger: true }}
-                              >
-                                <AppButton
-                                  size="small"
-                                  danger
-                                  icon={<DeleteOutlined />}
-                                  title="Delete Product"
-                                />
-                              </Popconfirm>
+                              />
                             )}
                             {!canEdit && !canDelete && (
                               <span className="text-[10px] text-slate-400 font-mono italic">Read-only</span>
@@ -1135,6 +1139,30 @@ export const ProductManagement: React.FC = () => {
         product={qrProduct}
         open={Boolean(qrProduct)}
         onClose={() => setQrProduct(null)}
+      />
+
+      {/* Product Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        open={Boolean(productToDelete)}
+        title="Delete Product Confirmation"
+        itemName={productToDelete?.name}
+        itemType="Product"
+        description={
+          productToDelete && (
+            <div className="flex items-center gap-2 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+              <span className="font-mono font-bold text-[#0096C7] bg-white px-2 py-0.5 rounded border border-sky-100">
+                {productToDelete.sku}
+              </span>
+              <span className="text-slate-400">•</span>
+              <span className="font-black text-slate-800">${productToDelete.price?.toFixed(2)}</span>
+              <span className="text-slate-400">•</span>
+              <span className="text-slate-500 font-medium">{productToDelete.stock} in stock</span>
+            </div>
+          )
+        }
+        loading={deleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setProductToDelete(null)}
       />
     </div>
   );
