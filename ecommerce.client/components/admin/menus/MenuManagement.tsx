@@ -309,26 +309,23 @@ export const MenuManagement: React.FC = () => {
         if (!matchName && !matchNepali && !matchPath && !matchParent && !matchId) return false;
       }
 
-      // Hierarchy Filter
-      if (hierarchyFilter === 'root') {
-        return !item.isSubmenu;
-      }
-      if (hierarchyFilter === 'sub') {
-        return item.isSubmenu;
-      }
-      if (hierarchyFilter === 'primary') {
-        return Boolean(item.menu.isPrimary);
-      }
-      if (hierarchyFilter === 'single') {
-        return Boolean(item.menu.isSinglePage);
-      }
+      // Hierarchy / Parent Menu Filter
       if (hierarchyFilter !== 'all') {
         const selfId = (item.menu._id || item.menu.id || '').toString();
         const selfMenuId = String(item.menu.menuId || '');
+        let itemParentId = item.parentIdStr || '';
+        if (!itemParentId && item.menu.parentId) {
+          if (typeof item.menu.parentId === 'object') {
+            itemParentId = (item.menu.parentId._id || item.menu.parentId.id || item.menu.parentId.menuId || '').toString();
+          } else {
+            itemParentId = String(item.menu.parentId);
+          }
+        }
         return (
           selfId === hierarchyFilter ||
           selfMenuId === hierarchyFilter ||
-          item.parentIdStr === hierarchyFilter
+          item.parentIdStr === hierarchyFilter ||
+          itemParentId === hierarchyFilter
         );
       }
 
@@ -512,8 +509,8 @@ export const MenuManagement: React.FC = () => {
               />
             </div>
 
-            {/* Hierarchy Type Filter */}
-            <div className="w-full sm:w-[180px]">
+            {/* Parent Menu Filter */}
+            <div className="w-full sm:w-[170px]">
               <AppSelect
                 value={hierarchyFilter}
                 onChange={(val) => {
@@ -521,12 +518,9 @@ export const MenuManagement: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 options={[
-                  { label: 'All Menus & Submenus', value: 'all' },
-                  { label: 'Root Menus Only', value: 'root' },
-                  { label: 'Submenus Only', value: 'sub' },
-                  { label: 'Single Page Only', value: 'single' },
+                  { label: 'All Menus', value: 'all' },
                   ...rootMenusList.map((r) => ({
-                    label: `Submenus of: ${r.name}`,
+                    label: r.name,
                     value: (r.menuId !== null && r.menuId !== undefined ? r.menuId : (r._id || r.id || '')).toString(),
                   })),
                 ]}
