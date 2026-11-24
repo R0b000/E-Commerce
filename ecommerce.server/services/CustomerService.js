@@ -121,6 +121,58 @@ class CustomerService {
       return ApiResponse.fail(error.message, [error.message], 500);
     }
   }
+
+  async toggleCustomerStatus(id, isActive) {
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        return ApiResponse.fail('User account not found', [], 404);
+      }
+
+      user.isActive = typeof isActive === 'boolean' ? isActive : !user.isActive;
+      await user.save();
+
+      const userObj = user.toObject();
+      delete userObj.password;
+      userObj.id = userObj._id.toString();
+
+      emitNotification({
+        title: user.isActive ? 'Account Activated' : 'Account Deactivated',
+        message: `${user.firstName} ${user.lastName}'s account was ${user.isActive ? 'activated' : 'deactivated'}`,
+        type: 'user',
+      });
+
+      return ApiResponse.success(userObj, [`Account ${user.isActive ? 'activated' : 'deactivated'} successfully`]);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  async changeCustomerPassword(id, newPassword) {
+    try {
+      if (!newPassword || newPassword.trim().length < 6) {
+        return ApiResponse.fail('Password must be at least 6 characters long', [], 400);
+      }
+
+      const user = await User.findById(id);
+      if (!user) {
+        return ApiResponse.fail('User account not found', [], 404);
+      }
+
+      user.password = await bcrypt.hash(newPassword.trim(), 10);
+      await user.save();
+
+      emitNotification({
+        title: 'Account Password Reset',
+        message: `Password was updated for ${user.firstName} ${user.lastName}`,
+        type: 'security',
+      });
+
+      return ApiResponse.success(null, ['Password updated successfully']);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
 }
 
 module.exports = { CustomerService };

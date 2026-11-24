@@ -133,6 +133,22 @@ export class EcommerceAPIService {
     return res.data;
   }
 
+  async toggleCustomerStatus(id: string, isActive?: boolean) {
+    const res = await axiosConfig.patch<{ success: boolean; data: Customer; messages?: string[] }>(
+      `/ecommerce/customers/${id}/status`,
+      { isActive }
+    );
+    return res.data;
+  }
+
+  async changeCustomerPassword(id: string, password: string) {
+    const res = await axiosConfig.patch<{ success: boolean; messages?: string[] }>(
+      `/ecommerce/customers/${id}/password`,
+      { password }
+    );
+    return res.data;
+  }
+
   // Dynamic Navigation Menus & RBAC
   async getUserMenus(role?: string) {
     const res = await axiosConfig.get<{
