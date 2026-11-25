@@ -29,4 +29,10 @@ customerRouter.patch('/:id/password', authenticateToken, requireRole('admin'), a
   res.status(result.statusCode || 200).json(result);
 });
 
+// Admin: update user role
+customerRouter.patch('/:id/role', authenticateToken, requireRole('admin'), async (req, res) => {
+  const result = await customerService.updateCustomerRole(req.params.id, req.body.role);
+  res.status(result.statusCode || 200).json(result);
+});
+
 module.exports = { customerRouter };

@@ -104,7 +104,7 @@ class AuthAPIService {
   }
 
   async deletePasskey(credentialId: string): Promise<IResponse<{ remaining: number }>> {
-    const response = await axiosConfig.delete<IResponse<any>>(`${AuthAPIRoutes.PASSKEYS}/${credentialId}`);
+    const response = await axiosConfig.delete<IResponse<any>>(`${AuthAPIRoutes.PASSKEYS}/${encodeURIComponent(credentialId)}`);
     return response.data;
   }
 

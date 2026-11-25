@@ -23,7 +23,7 @@ import {
   Breadcrumb,
   Popconfirm,
 } from 'antd';
-import { AppTable, AppButton, AppInput, AppModal } from 'shared-components';
+import { AppTable, AppButton, AppInput, AppModal, DeleteConfirmModal } from 'shared-components';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { authAPIService } from 'auth-client/services/AuthAPIService';
 import { createWebAuthnCredential } from 'auth-client/services/fido2Helper';
@@ -70,6 +70,8 @@ export default function SecurityManagement() {
   const [isRegisterPasskeyModalOpen, setIsRegisterPasskeyModalOpen] = useState(false);
   const [newPasskeyName, setNewPasskeyName] = useState('');
   const [registeringPasskey, setRegisteringPasskey] = useState(false);
+  const [passkeyToDelete, setPasskeyToDelete] = useState<PasskeyItem | null>(null);
+  const [deletingPasskey, setDeletingPasskey] = useState(false);
 
   // Sessions state
   const [sessions, setSessions] = useState<SessionItem[]>([]);
@@ -174,11 +176,16 @@ export default function SecurityManagement() {
     }
   };
 
-  const handleDeletePasskey = async (credentialId: string, name: string) => {
+  const handleDeletePasskey = async () => {
+    if (!passkeyToDelete) return;
+    const targetId = passkeyToDelete.credentialId || passkeyToDelete.id;
+    const name = passkeyToDelete.deviceName;
+    setDeletingPasskey(true);
     try {
-      const res = await authAPIService.deletePasskey(credentialId);
+      const res = await authAPIService.deletePasskey(targetId);
       if (res.success) {
         showSuccess(`Passkey "${name}" removed successfully`);
+        setPasskeyToDelete(null);
         await loadPasskeys();
         await refreshUser();
       } else {
@@ -186,6 +193,8 @@ export default function SecurityManagement() {
       }
     } catch (err: any) {
       showError(err.message || 'Error deleting passkey');
+    } finally {
+      setDeletingPasskey(false);
     }
   };
 
@@ -503,16 +512,13 @@ export default function SecurityManagement() {
                         </td>
 
                         <td className="py-3 px-6 text-right whitespace-nowrap">
-                          <Popconfirm
+                          <AppButton
+                            size="small"
+                            danger
+                            icon={<DeleteOutlined />}
                             title="Remove Passkey"
-                            description={`Remove passkey "${pk.deviceName}"? You will not be able to sign in with this device.`}
-                            onConfirm={() => handleDeletePasskey(pk.credentialId, pk.deviceName)}
-                            okText="Yes, Remove"
-                            cancelText="Cancel"
-                            okButtonProps={{ danger: true }}
-                          >
-                            <AppButton size="small" danger icon={<DeleteOutlined />} title="Remove Passkey" />
-                          </Popconfirm>
+                            onClick={() => setPasskeyToDelete(pk)}
+                          />
                         </td>
                       </tr>
                     ))
@@ -1094,6 +1100,17 @@ export default function SecurityManagement() {
           </div>
         )}
       </AppModal>
+
+      <DeleteConfirmModal
+        open={Boolean(passkeyToDelete)}
+        title="Remove Passkey"
+        itemName={passkeyToDelete?.deviceName}
+        itemType="passkey"
+        description="You will no longer be able to sign in using this biometric passkey or security key."
+        loading={deletingPasskey}
+        onConfirm={handleDeletePasskey}
+        onCancel={() => !deletingPasskey && setPasskeyToDelete(null)}
+      />
     </div>
   );
 }

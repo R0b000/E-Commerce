@@ -17,6 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         token: {
           colorPrimary: '#0096C7',
           borderRadius: 8,
+          fontSize: 13,
           fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
           colorBgBase: '#ffffff',
           colorTextBase: '#1e293b',

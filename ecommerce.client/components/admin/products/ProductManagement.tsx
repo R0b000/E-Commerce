@@ -618,7 +618,7 @@ export const ProductManagement: React.FC = () => {
                         {/* Actions */}
                         <td className="py-3 px-4 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Tooltip title="Advertisement QR Hub (Product View & Website)">
+                            <Tooltip title="View Product QR Code">
                               <button
                                 type="button"
                                 onClick={(e) => {

@@ -525,10 +525,20 @@ export const PermissionManagement: React.FC = () => {
               ),
             },
             {
-              title: <span className="text-slate-700 font-semibold">Permissions Matrix</span>,
+              title: <span className="text-slate-700 font-semibold">Role Permission</span>,
             },
           ]}
         />
+
+        <div className="flex items-center gap-2">
+          <Link
+            to="/admin/user-roles"
+            className="text-xs text-[#0096c7] hover:underline font-semibold flex items-center gap-1"
+          >
+            <TeamOutlined />
+            <span>User Role Management ›</span>
+          </Link>
+        </div>
       </div>
 
       {/* Main Permissions Matrix Card with Integrated Header */}
@@ -537,7 +547,7 @@ export const PermissionManagement: React.FC = () => {
         <div className="pl-0 pr-4 py-3 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl shrink-0">
           <div className="flex flex-col min-w-0">
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
-              Role Permissions & Access Matrix
+              Role Permission & Access Matrix
             </h3>
           </div>
 

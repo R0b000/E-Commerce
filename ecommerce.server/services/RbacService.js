@@ -51,7 +51,7 @@ class RbacService {
         /^\/categories$/,
       ];
 
-      const validMenuIds = [1, 2, 21, 22, 23, 24, 11, 12, 13, 14, 4, 41, 42, 5, 10, 101, 102, 103, 104, 60, 61, 62];
+      const validMenuIds = [1, 2, 21, 22, 23, 24, 11, 12, 13, 14, 4, 41, 42, 5, 10, 101, 102, 103, 104, 105, 60, 61, 62];
 
       await Menu.deleteMany({
         $or: [
@@ -396,11 +396,27 @@ class RbacService {
         },
         {
           menuId: 104,
-          name: 'User Role',
+          name: 'Role Permission',
           menuNameNepali: '',
           path: '/admin/permissions',
-          icon: 'group',
+          icon: 'shield',
           order: 4,
+          parentId: 10,
+          isSinglePage: true,
+          isPrimary: false,
+          isChild: true,
+          isNotParent: true,
+          isNotChild: false,
+          roles: ['admin'],
+          isActive: true,
+        },
+        {
+          menuId: 105,
+          name: 'User Role Management',
+          menuNameNepali: '',
+          path: '/admin/user-roles',
+          icon: 'group',
+          order: 5,
           parentId: 10,
           isSinglePage: true,
           isPrimary: false,

@@ -3,6 +3,7 @@ const { User } = require('../../auth.server/models/database/User');
 const { Order } = require('../models/database/Order');
 const { Response: ApiResponse } = require('../../Shared/API/wrappers/Response');
 const { emitNotification } = require('../socket/SocketServer');
+const { redisService } = require('./RedisService');
 
 class CustomerService {
   async getCustomers(queryParams = {}) {
@@ -169,6 +170,39 @@ class CustomerService {
       });
 
       return ApiResponse.success(null, ['Password updated successfully']);
+    } catch (error) {
+      return ApiResponse.fail(error.message, [error.message], 500);
+    }
+  }
+
+  async updateCustomerRole(id, role) {
+    try {
+      if (!role) {
+        return ApiResponse.fail('Role is required', [], 400);
+      }
+
+      const user = await User.findById(id);
+      if (!user) {
+        return ApiResponse.fail('User account not found', [], 404);
+      }
+
+      const normalizedRole = role.toLowerCase().trim();
+      user.role = normalizedRole;
+      await user.save();
+
+      await redisService.delByPattern('ecommerce:menus:*');
+
+      const userObj = user.toObject();
+      delete userObj.password;
+      userObj.id = userObj._id.toString();
+
+      emitNotification({
+        title: 'User Role Updated',
+        message: `${user.firstName} ${user.lastName}'s role was updated to ${normalizedRole}`,
+        type: 'user',
+      });
+
+      return ApiResponse.success(userObj, [`Role updated to ${normalizedRole} successfully`]);
     } catch (error) {
       return ApiResponse.fail(error.message, [error.message], 500);
     }

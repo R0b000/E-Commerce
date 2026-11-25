@@ -21,7 +21,7 @@ import {
   ThunderboltFilled,
   ClockCircleOutlined,
 } from '@ant-design/icons';
-import { Tag } from 'antd';
+import { Tag, Progress } from 'antd';
 import {
   AreaChart,
   Area,
@@ -163,7 +163,7 @@ export const DashboardOverview: React.FC = () => {
   // =========================================================================
   if (isCustomer) {
     return (
-      <div className="space-y-6 w-full font-['Nunito_Sans','Poppins',sans-serif]">
+      <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif] text-[13px]">
         {/* Customer Welcome Header Card */}
         <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -442,84 +442,85 @@ export const DashboardOverview: React.FC = () => {
   // ADMIN / EXECUTIVE COMMAND CENTER VIEW
   // =========================================================================
   return (
-    <div className="space-y-6 w-full font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif] text-[13px]">
+
       {/* =========================================================================
           2. Executive Metric Ribbon with Micro Sparklines & Conversion Ratios
          ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1: Gross Platform Revenue */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <span>Gross Revenue</span>
-              <span className="w-8 h-8 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-sm font-bold">
+              <span className="w-9 h-9 rounded-xl bg-sky-50 text-[#0096c7] group-hover:bg-[#0096c7] group-hover:text-white transition-colors flex items-center justify-center text-sm font-bold">
                 <DollarOutlined />
               </span>
             </div>
 
-            <div className="flex items-baseline gap-2 mt-2">
+            <div className="flex items-baseline gap-2 mt-3">
               <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 ${summary.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className="text-[11px] font-bold text-emerald-600 inline-flex items-center gap-0.5">
+              <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full inline-flex items-center gap-0.5">
                 <RiseOutlined /> +18.4%
               </span>
             </div>
           </div>
 
-          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span className="text-slate-400">Avg Order Value:</span>
-            <span className="font-bold text-slate-700 font-mono">${avgOrderValue}</span>
+            <span className="font-bold text-slate-800 font-mono">${avgOrderValue}</span>
           </div>
         </div>
 
         {/* Metric 2: Total Volume & Fulfillment Rate */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <span>Order Volume</span>
-              <span className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm font-bold">
+              <span className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors flex items-center justify-center text-sm font-bold">
                 <ShoppingOutlined />
               </span>
             </div>
 
-            <div className="flex items-baseline gap-2 mt-2">
+            <div className="flex items-baseline gap-2 mt-3">
               <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 {summary.totalOrders}
               </span>
-              <span className="text-[11px] font-bold text-slate-500">
+              <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
                 {statusCounts.delivered} fulfilled
               </span>
             </div>
           </div>
 
-          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span className="text-slate-400">Fulfillment Success:</span>
             <span className="font-bold text-emerald-600 font-mono">{fulfillmentRate}%</span>
           </div>
         </div>
 
         {/* Metric 3: Active Catalog SKUs & Inventory Health */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <span>Catalog SKUs</span>
-              <span className="w-8 h-8 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-sm font-bold">
+              <span className="w-9 h-9 rounded-xl bg-orange-50 text-[#f97316] group-hover:bg-[#f97316] group-hover:text-white transition-colors flex items-center justify-center text-sm font-bold">
                 <AppstoreOutlined />
               </span>
             </div>
 
-            <div className="flex items-baseline gap-2 mt-2">
+            <div className="flex items-baseline gap-2 mt-3">
               <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 {summary.totalProducts}
               </span>
-              <span className="text-[11px] font-bold text-slate-500">
-                Live items
+              <span className="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                Live SKUs
               </span>
             </div>
           </div>
 
-          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span className="text-slate-400">Stock Health Index:</span>
             <span className={`font-bold font-mono ${inStockPercentage > 80 ? 'text-emerald-600' : 'text-amber-600'}`}>
               {inStockPercentage}% Healthy
@@ -528,26 +529,26 @@ export const DashboardOverview: React.FC = () => {
         </div>
 
         {/* Metric 4: Platform Buyers / Customers */}
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between group">
           <div>
             <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <span>Active Accounts</span>
-              <span className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-sm font-bold">
+              <span className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors flex items-center justify-center text-sm font-bold">
                 <UserOutlined />
               </span>
             </div>
 
-            <div className="flex items-baseline gap-2 mt-2">
+            <div className="flex items-baseline gap-2 mt-3">
               <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 {summary.totalCustomers || 15}
               </span>
-              <span className="text-[11px] font-bold text-emerald-600">
+              <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                 Verified
               </span>
             </div>
           </div>
 
-          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span className="text-slate-400">Biometric Passkeys:</span>
             <span className="font-bold text-purple-600 font-mono">100% Enabled</span>
           </div>
@@ -558,16 +559,16 @@ export const DashboardOverview: React.FC = () => {
           3. Smart "Action Center" (Real-time Operations Pulse)
          ========================================================================= */}
       {(summary.lowStockCount > 0 || statusCounts.pending > 0) && (
-        <div className="bg-linear-to-r from-amber-50/70 to-orange-50/40 rounded-2xl border border-amber-200/80 p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent rounded-2xl border border-amber-300/70 p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center text-base shrink-0 shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-base shrink-0 shadow-sm shadow-amber-500/30">
               <ThunderboltFilled />
             </div>
             <div>
               <div className="text-xs font-bold text-slate-900">
                 Action Required ({summary.lowStockCount + statusCounts.pending} items)
               </div>
-              <div className="text-[11px] text-slate-600 mt-0.5">
+              <div className="text-xs text-slate-600 mt-0.5">
                 {statusCounts.pending > 0 && `${statusCounts.pending} pending order(s) awaiting shipment. `}
                 {summary.lowStockCount > 0 && `${summary.lowStockCount} product(s) are at or below critical inventory threshold.`}
               </div>
@@ -578,7 +579,7 @@ export const DashboardOverview: React.FC = () => {
             {statusCounts.pending > 0 && (
               <Link
                 to="/admin/orders"
-                className="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-800 hover:bg-amber-100/60 font-semibold text-xs shadow-2xs transition-colors"
+                className="px-3.5 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-800 hover:bg-amber-100/60 font-semibold text-xs shadow-2xs transition-colors"
               >
                 Fulfill Orders ›
               </Link>
@@ -586,7 +587,7 @@ export const DashboardOverview: React.FC = () => {
             {summary.lowStockCount > 0 && (
               <Link
                 to="/admin/inventory"
-                className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-2xs transition-colors"
+                className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-2xs transition-colors"
               >
                 Restock Warehouse ›
               </Link>
@@ -600,114 +601,133 @@ export const DashboardOverview: React.FC = () => {
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Main Trajectory Area Chart (8 Columns) */}
-        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Revenue & Sales Trajectory
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Monthly revenue generation and customer order frequency.
-              </p>
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+              <div>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  Revenue & Sales Trajectory
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Monthly revenue generation and customer order frequency.
+                </p>
+              </div>
+
+              {/* Timeframe Pill Switcher */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold self-start sm:self-auto border border-slate-200/60">
+                <button
+                  type="button"
+                  onClick={() => setTimeRange('6m')}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    timeRange === '6m' ? 'bg-[#0096c7] text-white shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  6 Months
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeRange('1y')}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    timeRange === '1y' ? 'bg-[#0096c7] text-white shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  1 Year
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTimeRange('all')}
+                  className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                    timeRange === 'all' ? 'bg-[#0096c7] text-white shadow-2xs font-bold' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  All Time
+                </button>
+              </div>
             </div>
 
-            {/* Timeframe Pill Switcher */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold self-start sm:self-auto">
-              <button
-                onClick={() => setTimeRange('6m')}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  timeRange === '6m' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                6 Months
-              </button>
-              <button
-                onClick={() => setTimeRange('1y')}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  timeRange === '1y' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                1 Year
-              </button>
-              <button
-                onClick={() => setTimeRange('all')}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  timeRange === 'all' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                All Time
-              </button>
+            <div className="h-[270px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#0096c7" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#0096c7" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#f97316" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                    tick={{ fontSize: 11, fill: '#64748b' }}
+                  />
+                  <YAxis
+                    yAxisId="left"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 11, fill: '#64748b' }}
+                    tickFormatter={(val) => `$${val}`}
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 11, fill: '#64748b' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      borderRadius: '12px',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      fontSize: '12px',
+                    }}
+                  />
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="Revenue"
+                    stroke="#0096c7"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#revenueGradient)"
+                  />
+                  <Area
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="Orders"
+                    stroke="#f97316"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#ordersGradient)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="h-[270px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={salesChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.0} />
-                  </linearGradient>
-                  <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0284c7" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#0284c7" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
-                />
-                <YAxis
-                  yAxisId="left"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
-                  tickFormatter={(val) => `$${val}`}
-                />
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    borderRadius: '12px',
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    fontSize: '12px',
-                  }}
-                />
-                <Area
-                  yAxisId="left"
-                  type="monotone"
-                  dataKey="Revenue"
-                  stroke="#f97316"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#revenueGradient)"
-                />
-                <Area
-                  yAxisId="right"
-                  type="monotone"
-                  dataKey="Orders"
-                  stroke="#0284c7"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#ordersGradient)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 mt-4 border-t border-slate-100 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#0096c7]" />
+              <span className="text-slate-500">Gross Sales Revenue</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#f97316]" />
+              <span className="text-slate-500">Order Frequency</span>
+            </div>
+            <div className="text-slate-400 text-right sm:block hidden">
+              Aggregated monthly telemetry
+            </div>
           </div>
         </div>
 
         {/* Order Fulfillment Pipeline Stages (4 Columns) */}
-        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
           <div>
             <h3 className="text-base font-bold text-slate-900 tracking-tight">
               Order Fulfillment Stages
@@ -750,13 +770,13 @@ export const DashboardOverview: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-5 gap-1 pt-3 border-t border-slate-100 text-center">
+          <div className="grid grid-cols-5 gap-1 pt-3.5 border-t border-slate-100 text-center">
             {statusChartData.map((s) => (
               <div key={s.name}>
                 <div className="text-sm font-bold" style={{ color: s.color }}>
                   {s.count}
                 </div>
-                <div className="text-[10px] text-slate-400 truncate">{s.name}</div>
+                <div className="text-[10px] text-slate-500 truncate font-semibold">{s.name}</div>
               </div>
             ))}
           </div>
@@ -768,7 +788,7 @@ export const DashboardOverview: React.FC = () => {
          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Live Orders Feed (8 Columns) */}
-        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <div>
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
@@ -781,9 +801,9 @@ export const DashboardOverview: React.FC = () => {
 
             <Link
               to="/admin/orders"
-              className="inline-flex items-center gap-1.5 self-start sm:self-auto px-3.5 py-1.5 rounded-lg bg-blue-50 text-[#0284c7] hover:bg-blue-100 font-semibold text-xs border border-blue-100 transition-colors"
+              className="inline-flex items-center gap-1.5 self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-sky-50 text-[#0096c7] hover:bg-sky-100 font-semibold text-xs border border-sky-200 transition-colors shadow-2xs"
             >
-              <span>View all orders ({summary.totalOrders})</span>
+              <span>View all ({summary.totalOrders})</span>
               <ArrowRightOutlined className="text-[10px]" />
             </Link>
           </div>
@@ -791,7 +811,7 @@ export const DashboardOverview: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-2">
+                <tr className="border-b border-slate-200/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider pb-2">
                   <th className="pb-3">Order Number</th>
                   <th className="pb-3">Customer</th>
                   <th className="pb-3">Items</th>
@@ -806,19 +826,26 @@ export const DashboardOverview: React.FC = () => {
                     <tr
                       key={order._id || order.id}
                       onClick={() => setSelectedOrder(order as any)}
-                      className="hover:bg-sky-50/70 transition-colors cursor-pointer group"
+                      className="hover:bg-sky-50/60 transition-colors cursor-pointer group"
                     >
-                      <td className="py-3 font-mono font-bold text-[#0284c7] group-hover:underline">
+                      <td className="py-3 font-mono font-bold text-[#0096c7] group-hover:underline">
                         {order.orderNumber}
                       </td>
                       <td className="py-3">
-                        <div className="font-semibold text-slate-800">{order.customer?.name}</div>
-                        <div className="text-[10px] text-slate-400">{order.customer?.email}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-[10px]">
+                            {order.customer?.name ? order.customer.name.charAt(0).toUpperCase() : 'U'}
+                          </span>
+                          <div>
+                            <div className="font-semibold text-slate-800">{order.customer?.name}</div>
+                            <div className="text-[10px] text-slate-400">{order.customer?.email}</div>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3 text-slate-600 font-medium">
-                        {order.items?.length || 0} items
+                        {order.items?.length || 0} item(s)
                       </td>
-                      <td className="py-3 font-bold text-slate-900">
+                      <td className="py-3 font-bold text-slate-900 font-mono">
                         ${order.totalAmount?.toFixed(2)}
                       </td>
                       <td className="py-3">
@@ -831,7 +858,7 @@ export const DashboardOverview: React.FC = () => {
                             e.stopPropagation();
                             setSelectedOrder(order as any);
                           }}
-                          className="px-2.5 py-1 rounded-md bg-sky-50 hover:bg-sky-100 text-[#0284c7] border border-sky-200 text-[11px] font-semibold transition-colors cursor-pointer inline-flex items-center gap-1"
+                          className="px-3 py-1 rounded-lg bg-sky-50 hover:bg-sky-100 text-[#0096c7] border border-sky-200 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5 shadow-2xs"
                         >
                           <CompassOutlined />
                           <span>Track GPS ›</span>
@@ -852,7 +879,7 @@ export const DashboardOverview: React.FC = () => {
         </div>
 
         {/* Warehouse Inventory Pulse (4 Columns) */}
-        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between gap-3 mb-4">
               <div>
@@ -860,11 +887,11 @@ export const DashboardOverview: React.FC = () => {
                   Inventory Pulse
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Items requiring immediate restock.
+                  Critical warehouse restock thresholds.
                 </p>
               </div>
 
-              <span className="w-8 h-8 rounded-full bg-orange-50 text-[#f97316] flex items-center justify-center text-sm shadow-2xs">
+              <span className="w-9 h-9 rounded-xl bg-orange-50 text-[#f97316] flex items-center justify-center text-sm shadow-2xs font-bold">
                 <WarningOutlined />
               </span>
             </div>
@@ -880,7 +907,7 @@ export const DashboardOverview: React.FC = () => {
                       <img
                         src={prod.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}
                         alt={prod.name}
-                        className="w-9 h-9 rounded-lg object-cover bg-white border border-slate-200 shrink-0"
+                        className="w-10 h-10 rounded-lg object-cover bg-white border border-slate-200 shrink-0 shadow-2xs"
                       />
                       <div className="truncate">
                         <div className="text-xs font-semibold text-slate-800 truncate">{prod.name}</div>
@@ -888,13 +915,14 @@ export const DashboardOverview: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <Tag color="error" className="m-0 font-bold text-[10px] px-1.5 py-0 rounded-full">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Tag color="error" className="m-0 font-bold text-[10px] px-2 py-0.5 rounded-full">
                         {prod.stock} left
                       </Tag>
                       <button
+                        type="button"
                         onClick={() => handleQuickRestock(prod._id || prod.id || '', prod.stock)}
-                        className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-200 transition-all cursor-pointer shadow-2xs"
+                        className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-orange-50 hover:text-[#f97316] hover:border-orange-200 transition-all cursor-pointer shadow-2xs"
                       >
                         +20
                       </button>
@@ -910,9 +938,9 @@ export const DashboardOverview: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+          <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
             <span className="text-slate-400">Warehouse stock alerts:</span>
-            <Link to="/admin/inventory" className="text-[#0284c7] font-semibold hover:underline">
+            <Link to="/admin/inventory" className="text-[#0096c7] font-semibold hover:underline">
               Manage inventory ›
             </Link>
           </div>

@@ -14,6 +14,7 @@ import BrandManagement from '../components/admin/brands/BrandManagement';
 import OrderManagement from '../components/admin/orders/OrderManagement';
 import CustomerManagement from '../components/admin/customers/CustomerManagement';
 import RoleManagement from '../components/admin/roles/RoleManagement';
+import UserRoleManagement from '../components/admin/roles/UserRoleManagement';
 import PermissionManagement from '../components/admin/permissions/PermissionManagement';
 import MenuManagement from '../components/admin/menus/MenuManagement';
 import ReviewManagement from '../components/admin/reviews/ReviewManagement';
@@ -62,6 +63,7 @@ export const EcommerceRoutes: RouteConfig = {
         { path: 'audit-logs', element: AuditLogManagement },
         { path: 'roles', element: RoleManagement },
         { path: 'permissions', element: PermissionManagement },
+        { path: 'user-roles', element: UserRoleManagement },
         { path: 'menus', element: MenuManagement },
         { path: 'inventory', element: InventoryManagement },
         { path: 'seller-profile', element: SellerProfile },
