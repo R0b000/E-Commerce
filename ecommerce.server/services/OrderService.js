@@ -241,25 +241,6 @@ class OrderService {
       return ApiResponse.fail(error.message, [error.message], 400);
     }
   }
-
-  /**
-   * Deletes order (Admin only)
-   */
-  async deleteOrder(id, user = null) {
-    try {
-      if (user && user.role !== 'admin') {
-        return ApiResponse.fail('Access denied: Only system administrators can delete orders', [], 403);
-      }
-
-      const order = await Order.findByIdAndDelete(id);
-      if (!order) {
-        return ApiResponse.fail('Order not found', [], 404);
-      }
-      return ApiResponse.success(null, ['Order deleted successfully']);
-    } catch (error) {
-      return ApiResponse.fail(error.message, [error.message], 500);
-    }
-  }
 }
 
 module.exports = { OrderService };

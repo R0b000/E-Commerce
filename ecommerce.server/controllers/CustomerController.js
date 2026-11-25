@@ -17,4 +17,16 @@ customerRouter.post('/', authenticateToken, requireRole('admin'), async (req, re
   res.status(result.statusCode || 200).json(result);
 });
 
+// Admin: toggle active / deactivated status
+customerRouter.patch('/:id/status', authenticateToken, requireRole('admin'), async (req, res) => {
+  const result = await customerService.toggleCustomerStatus(req.params.id, req.body.isActive);
+  res.status(result.statusCode || 200).json(result);
+});
+
+// Admin: change account password
+customerRouter.patch('/:id/password', authenticateToken, requireRole('admin'), async (req, res) => {
+  const result = await customerService.changeCustomerPassword(req.params.id, req.body.password || req.body.newPassword);
+  res.status(result.statusCode || 200).json(result);
+});
+
 module.exports = { customerRouter };

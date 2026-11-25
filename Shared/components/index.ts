@@ -13,6 +13,9 @@ export type { AppTableProps, AppTableColumn, AppTablePaginationConfig } from './
 export { AppModal } from './AppModal';
 export type { AppModalProps } from './AppModal';
 
+export { DeleteConfirmModal } from './DeleteConfirmModal';
+export type { DeleteConfirmModalProps } from './DeleteConfirmModal';
+
 export { AppInput, AppSearchInput } from './AppInput';
 export type { AppInputProps } from './AppInput';
 

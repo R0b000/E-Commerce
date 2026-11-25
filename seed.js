@@ -37,7 +37,6 @@ async function seedData() {
       { code: 'pages:categories', name: 'Categories Page', module: 'Catalog', description: 'Manage department classifications' },
       { code: 'pages:orders', name: 'Orders Page', module: 'Orders', description: 'Access order fulfillment and customer transactions' },
       { code: 'orders:update_status', name: 'Update Order Status', module: 'Orders', description: 'Update dispatch tracking numbers and order state' },
-      { code: 'orders:delete', name: 'Delete Order', module: 'Orders', description: 'Permanently remove orders (Admin only)' },
       { code: 'pages:customers', name: 'Customer Directory', module: 'Directory', description: 'View registered shopper profiles' },
       { code: 'pages:roles', name: 'Role Management', module: 'Access Control', description: 'Manage customer and seller role permissions' },
       { code: 'pages:permissions', name: 'Permission Management', module: 'Access Control', description: 'Grant special user permissions and create permissions' },
@@ -107,8 +106,10 @@ async function seedData() {
       { menuId: 41, name: 'Discounts & Coupons', menuNameNepali: 'छुट र कुपन', path: '/admin/discounts', icon: 'tune', order: 1, parentId: 4, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager'], isActive: true },
       { menuId: 42, name: 'Hero Banners', menuNameNepali: 'ब्यानरहरू', path: '/admin/banners', icon: 'photo_camera', order: 2, parentId: 4, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager'], isActive: true },
 
-      // 5. Accounts (Single Page)
-      { menuId: 5, name: 'Accounts', menuNameNepali: 'खाताहरू', path: '/admin/customers', icon: 'groups', order: 5, parentId: null, isSinglePage: true, isPrimary: false, isNotParent: true, isNotChild: true, roles: ['admin', 'seller', 'support', 'manager'], isActive: true },
+      // 5. Accounts (Parent Menu)
+      { menuId: 5, name: 'Accounts', menuNameNepali: 'खाताहरू', path: '/admin/accounts/employees', icon: 'groups', order: 5, parentId: null, isSinglePage: false, isPrimary: false, isNotParent: false, isNotChild: true, roles: ['admin', 'manager', 'support'], isActive: true },
+      { menuId: 51, name: 'Employee', menuNameNepali: 'कर्मचारीहरू', path: '/admin/accounts/employees', icon: 'badge', order: 1, parentId: 5, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager', 'support'], isActive: true },
+      { menuId: 52, name: 'Client', menuNameNepali: 'ग्राहक तथा बिक्रेता', path: '/admin/accounts/clients', icon: 'groups', order: 2, parentId: 5, isSinglePage: true, isPrimary: false, isChild: true, isNotParent: true, isNotChild: false, roles: ['admin', 'manager', 'support', 'seller'], isActive: true },
 
       // 6. Auth (Parent Menu)
       { menuId: 10, name: 'Auth', menuNameNepali: 'प्रमाणीकरण', path: '/admin/auth', icon: 'shield', order: 6, parentId: null, isSinglePage: false, isPrimary: false, isNotParent: false, isNotChild: true, roles: ['admin'], isActive: true },

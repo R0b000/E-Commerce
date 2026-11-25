@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   TeamOutlined,
   SearchOutlined,
@@ -21,8 +21,11 @@ import {
   LeftOutlined,
   RightOutlined,
   DownOutlined,
+  KeyOutlined,
+  LockOutlined,
+  PoweroffOutlined,
 } from '@ant-design/icons';
-import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio, Breadcrumb, Dropdown } from 'antd';
+import { Avatar, Tag, Spin, Form, Input, Select, Switch, Radio, Breadcrumb, Dropdown, Popconfirm, Tooltip } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { Customer } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -33,18 +36,32 @@ import {
   AppTable,
   AppButton,
   AppInput,
+  AppSelect,
   AppModal,
   PageHeader,
   TableSkeleton,
 } from 'shared-components';
 
-export const CustomerManagement: React.FC = () => {
+export interface CustomerManagementProps {
+  mode?: 'all' | 'employee' | 'client';
+}
+
+export const CustomerManagement: React.FC<CustomerManagementProps> = ({ mode: propMode }) => {
   const { user } = useAuth();
+  const location = useLocation();
   const isSeller = user?.role === 'seller';
 
   if (isSeller) {
     return <SellerProfile />;
   }
+
+  const activeMode: 'all' | 'employee' | 'client' = useMemo(() => {
+    if (propMode) return propMode;
+    const path = location.pathname.toLowerCase();
+    if (path.includes('employee')) return 'employee';
+    if (path.includes('client')) return 'client';
+    return 'all';
+  }, [propMode, location.pathname]);
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +71,60 @@ export const CustomerManagement: React.FC = () => {
   const [viewingUser, setViewingUser] = useState<Customer | null>(null);
   const [creating, setCreating] = useState(false);
 
+  // Password Reset / Change State
+  const [passwordTargetUser, setPasswordTargetUser] = useState<Customer | null>(null);
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [passwordForm] = Form.useForm();
+
+  const openPasswordModal = (customer: Customer) => {
+    setPasswordTargetUser(customer);
+    passwordForm.resetFields();
+  };
+
+  const handlePasswordSubmit = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      if (!passwordTargetUser) return;
+      const targetId = passwordTargetUser.id || passwordTargetUser._id;
+      setUpdatingPassword(true);
+      const res = await ecommerceService.changeCustomerPassword(targetId, values.newPassword);
+      if (res.success) {
+        showToast(res.messages?.[0] || 'Password updated successfully!', 'success');
+        setPasswordTargetUser(null);
+        passwordForm.resetFields();
+      } else {
+        showToast(res.messages?.[0] || 'Failed to update password', 'error');
+      }
+    } catch (err: any) {
+      if (err.errorFields) return;
+      showToast(err.response?.data?.messages?.[0] || 'Error updating password', 'error');
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  const handleToggleStatus = async (customer: Customer) => {
+    const targetId = customer.id || customer._id;
+    if (!targetId) return;
+    const nextStatus = customer.isActive === false ? true : false;
+    try {
+      const res = await ecommerceService.toggleCustomerStatus(targetId, nextStatus);
+      if (res.success) {
+        showToast(res.messages?.[0] || `Account ${nextStatus ? 'activated' : 'deactivated'} successfully!`, 'success');
+        setCustomers((prev) =>
+          prev.map((c) => ((c.id || c._id) === targetId ? { ...c, isActive: nextStatus } : c))
+        );
+        if (viewingUser && ((viewingUser.id || viewingUser._id) === targetId)) {
+          setViewingUser((prev) => (prev ? { ...prev, isActive: nextStatus } : null));
+        }
+      } else {
+        showToast(res.messages?.[0] || 'Failed to update account status', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.response?.data?.messages?.[0] || 'Error updating account status', 'error');
+    }
+  };
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -61,18 +132,29 @@ export const CustomerManagement: React.FC = () => {
   const selectedRole = Form.useWatch('role', form);
   const { showToast } = useToast();
 
+  useEffect(() => {
+    setSelectedRoleFilter('all');
+    setCurrentPage(1);
+  }, [activeMode]);
+
   const loadCustomers = async () => {
     setLoading(true);
     try {
-      const res = await ecommerceService.getCustomers({
+      const params: Record<string, any> = {
         search: searchQuery,
         role: selectedRoleFilter !== 'all' ? selectedRoleFilter : undefined,
-      });
+      };
+      if (activeMode === 'employee') {
+        params.type = 'employee';
+      } else if (activeMode === 'client') {
+        params.type = 'client';
+      }
+      const res = await ecommerceService.getCustomers(params);
       if (res.success && res.data) {
         setCustomers(res.data);
       }
     } catch {
-      showToast('Error loading user & customer directory', 'error');
+      showToast('Error loading accounts directory', 'error');
     } finally {
       setLoading(false);
     }
@@ -80,7 +162,7 @@ export const CustomerManagement: React.FC = () => {
 
   useEffect(() => {
     loadCustomers();
-  }, [selectedRoleFilter]);
+  }, [selectedRoleFilter, activeMode]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,13 +215,73 @@ export const CustomerManagement: React.FC = () => {
     }
   };
 
-  const totalSpendAll = customers.reduce((acc, c) => acc + (c.totalSpend || 0), 0);
-  const totalOrdersAll = customers.reduce((acc, c) => acc + (c.ordersCount || 0), 0);
-  const sellersCount = customers.filter((c) => c.role === 'seller').length;
-  const customersCount = customers.filter((c) => c.role === 'customer' || c.role === 'user').length;
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((c) => {
+      const role = (c.role || '').toLowerCase();
+      if (activeMode === 'employee') {
+        // Render all accounts EXCEPT seller and customer
+        if (role === 'customer' || role === 'user' || role === 'seller') return false;
+        if (selectedRoleFilter !== 'all' && role !== selectedRoleFilter.toLowerCase()) return false;
+        return true;
+      }
+      if (activeMode === 'client') {
+        // Vice versa: only customer and seller
+        if (role !== 'customer' && role !== 'user' && role !== 'seller') return false;
+        if (selectedRoleFilter !== 'all' && role !== selectedRoleFilter.toLowerCase()) return false;
+        return true;
+      }
+      if (selectedRoleFilter !== 'all' && role !== selectedRoleFilter.toLowerCase()) return false;
+      return true;
+    });
+  }, [customers, activeMode, selectedRoleFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(customers.length / pageSize));
-  const paginatedCustomers = customers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const totalSpendAll = filteredCustomers.reduce((acc, c) => acc + (c.totalSpend || 0), 0);
+  const totalOrdersAll = filteredCustomers.reduce((acc, c) => acc + (c.ordersCount || 0), 0);
+  const sellersCount = customers.filter((c) => (c.role || '').toLowerCase() === 'seller').length;
+  const customersCount = customers.filter((c) => {
+    const r = (c.role || '').toLowerCase();
+    return r === 'customer' || r === 'user';
+  }).length;
+  const managersCount = customers.filter((c) => (c.role || '').toLowerCase() === 'manager').length;
+  const supportCount = customers.filter((c) => (c.role || '').toLowerCase() === 'support').length;
+  const employeesCount = customers.filter((c) => {
+    const r = (c.role || '').toLowerCase();
+    return r !== 'customer' && r !== 'user' && r !== 'seller';
+  }).length;
+
+  const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / pageSize));
+  const paginatedCustomers = filteredCustomers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const roleFilterOptions = useMemo(() => {
+    if (activeMode === 'employee') {
+      return [
+        { label: 'All Employees', value: 'all' },
+        { label: 'Managers', value: 'manager' },
+        { label: 'Support', value: 'support' },
+        { label: 'Administrators', value: 'admin' },
+      ];
+    }
+    if (activeMode === 'client') {
+      return [
+        { label: 'All Clients', value: 'all' },
+        { label: 'Customers', value: 'customer' },
+        { label: 'Sellers', value: 'seller' },
+      ];
+    }
+    return [
+      { label: 'All Accounts', value: 'all' },
+      { label: 'Customers', value: 'customer' },
+      { label: 'Sellers', value: 'seller' },
+      { label: 'Support', value: 'support' },
+      { label: 'Managers', value: 'manager' },
+    ];
+  }, [activeMode]);
+
+  const pageTitle = activeMode === 'employee' ? 'Employee Directory' : activeMode === 'client' ? 'Client Directory' : 'Accounts & Directory';
+  const breadcrumbItem = activeMode === 'employee' ? 'Employees' : activeMode === 'client' ? 'Clients' : 'Accounts & Customers';
+  const tableTitle = activeMode === 'employee' ? 'Employees & Staff' : activeMode === 'client' ? 'Clients & Shoppers' : 'Accounts & Directory';
+  const searchPlaceholder = activeMode === 'employee' ? 'Search employees...' : activeMode === 'client' ? 'Search clients...' : 'Search accounts...';
+  const footerLabel = activeMode === 'employee' ? 'Total Employees' : activeMode === 'client' ? 'Total Clients' : 'Total Accounts';
 
   return (
     <div className="w-full h-full flex flex-col min-h-0 overflow-hidden font-['Poppins','Inter',sans-serif] space-y-2.5">
@@ -155,8 +297,19 @@ export const CustomerManagement: React.FC = () => {
                 </Link>
               ),
             },
+            ...(activeMode !== 'all'
+              ? [
+                  {
+                    title: (
+                      <Link to="/admin/accounts/employees" className="text-slate-500 hover:text-[#0096C7] transition-colors font-semibold">
+                        Accounts
+                      </Link>
+                    ),
+                  },
+                ]
+              : []),
             {
-              title: <span className="text-slate-700 font-semibold">Accounts & Customers</span>,
+              title: <span className="text-slate-700 font-semibold">{breadcrumbItem}</span>,
             },
           ]}
         />
@@ -170,7 +323,7 @@ export const CustomerManagement: React.FC = () => {
           <div className="pl-0 pr-4 py-3 border-b border-slate-100 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white relative z-20 rounded-t-2xl shrink-0">
             <div className="flex flex-col min-w-0">
               <h3 className="text-base font-bold text-slate-900 tracking-tight">
-                Accounts & Directory
+                {tableTitle}
               </h3>
             </div>
 
@@ -184,44 +337,28 @@ export const CustomerManagement: React.FC = () => {
                     setSearchQuery(e.target.value);
                     setCurrentPage(1);
                   }}
-                  placeholder="Search accounts..."
+                  placeholder={searchPlaceholder}
                   allowClear
                 />
               </form>
 
-              {/* Role Filter Tabs */}
-              <div className="flex items-center gap-1 overflow-x-auto">
-                {[
-                  { key: 'all', label: 'All Accounts', icon: null },
-                  { key: 'customer', label: 'Customers', icon: <ShoppingOutlined /> },
-                  { key: 'seller', label: 'Sellers', icon: <ShopOutlined /> },
-                  { key: 'support', label: 'Support', icon: <CustomerServiceOutlined /> },
-                  { key: 'manager', label: 'Managers', icon: <AppstoreOutlined /> },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => {
-                      setSelectedRoleFilter(tab.key);
-                      setCurrentPage(1);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap inline-flex items-center gap-1 ${
-                      selectedRoleFilter === tab.key
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
+              {/* Role Filter Dropdown */}
+              <div className="w-full sm:w-[160px] shrink-0">
+                <AppSelect
+                  value={selectedRoleFilter}
+                  onChange={(val) => {
+                    setSelectedRoleFilter(val as string);
+                    setCurrentPage(1);
+                  }}
+                  options={roleFilterOptions}
+                />
               </div>
             </div>
           </div>
 
           {/* Table Content Canvas (independent scroll) */}
-          <div className="flex-1 min-h-0 overflow-y-auto brand-table-scroll">
-            <AppTable>
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+            <AppTable wrapperClassName="h-full flex-1 flex flex-col min-h-0" className="w-full border-collapse">
             <thead>
               <tr>
                 <th className="py-2.5 px-6 font-medium text-[12px]">User / Merchant</th>
@@ -236,10 +373,10 @@ export const CustomerManagement: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <TableSkeleton columns={7} rows={6} hasAvatar={true} />
-              ) : customers.length === 0 ? (
+              ) : filteredCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 text-sm">
-                    No accounts found matching search or filter.
+                    No {activeMode === 'employee' ? 'employees' : activeMode === 'client' ? 'clients' : 'accounts'} found matching search or filter.
                   </td>
                 </tr>
               ) : (
@@ -362,21 +499,71 @@ export const CustomerManagement: React.FC = () => {
                       </td>
 
                       <td className="py-4 px-4">
-                        <Tag color={c.isActive !== false ? 'success' : 'default'} className="font-semibold text-[11px] px-2.5 py-0.5 rounded-full capitalize">
-                          {c.isActive !== false ? 'Active' : 'Inactive'}
+                        <Tag
+                          color={c.isActive !== false ? 'success' : 'default'}
+                          className="font-semibold text-[11px] px-2.5 py-0.5 rounded-full capitalize m-0"
+                        >
+                          {c.isActive !== false ? 'Active' : 'Deactivated'}
                         </Tag>
                       </td>
 
                       <td className="py-4 px-6 text-right whitespace-nowrap">
-                        <AppButton
-                          size="small"
-                          icon={isSellerAccount ? <ShopOutlined /> : <EyeOutlined />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setViewingUser(c);
-                          }}
-                          title={isSellerAccount ? 'Vendor Profile' : 'View Profile'}
-                        />
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Tooltip title="Reset Password">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openPasswordModal(c);
+                              }}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-[#0096C7] hover:border-[#0096C7] hover:bg-sky-50 transition-colors cursor-pointer"
+                            >
+                              <KeyOutlined className="text-xs" />
+                            </button>
+                          </Tooltip>
+
+                          <Tooltip title={c.isActive !== false ? 'Deactivate Account' : 'Activate Account'}>
+                            <Popconfirm
+                              title={c.isActive !== false ? 'Deactivate this account?' : 'Activate this account?'}
+                              description={
+                                c.isActive !== false
+                                  ? 'User will be temporarily prevented from logging in.'
+                                  : 'User login access will be restored.'
+                              }
+                              onConfirm={(e) => {
+                                e?.stopPropagation();
+                                handleToggleStatus(c);
+                              }}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <button
+                                type="button"
+                                onClick={(e) => e.stopPropagation()}
+                                className={`w-7 h-7 flex items-center justify-center rounded-lg border transition-colors cursor-pointer ${
+                                  c.isActive !== false
+                                    ? 'border-slate-200 text-slate-500 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50'
+                                    : 'border-emerald-200 text-emerald-600 hover:text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50'
+                                }`}
+                              >
+                                <PoweroffOutlined className="text-xs" />
+                              </button>
+                            </Popconfirm>
+                          </Tooltip>
+
+                          <Tooltip title={isSellerAccount ? 'Vendor Profile' : 'View Profile'}>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setViewingUser(c);
+                              }}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:text-[#0096C7] hover:border-[#0096C7] hover:bg-sky-50 transition-colors cursor-pointer"
+                            >
+                              {isSellerAccount ? <ShopOutlined className="text-xs" /> : <EyeOutlined className="text-xs" />}
+                            </button>
+                          </Tooltip>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -387,17 +574,17 @@ export const CustomerManagement: React.FC = () => {
         </div>
 
         {/* Signature Cyan Footer Toolbar (Fixed at Bottom of Column) */}
-        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-md flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
+        <div className="px-6 h-[30px] min-h-[30px] bg-[#0096C7] text-white rounded-b-[2px] flex items-center justify-between text-[11px] shadow-inner select-none shrink-0">
           {/* Left Side: Count */}
           <div className="flex items-center gap-1.5 leading-none">
-            <span className="font-medium text-white/90 text-[11px] leading-none">Total Accounts:</span>
+            <span className="font-medium text-white/90 text-[11px] leading-none">{footerLabel}:</span>
             <span className="font-bold text-white text-[11px] leading-none">
-              {customers.length} Items
+              {filteredCustomers.length} Items
             </span>
           </div>
 
           {/* Right Side: Pagination Controls */}
-          {customers.length > 0 && (
+          {filteredCustomers.length > 0 && (
             <div className="flex items-center gap-2.5 leading-none">
               <div className="flex items-center gap-1.5 text-[10px] text-white/95 font-medium leading-none">
                 <span>Items:</span>
@@ -430,7 +617,7 @@ export const CustomerManagement: React.FC = () => {
               </div>
 
               <span className="text-[10px] text-white/95 font-medium whitespace-nowrap leading-none">
-                {customers.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, customers.length)} of {customers.length}
+                {filteredCustomers.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, filteredCustomers.length)} of {filteredCustomers.length}
               </span>
 
               <div className="flex items-center gap-1">
@@ -465,97 +652,168 @@ export const CustomerManagement: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              form.setFieldsValue({ role: 'customer', agreementAccepted: true });
+              form.setFieldsValue({
+                role: activeMode === 'employee' ? 'manager' : 'customer',
+                agreementAccepted: true,
+              });
               setIsModalOpen(true);
             }}
             className="w-full h-[32px] flex items-center justify-center gap-1.5 bg-[#0096C7] hover:bg-[#0083ae] active:bg-[#007096] text-white font-semibold text-xs rounded-md shadow-xs transition-colors cursor-pointer"
           >
             <PlusOutlined className="text-xs" />
-            <span>Add New Account</span>
+            <span>
+              {activeMode === 'employee'
+                ? 'Add New Employee'
+                : activeMode === 'client'
+                ? 'Add New Client'
+                : 'Add New Account'}
+            </span>
           </button>
         </div>
 
         {/* Card 2: Account Directory Overview (Static Clean View) */}
         <div className="bg-white rounded-2xl shadow-xs p-4 space-y-3">
           <div className="flex items-center justify-between pb-1">
-            <h4 className="text-xs font-bold text-slate-900">Directory Summary</h4>
+            <h4 className="text-xs font-bold text-slate-900">
+              {activeMode === 'employee' ? 'Staff Summary' : activeMode === 'client' ? 'Client Summary' : 'Directory Summary'}
+            </h4>
             <span className="text-[10px] font-bold text-[#0096C7] bg-sky-50 px-2.5 py-0.5 rounded-full">
               Live Data
             </span>
           </div>
 
           <div className="space-y-1">
-            {/* Metric 1: Total Buyers */}
-            <div className="py-2.5 flex items-center justify-between">
-              <div>
-                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
-                  Total Buyers
-                </span>
-                <span className="text-2xl font-black text-[#0284c7] leading-tight block">
-                  {customersCount}
-                </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  Verified buyer accounts
-                </span>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg shrink-0">
-                <ShoppingOutlined />
-              </div>
-            </div>
+            {activeMode === 'employee' ? (
+              <>
+                {/* Metric 1: Total Employees */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                      Total Staff
+                    </span>
+                    <span className="text-2xl font-black text-[#0284c7] leading-tight block">
+                      {employeesCount}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Internal team members
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg shrink-0">
+                    <TeamOutlined />
+                  </div>
+                </div>
 
-            {/* Metric 2: Active Sellers / Stores */}
-            <div className="py-2.5 flex items-center justify-between">
-              <div>
-                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
-                  Active Sellers
-                </span>
-                <span className="text-2xl font-black text-orange-600 leading-tight block">
-                  {sellersCount}
-                </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  Authorized store vendors
-                </span>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-lg shrink-0">
-                <ShopOutlined />
-              </div>
-            </div>
+                {/* Metric 2: Store Managers */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                      Store Managers
+                    </span>
+                    <span className="text-2xl font-black text-amber-600 leading-tight block">
+                      {managersCount}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Operations & catalog managers
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg shrink-0">
+                    <AppstoreOutlined />
+                  </div>
+                </div>
 
-            {/* Metric 3: Total Orders Placed */}
-            <div className="py-2.5 flex items-center justify-between">
-              <div>
-                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
-                  Orders Placed
-                </span>
-                <span className="text-2xl font-black text-slate-900 leading-tight block">
-                  {totalOrdersAll}
-                </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  Across active accounts
-                </span>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-lg shrink-0">
-                <FileTextOutlined />
-              </div>
-            </div>
+                {/* Metric 3: Support Agents */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                      Support Agents
+                    </span>
+                    <span className="text-2xl font-black text-emerald-600 leading-tight block">
+                      {supportCount}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Helpdesk & customer care
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                    <CustomerServiceOutlined />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Metric 1: Total Buyers */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                      Total Buyers
+                    </span>
+                    <span className="text-2xl font-black text-[#0284c7] leading-tight block">
+                      {customersCount}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Verified buyer accounts
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0284c7] flex items-center justify-center text-lg shrink-0">
+                    <ShoppingOutlined />
+                  </div>
+                </div>
 
-            {/* Metric 4: Cumulative Revenue */}
-            <div className="py-2.5 flex items-center justify-between">
-              <div>
-                <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
-                  Platform Volume
-                </span>
-                <span className="text-xl font-black text-emerald-600 leading-tight block truncate max-w-[170px]" title={`$${totalSpendAll.toFixed(2)}`}>
-                  ${totalSpendAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  Lifetime cumulative GMV
-                </span>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
-                <SafetyCertificateOutlined />
-              </div>
-            </div>
+                {/* Metric 2: Active Sellers / Stores */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                      Active Sellers
+                    </span>
+                    <span className="text-2xl font-black text-orange-600 leading-tight block">
+                      {sellersCount}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Authorized store vendors
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center text-lg shrink-0">
+                    <ShopOutlined />
+                  </div>
+                </div>
+
+                {/* Metric 3: Total Orders Placed */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                      Orders Placed
+                    </span>
+                    <span className="text-2xl font-black text-slate-900 leading-tight block">
+                      {totalOrdersAll}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Across active accounts
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-lg shrink-0">
+                    <FileTextOutlined />
+                  </div>
+                </div>
+
+                {/* Metric 4: Cumulative Revenue */}
+                <div className="py-2.5 flex items-center justify-between">
+                  <div>
+                    <span className="block text-[11px] font-bold text-slate-800 tracking-tight">
+                      Platform Volume
+                    </span>
+                    <span className="text-xl font-black text-emerald-600 leading-tight block truncate max-w-[170px]" title={`$${totalSpendAll.toFixed(2)}`}>
+                      ${totalSpendAll.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-xs text-slate-500 font-medium">
+                      Lifetime cumulative GMV
+                    </span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg shrink-0">
+                    <SafetyCertificateOutlined />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -563,7 +821,13 @@ export const CustomerManagement: React.FC = () => {
 
       {/* Add New Account Modal */}
       <AppModal
-        title="Register Platform Account"
+        title={
+          activeMode === 'employee'
+            ? 'Register Employee Account'
+            : activeMode === 'client'
+            ? 'Register Client Account'
+            : 'Register Platform Account'
+        }
         open={isModalOpen}
         onCancel={() => {
           setIsModalOpen(false);
@@ -579,22 +843,35 @@ export const CustomerManagement: React.FC = () => {
           <Form.Item
             name="role"
             label="Account Role"
-            initialValue="customer"
+            initialValue={activeMode === 'employee' ? 'manager' : 'customer'}
             rules={[{ required: true }]}
           >
             <Radio.Group buttonStyle="solid" className="w-full grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-              <Radio.Button value="customer" className="text-center font-medium">
-                <ShoppingOutlined className="mr-1" /> Buyer
-              </Radio.Button>
-              <Radio.Button value="seller" className="text-center font-medium">
-                <ShopOutlined className="mr-1" /> Seller
-              </Radio.Button>
-              <Radio.Button value="support" className="text-center font-medium">
-                <CustomerServiceOutlined className="mr-1" /> Support
-              </Radio.Button>
-              <Radio.Button value="manager" className="text-center font-medium">
-                <AppstoreOutlined className="mr-1" /> Manager
-              </Radio.Button>
+              {activeMode !== 'employee' && (
+                <Radio.Button value="customer" className="text-center font-medium">
+                  <ShoppingOutlined className="mr-1" /> Buyer
+                </Radio.Button>
+              )}
+              {activeMode !== 'employee' && (
+                <Radio.Button value="seller" className="text-center font-medium">
+                  <ShopOutlined className="mr-1" /> Seller
+                </Radio.Button>
+              )}
+              {activeMode !== 'client' && (
+                <Radio.Button value="support" className="text-center font-medium">
+                  <CustomerServiceOutlined className="mr-1" /> Support
+                </Radio.Button>
+              )}
+              {activeMode !== 'client' && (
+                <Radio.Button value="manager" className="text-center font-medium">
+                  <AppstoreOutlined className="mr-1" /> Manager
+                </Radio.Button>
+              )}
+              {activeMode === 'employee' && (
+                <Radio.Button value="admin" className="text-center font-medium">
+                  <SafetyCertificateOutlined className="mr-1" /> Admin
+                </Radio.Button>
+              )}
             </Radio.Group>
           </Form.Item>
 
@@ -775,11 +1052,45 @@ export const CustomerManagement: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-right">
+              <div className="text-right space-y-1.5">
                 <div className="text-[10px] text-slate-400 font-semibold uppercase">Account Status</div>
-                <Tag color={viewingUser.isActive !== false ? 'success' : 'default'} className="mt-1 font-bold text-xs">
-                  {viewingUser.isActive !== false ? 'Active' : 'Inactive'}
+                <Tag color={viewingUser.isActive !== false ? 'success' : 'default'} className="m-0 font-bold text-xs">
+                  {viewingUser.isActive !== false ? 'Active' : 'Deactivated'}
                 </Tag>
+                <div className="flex items-center justify-end gap-1.5 pt-1">
+                  <Popconfirm
+                    title={viewingUser.isActive !== false ? 'Deactivate this account?' : 'Activate this account?'}
+                    description={
+                      viewingUser.isActive !== false
+                        ? 'User will be temporarily prevented from logging in.'
+                        : 'User login access will be restored.'
+                    }
+                    onConfirm={() => handleToggleStatus(viewingUser)}
+                    okText="Yes"
+                    cancelText="No"
+                  >
+                    <button
+                      type="button"
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
+                        viewingUser.isActive !== false
+                          ? 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200'
+                          : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200'
+                      }`}
+                    >
+                      <PoweroffOutlined className="text-[10px]" />
+                      <span>{viewingUser.isActive !== false ? 'Deactivate' : 'Activate'}</span>
+                    </button>
+                  </Popconfirm>
+
+                  <button
+                    type="button"
+                    onClick={() => openPasswordModal(viewingUser)}
+                    className="px-2.5 py-1 text-[11px] font-semibold rounded-md bg-sky-50 text-[#0096C7] hover:bg-sky-100 border border-sky-200 transition-colors cursor-pointer flex items-center gap-1"
+                  >
+                    <KeyOutlined className="text-[10px]" />
+                    <span>Change Password</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -885,8 +1196,81 @@ export const CustomerManagement: React.FC = () => {
           </div>
         </AppModal>
       )}
+
+      {/* Password Change / Reset Modal */}
+      {passwordTargetUser && (
+        <AppModal
+          open={Boolean(passwordTargetUser)}
+          title={
+            <span className="flex items-center gap-2">
+              <KeyOutlined className="text-[#0096C7] text-base" />
+              <span>
+                Reset Password: {passwordTargetUser.firstName} {passwordTargetUser.lastName}
+              </span>
+            </span>
+          }
+          onCancel={() => {
+            setPasswordTargetUser(null);
+            passwordForm.resetFields();
+          }}
+          onOk={handlePasswordSubmit}
+          confirmLoading={updatingPassword}
+          okText="Update Password"
+          width="max-w-md"
+        >
+          <div className="space-y-3 py-2 text-xs">
+            <p className="text-slate-500 text-xs">
+              Enter a new password for <strong className="text-slate-800">{passwordTargetUser.email}</strong>.
+              Minimum 6 characters required.
+            </p>
+
+            <Form form={passwordForm} layout="vertical">
+              <Form.Item
+                name="newPassword"
+                label="New Password"
+                rules={[
+                  { required: true, message: 'Please enter a new password' },
+                  { min: 6, message: 'Password must be at least 6 characters' },
+                ]}
+                hasFeedback
+              >
+                <Input.Password
+                  placeholder="Enter new password (min. 6 chars)"
+                  prefix={<LockOutlined className="text-slate-400 mr-1" />}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="confirmPassword"
+                label="Confirm Password"
+                dependencies={['newPassword']}
+                hasFeedback
+                rules={[
+                  { required: true, message: 'Please confirm the new password' },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue('newPassword') === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(new Error('The two passwords do not match!'));
+                    },
+                  }),
+                ]}
+              >
+                <Input.Password
+                  placeholder="Confirm new password"
+                  prefix={<LockOutlined className="text-slate-400 mr-1" />}
+                />
+              </Form.Item>
+            </Form>
+          </div>
+        </AppModal>
+      )}
     </div>
   );
 };
+
+export const EmployeeManagement: React.FC = () => <CustomerManagement mode="employee" />;
+export const ClientManagement: React.FC = () => <CustomerManagement mode="client" />;
 
 export default CustomerManagement;

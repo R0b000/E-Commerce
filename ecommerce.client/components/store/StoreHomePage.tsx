@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   ShoppingOutlined,
   StarFilled,
@@ -12,6 +12,7 @@ import {
   LeftOutlined,
   RightOutlined,
   ClockCircleOutlined,
+  QrcodeOutlined,
 } from '@ant-design/icons';
 import { Tag, Spin, Input, Rate, Form, Select } from 'antd';
 import { ecommerceService } from '../../services/EcommerceAPIService';
@@ -19,6 +20,7 @@ import { Product, Category, ReviewItem, BannerItem } from '../../types/ecommerce
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { AppCard, AppButton, AppModal, CardSkeleton } from 'shared-components';
+import { ProductQrModal } from '../admin/products/ProductQrModal';
 
 export const StoreHomePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,12 +29,16 @@ export const StoreHomePage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [qrModalProduct, setQrModalProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [banners, setBanners] = useState<BannerItem[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewForm] = Form.useForm();
+
+  const [searchParams] = useSearchParams();
+  const productParam = searchParams.get('product') || searchParams.get('viewProduct');
 
   const { addToCart } = useCart();
   const { showToast } = useToast();
@@ -76,6 +82,29 @@ export const StoreHomePage: React.FC = () => {
 
     fetchData();
   }, []);
+
+  // Direct Product QR scan listener (?product=... or ?viewProduct=...)
+  useEffect(() => {
+    if (!productParam) return;
+    const match = products.find(
+      (p) =>
+        (p._id && p._id.toString() === productParam) ||
+        (p.id && p.id.toString() === productParam) ||
+        (p.sku && p.sku.toLowerCase() === productParam.toLowerCase())
+    );
+    if (match) {
+      setQuickViewProduct(match);
+    } else if (!loading) {
+      ecommerceService
+        .getProduct(productParam)
+        .then((res) => {
+          if (res.success && res.data) {
+            setQuickViewProduct(res.data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [productParam, products, loading]);
 
   // Auto-cycle through scheduled active banners every 7 seconds
   useEffect(() => {
@@ -738,7 +767,7 @@ export const StoreHomePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-200">
+              <div className="pt-4 border-t border-slate-200 flex items-center gap-2">
                 <AppButton
                   type="primary"
                   size="large"
@@ -752,11 +781,26 @@ export const StoreHomePage: React.FC = () => {
                 >
                   Add To Bag
                 </AppButton>
+                <AppButton
+                  size="large"
+                  icon={<QrcodeOutlined />}
+                  onClick={() => setQrModalProduct(quickViewProduct)}
+                  title="Marketing & Advertisement QR Codes"
+                >
+                  QR Code
+                </AppButton>
               </div>
             </div>
           </div>
         </AppModal>
       )}
+
+      {/* Product Marketing & Advertisement QR Hub */}
+      <ProductQrModal
+        product={qrModalProduct}
+        open={Boolean(qrModalProduct)}
+        onClose={() => setQrModalProduct(null)}
+      />
     </div>
   );
 };

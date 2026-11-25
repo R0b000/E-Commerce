@@ -1,0 +1,28 @@
+{
+    "host": "0.0.0.0",
+    "api_port": 8091,
+    "ui_port": 8090,
+    "baseurl": "http://localhost:8091",
+    "ui": {
+        "baseurl": "http://localhost:8091"
+    },
+    "cors_origins": [
+        "http://localhost:8090",
+        "http://localhost:3000",
+        "http://localhost:5001"
+    ],
+    "hosts": [
+        "localhost",
+        "127.0.0.1"
+    ],
+    "username": "",
+    "password": "",
+    "api_keys": [],
+    "max_words": 5000,
+    "default_voices": {
+        "en": "en_US-amy-medium",
+        "ne": "ne_NP-google-2"
+    },
+    "trust_proxy_headers": true,
+    "queue_timeout_seconds": 1200
+}

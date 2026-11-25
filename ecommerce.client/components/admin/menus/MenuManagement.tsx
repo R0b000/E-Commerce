@@ -37,7 +37,7 @@ import {
   ClockCircleOutlined,
   PictureOutlined,
 } from '@ant-design/icons';
-import { Tag, Switch, Popconfirm, Select, Breadcrumb, Tooltip } from 'antd';
+import { Tag, Switch, Popconfirm, Breadcrumb, Tooltip } from 'antd';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem, PermissionItem } from '../../../types/ecommerce.types';
 import { useToast } from '../../../context/ToastContext';
@@ -309,26 +309,23 @@ export const MenuManagement: React.FC = () => {
         if (!matchName && !matchNepali && !matchPath && !matchParent && !matchId) return false;
       }
 
-      // Hierarchy Filter
-      if (hierarchyFilter === 'root') {
-        return !item.isSubmenu;
-      }
-      if (hierarchyFilter === 'sub') {
-        return item.isSubmenu;
-      }
-      if (hierarchyFilter === 'primary') {
-        return Boolean(item.menu.isPrimary);
-      }
-      if (hierarchyFilter === 'single') {
-        return Boolean(item.menu.isSinglePage);
-      }
+      // Hierarchy / Parent Menu Filter
       if (hierarchyFilter !== 'all') {
         const selfId = (item.menu._id || item.menu.id || '').toString();
         const selfMenuId = String(item.menu.menuId || '');
+        let itemParentId = item.parentIdStr || '';
+        if (!itemParentId && item.menu.parentId) {
+          if (typeof item.menu.parentId === 'object') {
+            itemParentId = (item.menu.parentId._id || item.menu.parentId.id || item.menu.parentId.menuId || '').toString();
+          } else {
+            itemParentId = String(item.menu.parentId);
+          }
+        }
         return (
           selfId === hierarchyFilter ||
           selfMenuId === hierarchyFilter ||
-          item.parentIdStr === hierarchyFilter
+          item.parentIdStr === hierarchyFilter ||
+          itemParentId === hierarchyFilter
         );
       }
 
@@ -512,8 +509,8 @@ export const MenuManagement: React.FC = () => {
               />
             </div>
 
-            {/* Hierarchy Type Filter */}
-            <div className="w-full sm:w-[180px]">
+            {/* Parent Menu Filter */}
+            <div className="w-full sm:w-[170px]">
               <AppSelect
                 value={hierarchyFilter}
                 onChange={(val) => {
@@ -521,12 +518,9 @@ export const MenuManagement: React.FC = () => {
                   setCurrentPage(1);
                 }}
                 options={[
-                  { label: 'All Menus & Submenus', value: 'all' },
-                  { label: 'Root Menus Only', value: 'root' },
-                  { label: 'Submenus Only', value: 'sub' },
-                  { label: 'Single Page Only', value: 'single' },
+                  { label: 'All Menus', value: 'all' },
                   ...rootMenusList.map((r) => ({
-                    label: `Submenus of: ${r.name}`,
+                    label: r.name,
                     value: (r.menuId !== null && r.menuId !== undefined ? r.menuId : (r._id || r.id || '')).toString(),
                   })),
                 ]}
@@ -825,20 +819,12 @@ export const MenuManagement: React.FC = () => {
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Menu icon
               </label>
-              <Select
-                value={formIcon || undefined}
-                onChange={(val) => setFormIcon(val)}
+              <AppSelect
+                value={formIcon || ''}
+                onChange={(val) => setFormIcon((val as string) || '')}
                 placeholder="Select an icon"
-                className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
-                showSearch
-                getPopupContainer={() => document.body}
-                filterOption={(input, option) =>
-                  String((option as any)?.filterValue ?? option?.label ?? '')
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
+                allowClear
                 options={AVAILABLE_ICONS.map((i) => ({
-                  filterValue: `${i.label} ${i.value}`,
                   label: (
                     <span className="flex items-center gap-2">
                       <span className="text-[#0096C7]">{i.icon}</span>
@@ -874,7 +860,7 @@ export const MenuManagement: React.FC = () => {
           </div>
 
           {/* Row 4: Parent & Child Menus */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 border-t border-slate-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 border-t border-slate-100 pb-16">
             {/* Is Not Parent? and Parent menu */}
             <div className="space-y-1.5">
               <label className="inline-flex items-center gap-2 cursor-pointer select-none">
@@ -891,41 +877,27 @@ export const MenuManagement: React.FC = () => {
               </label>
 
               <div>
-                <Select
+                <AppSelect
                   disabled={!formIsNotParent}
-                  value={formParentId || undefined}
-                  onChange={(val) => setFormParentId(val || '')}
+                  value={formParentId || ''}
+                  onChange={(val) => setFormParentId((val as string) || '')}
                   placeholder="Select parent"
                   allowClear
-                  className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
-                  showSearch
-                  placement="topLeft"
-                  getPopupContainer={() => document.body}
-                  dropdownStyle={{ zIndex: 1100 }}
-                  filterOption={(input, option) =>
-                    String((option as any)?.filterValue ?? option?.label ?? '')
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                  options={[
-                    { filterValue: 'none root', label: 'None (Root Menu)', value: '' },
-                    ...rootMenusList
-                      .filter(
-                        (r) =>
-                          (r._id || r.id) !== (editingMenu?._id || editingMenu?.id)
-                      )
-                      .map((r) => {
-                        const valStr = (r.menuId !== null && r.menuId !== undefined
-                          ? r.menuId
-                          : r._id || r.id || ''
-                        ).toString();
-                        return {
-                          filterValue: `${r.name} ${r.path} ${valStr}`,
-                          label: r.name,
-                          value: valStr,
-                        };
-                      }),
-                  ]}
+                  options={rootMenusList
+                    .filter(
+                      (r) =>
+                        (r._id || r.id) !== (editingMenu?._id || editingMenu?.id)
+                    )
+                    .map((r) => {
+                      const valStr = (r.menuId !== null && r.menuId !== undefined
+                        ? r.menuId
+                        : r._id || r.id || ''
+                      ).toString();
+                      return {
+                        label: r.name,
+                        value: valStr,
+                      };
+                    })}
                 />
               </div>
             </div>
@@ -946,41 +918,27 @@ export const MenuManagement: React.FC = () => {
               </label>
 
               <div>
-                <Select
+                <AppSelect
                   disabled={!formIsNotChild}
-                  value={formChildId || undefined}
-                  onChange={(val) => setFormChildId(val || '')}
+                  value={formChildId || ''}
+                  onChange={(val) => setFormChildId((val as string) || '')}
                   placeholder="Select child"
                   allowClear
-                  className="w-full text-xs [&_.ant-select-selector]:!rounded-lg [&_.ant-select-selector]:!border-slate-200"
-                  showSearch
-                  placement="topLeft"
-                  getPopupContainer={() => document.body}
-                  dropdownStyle={{ zIndex: 1100 }}
-                  filterOption={(input, option) =>
-                    String((option as any)?.filterValue ?? option?.label ?? '')
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                  options={[
-                    { filterValue: 'none', label: 'None', value: '' },
-                    ...menus
-                      .filter(
-                        (m) =>
-                          (m._id || m.id) !== (editingMenu?._id || editingMenu?.id)
-                      )
-                      .map((m) => {
-                        const valStr = (m.menuId !== null && m.menuId !== undefined
-                          ? m.menuId
-                          : m._id || m.id || ''
-                        ).toString();
-                        return {
-                          filterValue: `${m.name} ${m.path} ${valStr}`,
-                          label: m.name,
-                          value: valStr,
-                        };
-                      }),
-                  ]}
+                  options={menus
+                    .filter(
+                      (m) =>
+                        (m._id || m.id) !== (editingMenu?._id || editingMenu?.id)
+                    )
+                    .map((m) => {
+                      const valStr = (m.menuId !== null && m.menuId !== undefined
+                        ? m.menuId
+                        : m._id || m.id || ''
+                      ).toString();
+                      return {
+                        label: m.name,
+                        value: valStr,
+                      };
+                    })}
                 />
               </div>
             </div>

@@ -5,7 +5,6 @@ const MenuSchema = new mongoose.Schema(
     menuId: {
       type: Number,
       default: null,
-      index: true,
     },
     name: {
       type: String,

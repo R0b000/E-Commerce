@@ -35,10 +35,4 @@ billingRouter.patch('/:id/status', authenticateToken, requireRole('admin', 'sell
   res.status(result.statusCode || 200).json(result);
 });
 
-// Delete / Void invoice
-billingRouter.delete('/:id', authenticateToken, requireRole('admin'), async (req, res) => {
-  const result = await billingService.deleteBilling(req.params.id, req.user);
-  res.status(result.statusCode || 200).json(result);
-});
-
 module.exports = { billingRouter };

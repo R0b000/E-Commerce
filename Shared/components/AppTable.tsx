@@ -93,11 +93,11 @@ export function AppTable<T extends object = any>({
   };
 
   return (
-    <div className={`app-table-container w-full font-['Poppins','Inter',sans-serif] ${wrapperClassName}`}>
+    <div className={`app-table-container w-full h-full flex-1 font-['Poppins','Inter',sans-serif] flex flex-col min-h-0 ${wrapperClassName}`}>
       {/* Scrollable Table View matching /admin/permissions layout */}
       <div
-        className="kiran-role-table-scroll app-table-scroll"
-        style={{ maxHeight, height: maxHeight ? 'auto' : undefined }}
+        className="kiran-role-table-scroll app-table-scroll brand-table-scroll flex-1 min-h-0 overflow-auto"
+        style={{ maxHeight, height: maxHeight ? 'auto' : '100%' }}
       >
         <table className={`kiran-role-table app-table ${className}`}>
           {children ? (

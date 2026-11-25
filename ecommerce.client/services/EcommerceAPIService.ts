@@ -116,11 +116,6 @@ export class EcommerceAPIService {
     return res.data;
   }
 
-  async deleteOrder(id: string) {
-    const res = await axiosConfig.delete<{ success: boolean; messages: string[] }>(`/ecommerce/orders/${id}`);
-    return res.data;
-  }
-
   // Dashboard Metrics
   async getDashboardMetrics() {
     const res = await axiosConfig.get<{ success: boolean; data: DashboardMetrics }>('/ecommerce/dashboard/overview');
@@ -135,6 +130,22 @@ export class EcommerceAPIService {
 
   async createCustomer(payload: { firstName: string; lastName: string; email: string; password?: string }) {
     const res = await axiosConfig.post<{ success: boolean; data: Customer; messages?: string[] }>('/ecommerce/customers', payload);
+    return res.data;
+  }
+
+  async toggleCustomerStatus(id: string, isActive?: boolean) {
+    const res = await axiosConfig.patch<{ success: boolean; data: Customer; messages?: string[] }>(
+      `/ecommerce/customers/${id}/status`,
+      { isActive }
+    );
+    return res.data;
+  }
+
+  async changeCustomerPassword(id: string, password: string) {
+    const res = await axiosConfig.patch<{ success: boolean; messages?: string[] }>(
+      `/ecommerce/customers/${id}/password`,
+      { password }
+    );
     return res.data;
   }
 
@@ -286,11 +297,6 @@ export class EcommerceAPIService {
 
   async updateBillingStatus(id: string, data: { paymentStatus?: string; paymentMethod?: string; notes?: string }) {
     const res = await axiosConfig.patch<{ success: boolean; data: BillingRecord; messages?: string[] }>(`/ecommerce/billing/${id}/status`, data);
-    return res.data;
-  }
-
-  async deleteBilling(id: string) {
-    const res = await axiosConfig.delete<{ success: boolean; messages: string[] }>(`/ecommerce/billing/${id}`);
     return res.data;
   }
 

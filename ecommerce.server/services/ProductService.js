@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const { Product } = require('../models/database/Product');
 const { Response: ApiResponse } = require('../../Shared/API/wrappers/Response');
 
@@ -113,10 +114,19 @@ class ProductService {
 
   async getProductById(id) {
     try {
-      const product = await Product.findById(id)
-        .populate('category', 'name slug')
-        .populate('seller', 'firstName lastName email')
-        .lean();
+      let product = null;
+      if (mongoose.isValidObjectId(id)) {
+        product = await Product.findById(id)
+          .populate('category', 'name slug')
+          .populate('seller', 'firstName lastName email')
+          .lean();
+      }
+      if (!product && typeof id === 'string') {
+        product = await Product.findOne({ sku: id.trim().toUpperCase() })
+          .populate('category', 'name slug')
+          .populate('seller', 'firstName lastName email')
+          .lean();
+      }
       if (!product) {
         return ApiResponse.fail('Product not found', [], 404);
       }

@@ -36,6 +36,7 @@ import {
   CompassOutlined,
   DollarOutlined,
   CalendarOutlined,
+  SoundOutlined,
 } from '@ant-design/icons';
 import { Avatar, Dropdown, MenuProps, Tooltip, Result, Spin, Popover } from 'antd';
 import { io, Socket } from 'socket.io-client';
@@ -47,6 +48,7 @@ import { AppButton, DashboardSkeleton } from 'shared-components';
 import { ecommerceService } from '../../../services/EcommerceAPIService';
 import { MenuItem } from '../../../types/ecommerce.types';
 import { RoleSwitcherSelect } from './RoleSwitcherSelect';
+import { ttsService } from '../../../services/TtsService';
 
 // Helper to map icon names (Ant Design + Material icon names) to Ant Design icons
 const renderMenuIcon = (iconName: string) => {
@@ -201,6 +203,7 @@ export const AuthorizedLayout: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isVoiceMuted, setIsVoiceMuted] = useState(ttsService.muted);
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: '1',
@@ -265,6 +268,7 @@ export const AuthorizedLayout: React.FC = () => {
 
       socket.on('notification:new', (notif: NotificationItem) => {
         setNotifications((prev) => [notif, ...prev]);
+        ttsService.speakNotification(notif.title, notif.message);
       });
     } catch {
       // Socket fallback
@@ -719,6 +723,9 @@ export const AuthorizedLayout: React.FC = () => {
     location.pathname.startsWith('/admin/discounts') ||
     location.pathname.startsWith('/admin/banners') ||
     location.pathname.startsWith('/admin/customers') ||
+    location.pathname.startsWith('/admin/accounts') ||
+    location.pathname.startsWith('/admin/employees') ||
+    location.pathname.startsWith('/admin/clients') ||
     location.pathname.startsWith('/admin/audit-logs') ||
     location.pathname.startsWith('/admin/security') ||
     location.pathname.startsWith('/admin/roles') ||
@@ -795,6 +802,25 @@ export const AuthorizedLayout: React.FC = () => {
               )}
             </button>
           </Popover>
+
+          {/* Offline TTS Voice Announcer Toggle (Amy + Nepali Google 2) */}
+          <Tooltip title={isVoiceMuted ? 'Voice announcements muted (Click to unmute)' : 'Voice notifications active: Amy (EN) & Google 2 (NE)'}>
+            <button
+              type="button"
+              onClick={() => {
+                const next = ttsService.toggleMuted();
+                setIsVoiceMuted(next);
+                if (!next) {
+                  ttsService.speakNotification('Voice notifications enabled', 'Amy and Nepali Google voice are active');
+                }
+              }}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors cursor-pointer border-0 ${
+                isVoiceMuted ? 'text-slate-400 hover:bg-slate-100' : 'text-[#0096C7] bg-sky-50 hover:bg-sky-100'
+              }`}
+            >
+              <SoundOutlined />
+            </button>
+          </Tooltip>
 
           {/* Circular User Avatar Dropdown Button (Role Switcher inside Account Dropdown) */}
           <Popover
