@@ -66,7 +66,7 @@ export const SellerProfile: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 w-full font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="space-y-6 w-full font-['Poppins','Inter',sans-serif]">
       {/* Header */}
       <PageHeader
         title="Seller & Vendor Profile"

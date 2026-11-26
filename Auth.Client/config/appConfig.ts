@@ -1,6 +1,6 @@
 import { User } from "../models/database/User";
 
-export type Role = 'admin' | 'seller' | 'customer' | 'user' | 'support' | 'manager';
+export type Role = 'admin' | 'seller' | 'customer' | 'user' | 'support' | 'manager' | (string & {});
 
 export interface VendorProfile {
   vendorName?: string;

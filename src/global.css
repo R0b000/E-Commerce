@@ -33,14 +33,18 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-family: var(--font-sans);
-    font-size: 11px;
-    font-weight: 400;
+    font-size: 13px;
+    font-weight: 600;
     line-height: 1.5;
   }
 
   table th {
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  table td {
+    font-size: 13px;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -375,22 +379,14 @@ select:focus-visible,
 }
 
 .profile-content-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #0096c7 #f8fafc;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   overflow-y: auto;
 }
 .profile-content-scroll::-webkit-scrollbar {
-  width: 7px;
-}
-.profile-content-scroll::-webkit-scrollbar-track {
-  background: #f8fafc;
-}
-.profile-content-scroll::-webkit-scrollbar-thumb {
-  background: #0096c7;
-  border-radius: 9999px;
-}
-.profile-content-scroll::-webkit-scrollbar-thumb:hover {
-  background: #0077b6;
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 /* =========================================================================

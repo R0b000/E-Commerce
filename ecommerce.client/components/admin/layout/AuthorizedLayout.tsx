@@ -38,7 +38,7 @@ import {
   CalendarOutlined,
   SoundOutlined,
 } from '@ant-design/icons';
-import { Avatar, Dropdown, MenuProps, Tooltip, Result, Spin, Popover } from 'antd';
+import { Avatar, Dropdown, MenuProps, Tooltip, Result, Spin, Popover, Switch } from 'antd';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from 'auth-client/hooks/useAuth';
 import { Role } from 'auth-client/config/appConfig';
@@ -383,6 +383,65 @@ export const AuthorizedLayout: React.FC = () => {
   };
 
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+
+  const handleToggleVoice = () => {
+    const next = ttsService.toggleMuted();
+    setIsVoiceMuted(next);
+    if (!next) {
+      ttsService.speakNotification('Voice notifications enabled', 'Amy and Nepali Google voice are active');
+    }
+  };
+
+  const settingsMenuContent = (
+    <div className="w-[270px] p-2 font-['Poppins','Inter',sans-serif]">
+      <div className="px-2 py-1.5 border-b border-slate-100 flex items-center gap-2">
+        <SettingOutlined className="text-[#0096C7] text-sm" />
+        <span className="font-bold text-slate-900 text-xs">Settings</span>
+      </div>
+
+      <div className="py-1.5 space-y-1">
+        {/* Offline TTS Voice Announcer Toggle (Amy + Nepali Google 2) */}
+        <div
+          onClick={handleToggleVoice}
+          className="flex items-center justify-between gap-3 px-2 py-2 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 transition-colors ${
+                isVoiceMuted ? 'bg-slate-100 text-slate-400' : 'bg-sky-50 text-[#0096C7]'
+              }`}
+            >
+              <SoundOutlined />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold text-slate-800 leading-tight">
+                Voice Notifications
+              </div>
+              <div className="text-[10px] text-slate-400 truncate">
+                {isVoiceMuted ? 'Muted' : 'Active: Amy (EN) & Google 2 (NE)'}
+              </div>
+            </div>
+          </div>
+          <Switch
+            size="small"
+            checked={!isVoiceMuted}
+            onChange={() => handleToggleVoice()}
+            onClick={(_, e) => e.stopPropagation()}
+          />
+        </div>
+
+        <Link
+          to="/admin/security"
+          onClick={() => setSettingsMenuOpen(false)}
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-50 hover:text-[#0284c7] text-xs font-semibold text-slate-700 transition-colors"
+        >
+          <SafetyCertificateOutlined className="text-slate-400 text-sm" />
+          <span>Security &amp; Passkeys</span>
+        </Link>
+      </div>
+    </div>
+  );
 
   const accountMenuContent = (
     <div className="w-[260px] p-2 font-['Poppins','Inter',sans-serif]">
@@ -730,6 +789,7 @@ export const AuthorizedLayout: React.FC = () => {
     location.pathname.startsWith('/admin/security') ||
     location.pathname.startsWith('/admin/roles') ||
     location.pathname.startsWith('/admin/permissions') ||
+    location.pathname.startsWith('/admin/user-roles') ||
     location.pathname.startsWith('/admin/menus');
 
   return (
@@ -803,24 +863,27 @@ export const AuthorizedLayout: React.FC = () => {
             </button>
           </Popover>
 
-          {/* Offline TTS Voice Announcer Toggle (Amy + Nepali Google 2) */}
-          <Tooltip title={isVoiceMuted ? 'Voice announcements muted (Click to unmute)' : 'Voice notifications active: Amy (EN) & Google 2 (NE)'}>
-            <button
-              type="button"
-              onClick={() => {
-                const next = ttsService.toggleMuted();
-                setIsVoiceMuted(next);
-                if (!next) {
-                  ttsService.speakNotification('Voice notifications enabled', 'Amy and Nepali Google voice are active');
-                }
-              }}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors cursor-pointer border-0 ${
-                isVoiceMuted ? 'text-slate-400 hover:bg-slate-100' : 'text-[#0096C7] bg-sky-50 hover:bg-sky-100'
-              }`}
-            >
-              <SoundOutlined />
-            </button>
-          </Tooltip>
+          {/* Settings Menu Popover (includes Offline TTS Voice Announcer Toggle) */}
+          <Popover
+            content={settingsMenuContent}
+            trigger="click"
+            open={settingsMenuOpen}
+            onOpenChange={setSettingsMenuOpen}
+            placement="bottomRight"
+            overlayInnerStyle={{ padding: 0 }}
+            arrow
+          >
+            <Tooltip title="Settings">
+              <button
+                type="button"
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-colors cursor-pointer border-0 ${
+                  settingsMenuOpen ? 'text-[#0096C7] bg-sky-50' : 'text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <SettingOutlined />
+              </button>
+            </Tooltip>
+          </Popover>
 
           {/* Circular User Avatar Dropdown Button (Role Switcher inside Account Dropdown) */}
           <Popover

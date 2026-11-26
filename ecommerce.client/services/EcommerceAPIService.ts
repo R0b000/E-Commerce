@@ -242,6 +242,15 @@ export class EcommerceAPIService {
     return res.data;
   }
 
+  // User Role Management
+  async updateUserRole(userId: string, role: string) {
+    const res = await axiosConfig.patch<{ success: boolean; data: any; messages?: string[] }>(
+      `/ecommerce/customers/${userId}/role`,
+      { role }
+    );
+    return res.data;
+  }
+
   // Customer Reviews
   async getReviews(params?: { product?: string; status?: string; limit?: number }) {
     const res = await axiosConfig.get<{ success: boolean; data: any[] }>('/ecommerce/reviews', { params });
@@ -301,7 +310,11 @@ export class EcommerceAPIService {
   }
 
   // Cloudinary Image Upload (defaults to HimalayaOnlineShop/Temporary staging)
-  async uploadImage(file: File, folder: string = 'HimalayaOnlineShop/Temporary') {
+  async uploadImage(
+    file: File,
+    folder: string = 'HimalayaOnlineShop/Temporary',
+    onProgress?: (percent: number) => void
+  ) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', folder);
@@ -312,6 +325,12 @@ export class EcommerceAPIService {
     }>('/ecommerce/upload/image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percent);
+        }
       },
     });
     return res.data;
@@ -330,7 +349,11 @@ export class EcommerceAPIService {
     return res.data;
   }
 
-  async uploadMultipleImages(files: File[], folder: string = 'HimalayaOnlineShop') {
+  async uploadMultipleImages(
+    files: File[],
+    folder: string = 'HimalayaOnlineShop',
+    onProgress?: (percent: number) => void
+  ) {
     const formData = new FormData();
     files.forEach((f) => formData.append('files', f));
     formData.append('folder', folder);
@@ -341,6 +364,12 @@ export class EcommerceAPIService {
     }>('/ecommerce/upload/multiple', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percent);
+        }
       },
     });
     return res.data;

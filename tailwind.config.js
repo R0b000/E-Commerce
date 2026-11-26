@@ -9,6 +9,12 @@ export default {
   ],
   theme: {
     extend: {
+      fontSize: {
+        '2xs': ['13px', '1.4'],
+        xs: ['13px', '1.4'],
+        sm: ['14px', '1.5'],
+        base: ['14px', '1.5'],
+      },
       fontFamily: {
         sans: ['Poppins', '"Nunito Sans"', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
