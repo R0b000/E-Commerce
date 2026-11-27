@@ -59,22 +59,28 @@
   }
 }
 
-/* Modern custom scrollbars */
-::-webkit-scrollbar {
+/* Standard default scrollbar for Customer POV & Main Document */
+html,
+body {
+  scrollbar-width: auto;
+}
+
+/* Optional custom scrollbar utility (for compact nested components) */
+.custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
 
-::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: var(--radius-full);
 }
 
-::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent);
 }
 
@@ -110,6 +116,12 @@ aside[data-drawer="true"],
 .drawer-overlay,
 .drawer-backdrop {
   z-index: 9990 !important;
+}
+
+.ant-drawer-content-wrapper,
+.ant-drawer-content {
+  z-index: 10001 !important;
+  pointer-events: auto !important;
 }
 
 /* 2. Dropdown Layer (Below Drawer, Above Confirmation Modal) */

@@ -25,7 +25,7 @@ export const ProductQrModal: React.FC<ProductQrModalProps> = ({ product, open, o
   const productViewUrl = useMemo(() => {
     if (!product) return '';
     const id = product._id || product.id || product.sku;
-    return `${window.location.origin}/?product=${encodeURIComponent(id)}`;
+    return `${window.location.origin}/product/${encodeURIComponent(id)}`;
   }, [product]);
 
   const handleDownload = (elementId: string, filename: string) => {

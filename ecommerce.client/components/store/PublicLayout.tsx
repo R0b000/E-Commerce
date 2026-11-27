@@ -13,7 +13,6 @@ import {
   ShopOutlined,
   CheckCircleOutlined,
   ThunderboltFilled,
-  DownOutlined,
 } from '@ant-design/icons';
 import { Badge, Avatar, Modal, Tag, Spin, Popover } from 'antd';
 import { useCart } from '../../context/CartContext';
@@ -55,15 +54,15 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white text-slate-800 flex flex-col antialiased">
-      {/* Top Banner Notice */}
-      <div className="bg-[#0096C7] text-white text-xs font-semibold py-2 px-4 text-center tracking-wide flex items-center justify-center gap-2">
+      {/* Top Banner Notice (Height: 36px) */}
+      <div className="h-9 bg-[#0096C7] text-white text-xs font-semibold px-4 text-center tracking-wide flex items-center justify-center gap-2 shrink-0">
         <ThunderboltFilled className="text-amber-300 text-xs" />
         <span>Himalaya Online Shop: Free Nationwide Delivery on orders over $150</span>
       </div>
 
-      {/* Main Navbar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-        <div className="w-full px-4 h-16 flex items-center justify-between gap-4">
+      {/* Main Navbar (Height: 64px) */}
+      <header className="h-16 sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs shrink-0">
+        <div className="w-full px-4 h-full flex items-center justify-between gap-4">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
             <img
@@ -73,33 +72,37 @@ export const PublicLayout: React.FC = () => {
             />
           </Link>
 
-          {/* Center Links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-            <Link to="/" className="hover:text-[#0096C7] transition-colors">
-              Storefront
+          {/* Navigation Links */}
+          <nav className="hidden sm:flex items-center gap-2">
+            <Link
+              to="/"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-[#0096C7] hover:bg-slate-50 transition-colors"
+            >
+              Home
             </Link>
-            <a href="#featured" className="hover:text-[#0096C7] transition-colors">
-              Featured Items
-            </a>
-            <a href="#categories" className="hover:text-[#0096C7] transition-colors">
-              Departments
-            </a>
+            <Link
+              to="/products"
+              className="px-3.5 py-1.5 rounded-xl text-xs font-black text-slate-800 hover:text-[#0096C7] hover:bg-sky-50/70 transition-colors flex items-center gap-1.5 border border-transparent hover:border-sky-200"
+            >
+              <AppstoreOutlined className="text-sky-600" />
+              <span>Catalog & Categories</span>
+            </Link>
           </nav>
 
           {/* Right Actions */}
           <div className="flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                {/* Seller / Admin Portal Badge if authorized */}
-                {(isSeller || isAdmin) && (
-                  <Link
-                    to="/admin"
-                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 text-[#f97316] hover:bg-orange-100 border border-orange-200 text-xs font-bold transition-colors"
-                  >
-                    <ShopOutlined />
-                    <span>{isSeller ? 'Seller Portal' : 'Admin Suite'}</span>
-                  </Link>
-                )}
+                {/* Shopping Bag Trigger */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2.5 text-slate-700 hover:text-[#0096C7] rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
+                  title="Shopping Cart"
+                >
+                  <Badge count={cartCount} size="small" offset={[2, -2]}>
+                    <ShoppingOutlined className="text-xl" />
+                  </Badge>
+                </button>
 
                 {/* Account Menu (replaces Sign In when authenticated) */}
                 <Popover
@@ -167,7 +170,8 @@ export const PublicLayout: React.FC = () => {
                   }
                 >
                   <button
-                    className="flex items-center gap-2 p-1.5 pr-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+                    type="button"
+                    className="flex items-center justify-center p-0.5 rounded-full hover:ring-2 hover:ring-[#0096C7]/30 transition-all cursor-pointer"
                     title={`Account: ${user?.firstName} (${user?.role}) • Session Expiry: ${formattedExpiry || '24h'}`}
                   >
                     <Avatar
@@ -176,27 +180,12 @@ export const PublicLayout: React.FC = () => {
                         color: '#fff',
                       }}
                       icon={<UserOutlined />}
-                      size="small"
+                      size="default"
                     >
                       {user?.firstName?.[0] || 'U'}
                     </Avatar>
-                    <span className="text-xs font-semibold text-slate-800 hidden sm:inline">
-                      {user?.firstName}
-                    </span>
-                    <DownOutlined className="text-[10px] text-slate-400" />
                   </button>
                 </Popover>
-
-                {/* Shopping Bag Trigger - Follows Account when authenticated */}
-                <button
-                  onClick={() => setIsCartOpen(true)}
-                  className="relative p-2.5 text-slate-700 hover:text-[#0096C7] rounded-xl hover:bg-slate-100 transition-colors cursor-pointer"
-                  title="Shopping Cart"
-                >
-                  <Badge count={cartCount} size="small" offset={[2, -2]}>
-                    <ShoppingOutlined className="text-xl" />
-                  </Badge>
-                </button>
               </>
             ) : (
               <>
@@ -332,7 +321,7 @@ export const PublicLayout: React.FC = () => {
       </Modal>
 
       {/* Main View */}
-      <main className="flex-1 w-full px-4 py-8">
+      <main className="flex-1 w-full">
         <Outlet />
       </main>
 

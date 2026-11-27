@@ -2,6 +2,8 @@ import React from 'react';
 import { RouteConfig } from 'shared-ui/router/RouteRenderer.types';
 import { PublicLayout } from '../components/store/PublicLayout';
 import { StoreHomePage } from '../components/store/StoreHomePage';
+import { ProductDetailPage } from '../components/store/ProductDetailPage';
+import { CategoryProductsPage } from '../components/store/CategoryProductsPage';
 import { CheckoutPage } from '../components/store/CheckoutPage';
 import { PaymentVerificationPage } from '../components/store/PaymentVerificationPage';
 
@@ -38,6 +40,11 @@ export const EcommerceRoutes: RouteConfig = {
       element: PublicLayout,
       children: [
         { index: true, element: StoreHomePage },
+        { path: 'products', element: CategoryProductsPage },
+        { path: 'categories', element: CategoryProductsPage },
+        { path: 'category/:categoryId', element: CategoryProductsPage },
+        { path: 'product/:id', element: ProductDetailPage },
+        { path: 'products/:id', element: ProductDetailPage },
         { path: 'checkout', element: CheckoutPage },
         { path: 'payment/verify/:gateway', element: PaymentVerificationPage },
         { path: 'payment/verify', element: PaymentVerificationPage },

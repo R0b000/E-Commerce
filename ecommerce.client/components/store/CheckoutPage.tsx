@@ -11,6 +11,11 @@ import {
   CheckOutlined,
   TagOutlined,
   CloseCircleOutlined,
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  EnvironmentOutlined,
+  DollarCircleOutlined,
 } from '@ant-design/icons';
 import { Radio, Spin, Tag, Divider } from 'antd';
 import { useCart } from '../../context/CartContext';
@@ -41,7 +46,7 @@ export const CheckoutPage: React.FC = () => {
 
   const [paymentMethod, setPaymentMethod] = useState<
     'credit_card' | 'paypal' | 'stripe' | 'cash_on_delivery' | 'khalti' | 'esewa'
-  >('khalti');
+  >('cash_on_delivery');
   const [submitting, setSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState<any>(null);
 
@@ -121,7 +126,7 @@ export const CheckoutPage: React.FC = () => {
         shippingAddress: shipping,
         items,
         paymentMethod,
-        paymentStatus: (paymentMethod === 'cash_on_delivery' || paymentMethod === 'khalti' || paymentMethod === 'esewa' ? 'pending' : 'paid') as 'pending' | 'paid',
+        paymentStatus: 'pending' as const,
         orderStatus: 'pending' as const,
         subtotal: cartTotal,
         taxAmount: tax,
@@ -279,28 +284,31 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-6 font-['Nunito_Sans','Poppins',sans-serif]">
+    <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 font-['Nunito_Sans','Poppins',sans-serif]">
       {/* Back Link & Breadcrumb Header */}
-      <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 mb-8 border-b border-slate-200 gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs text-slate-400 mb-1">
-            <Link to="/" className="hover:text-[#0284c7] transition-colors">Home</Link>
+          <div className="flex items-center gap-2 text-sm text-slate-400 font-semibold mb-2">
+            <Link to="/" className="hover:text-sky-600 transition-colors">Home</Link>
             <span>/</span>
-            <span>Cart</span>
+            <Link to="/" className="hover:text-sky-600 transition-colors">Cart</Link>
             <span>/</span>
-            <span className="text-slate-800 font-semibold">Secure Checkout</span>
+            <span className="text-slate-900 font-bold">Checkout</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Checkout & Order Finalization
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <span>Secure Checkout</span>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <SafetyCertificateOutlined className="text-sm" /> 256-bit Encrypted
+            </span>
           </h1>
         </div>
 
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-[#0284c7] transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-sky-600 transition-colors self-start sm:self-auto bg-slate-100 hover:bg-slate-200/80 px-4 py-2.5 rounded-xl"
         >
           <ArrowLeftOutlined />
-          <span>Back to Store</span>
+          <span>Continue Shopping</span>
         </Link>
       </div>
 
@@ -309,115 +317,157 @@ export const CheckoutPage: React.FC = () => {
           {/* Left Column: Form Fields (7 Columns) */}
           <div className="lg:col-span-7 space-y-6">
             {/* Step 1: Customer Information */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-              <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-100">
-                <span className="w-7 h-7 rounded-full bg-blue-50 text-[#0284c7] font-bold text-xs flex items-center justify-center border border-blue-200">
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <span className="w-9 h-9 rounded-2xl bg-sky-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-sky-600/25 shrink-0">
                   1
                 </span>
-                <h3 className="text-sm font-bold text-slate-900">Contact Details</h3>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">
+                    Contact Information
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-400">
+                    Where we should send your order confirmation and dispatch updates
+                  </p>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Dorje Tenzing"
-                    value={customer.name}
-                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-[#0284c7]"
-                  />
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    Full Name <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Dorje Tenzing"
+                      value={customer.name}
+                      onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs"
+                    />
+                    <UserOutlined className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address *</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    value={customer.email}
-                    onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-[#0284c7]"
-                  />
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    Email Address <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      value={customer.email}
+                      onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs"
+                    />
+                    <MailOutlined className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    placeholder="+977 980-0000000"
-                    value={customer.phone}
-                    onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-[#0284c7]"
-                  />
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    Phone Number
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      placeholder="+977 980-0000000"
+                      value={customer.phone}
+                      onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs"
+                    />
+                    <PhoneOutlined className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Step 2: Shipping Destination */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-              <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-100">
-                <span className="w-7 h-7 rounded-full bg-orange-50 text-[#f97316] font-bold text-xs flex items-center justify-center border border-orange-200">
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <span className="w-9 h-9 rounded-2xl bg-amber-500 text-white font-black text-sm flex items-center justify-center shadow-md shadow-amber-500/25 shrink-0">
                   2
                 </span>
-                <h3 className="text-sm font-bold text-slate-900">Shipping Address</h3>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">
+                    Shipping Address
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-400">
+                    Provide precise address for swift doorstep delivery
+                  </p>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Street Address *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="123 Himalayan Way, Thamel"
-                    value={shipping.street}
-                    onChange={(e) => setShipping({ ...shipping, street: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-[#0284c7]"
-                  />
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    Street Address <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 123 Himalayan Way, Ward 4, Thamel"
+                      value={shipping.street}
+                      onChange={(e) => setShipping({ ...shipping, street: e.target.value })}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs"
+                    />
+                    <EnvironmentOutlined className="absolute right-4 top-3.5 text-slate-400 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">City *</label>
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    City <span className="text-rose-500">*</span>
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="Kathmandu"
+                    placeholder="e.g. Kathmandu"
                     value={shipping.city}
                     onChange={(e) => setShipping({ ...shipping, city: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-[#0284c7]"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">ZIP / Postal Code *</label>
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    ZIP / Postal Code <span className="text-rose-500">*</span>
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="44600"
+                    placeholder="e.g. 44600"
                     value={shipping.zipCode}
                     onChange={(e) => setShipping({ ...shipping, zipCode: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-[#0284c7]"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">State / Province</label>
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    State / Province
+                  </label>
                   <input
                     type="text"
-                    placeholder="Bagmati Province"
+                    placeholder="e.g. Bagmati Province"
                     value={shipping.state}
                     onChange={(e) => setShipping({ ...shipping, state: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:outline-none focus:border-[#0284c7]"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Country</label>
+                  <label className="block text-sm font-bold text-slate-800 mb-2">
+                    Country
+                  </label>
                   <select
                     value={shipping.country}
                     onChange={(e) => setShipping({ ...shipping, country: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs bg-white focus:outline-none focus:border-[#0284c7]"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all shadow-xs cursor-pointer"
                   >
                     <option value="Nepal">Nepal</option>
                     <option value="United States">United States</option>
@@ -431,124 +481,119 @@ export const CheckoutPage: React.FC = () => {
             </div>
 
             {/* Step 3: Payment Method */}
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-              <div className="flex items-center gap-3 mb-5 pb-3 border-b border-slate-100">
-                <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 font-bold text-xs flex items-center justify-center border border-emerald-200">
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-sm">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                <span className="w-9 h-9 rounded-2xl bg-sky-600 text-white font-black text-sm flex items-center justify-center shadow-md shadow-sky-600/25 shrink-0">
                   3
                 </span>
-                <h3 className="text-sm font-bold text-slate-900">Payment Selection</h3>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900">
+                    Payment Method
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-400">
+                    Select your preferred secure payment gateway or cash on delivery
+                  </p>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Payment Method Cards */}
+              <div className="space-y-3.5">
                 {/* Khalti Digital Wallet */}
                 <div
                   onClick={() => setPaymentMethod('khalti')}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 relative overflow-hidden ${
+                  className={`p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4 ${
                     paymentMethod === 'khalti'
-                      ? 'border-[#5c2d91] bg-purple-50/70 shadow-xs ring-1 ring-[#5c2d91]/30'
-                      : 'border-slate-200 hover:border-purple-300'
+                      ? 'border-[#5c2d91] bg-purple-50/60 shadow-md ring-2 ring-[#5c2d91]/20'
+                      : 'border-slate-200 hover:border-purple-300 hover:bg-slate-50/60'
                   }`}
                 >
-                  <Radio checked={paymentMethod === 'khalti'} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 rounded-full bg-[#5c2d91] text-white flex items-center justify-center text-[9px] font-bold">
-                        K
+                  <div className="flex items-center gap-3.5">
+                    <Radio checked={paymentMethod === 'khalti'} />
+                    <div className="w-10 h-10 rounded-xl bg-[#5c2d91] text-white flex items-center justify-center text-base font-black shadow-sm shrink-0">
+                      K
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm sm:text-base font-black text-slate-900">
+                          Khalti Digital Wallet
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#5c2d91] text-white uppercase tracking-wider">
+                          Instant ePayment
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-slate-900">Khalti Pay</span>
-                      <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-[#5c2d91] text-white">
-                        Digital Wallet
-                      </span>
+                      <p className="text-xs font-semibold text-slate-500 mt-0.5">
+                        Direct secure payment via Khalti wallet, mobile banking & SCT cards
+                      </p>
                     </div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">
-                      Khalti ID, eBanking, ConnectIPS
-                    </div>
+                  </div>
+                  <div className="hidden sm:block text-xs font-extrabold text-[#5c2d91] bg-purple-100/80 px-3 py-1.5 rounded-xl border border-purple-200 shrink-0">
+                    Zero Extra Fee
                   </div>
                 </div>
 
                 {/* eSewa Mobile Wallet */}
                 <div
                   onClick={() => setPaymentMethod('esewa')}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 relative overflow-hidden ${
+                  className={`p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4 ${
                     paymentMethod === 'esewa'
-                      ? 'border-[#60bb46] bg-emerald-50/70 shadow-xs ring-1 ring-[#60bb46]/30'
-                      : 'border-slate-200 hover:border-emerald-300'
+                      ? 'border-[#60bb46] bg-emerald-50/60 shadow-md ring-2 ring-[#60bb46]/20'
+                      : 'border-slate-200 hover:border-emerald-300 hover:bg-slate-50/60'
                   }`}
                 >
-                  <Radio checked={paymentMethod === 'esewa'} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-4 h-4 rounded-full bg-[#60bb46] text-white flex items-center justify-center text-[9px] font-bold">
-                        e
+                  <div className="flex items-center gap-3.5">
+                    <Radio checked={paymentMethod === 'esewa'} />
+                    <div className="w-10 h-10 rounded-xl bg-[#60bb46] text-white flex items-center justify-center text-base font-black shadow-sm shrink-0">
+                      e
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm sm:text-base font-black text-slate-900">
+                          eSewa Mobile Wallet
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-[#60bb46] text-white uppercase tracking-wider">
+                          Digital Gateway
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-slate-900">eSewa ePay</span>
-                      <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-[#60bb46] text-white">
-                        Fonepay
-                      </span>
-                    </div>
-                    <div className="text-[10px] text-slate-500 mt-0.5">
-                      eSewa Wallet, QR scan, Mobile Banking
+                      <p className="text-xs font-semibold text-slate-500 mt-0.5">
+                        Pay swiftly using your verified eSewa account or linked bank accounts
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                <div
-                  onClick={() => setPaymentMethod('credit_card')}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
-                    paymentMethod === 'credit_card'
-                      ? 'border-[#0284c7] bg-blue-50/50 shadow-2xs'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <Radio checked={paymentMethod === 'credit_card'} />
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Credit / Debit Card</div>
-                    <div className="text-[10px] text-slate-400">Visa, Mastercard, Amex</div>
+                  <div className="hidden sm:block text-xs font-extrabold text-[#3a8b23] bg-emerald-100/80 px-3 py-1.5 rounded-xl border border-emerald-200 shrink-0">
+                    Instant Gateway
                   </div>
                 </div>
 
-                <div
-                  onClick={() => setPaymentMethod('stripe')}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
-                    paymentMethod === 'stripe'
-                      ? 'border-[#0284c7] bg-blue-50/50 shadow-2xs'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <Radio checked={paymentMethod === 'stripe'} />
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Stripe Checkout</div>
-                    <div className="text-[10px] text-slate-400">Direct encrypted billing</div>
-                  </div>
-                </div>
-
-                <div
-                  onClick={() => setPaymentMethod('paypal')}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
-                    paymentMethod === 'paypal'
-                      ? 'border-[#0284c7] bg-blue-50/50 shadow-2xs'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <Radio checked={paymentMethod === 'paypal'} />
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">PayPal</div>
-                    <div className="text-[10px] text-slate-400">Digital wallet payment</div>
-                  </div>
-                </div>
-
+                {/* Cash on Delivery (COD) */}
                 <div
                   onClick={() => setPaymentMethod('cash_on_delivery')}
-                  className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center gap-3 ${
+                  className={`p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-4 ${
                     paymentMethod === 'cash_on_delivery'
-                      ? 'border-[#f97316] bg-orange-50/50 shadow-2xs'
-                      : 'border-slate-200 hover:border-slate-300'
+                      ? 'border-[#f97316] bg-orange-50/60 shadow-md ring-2 ring-[#f97316]/20'
+                      : 'border-slate-200 hover:border-orange-300 hover:bg-slate-50/60'
                   }`}
                 >
-                  <Radio checked={paymentMethod === 'cash_on_delivery'} />
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">Cash on Delivery</div>
-                    <div className="text-[10px] text-slate-400">Pay upon package arrival</div>
+                  <div className="flex items-center gap-3.5">
+                    <Radio checked={paymentMethod === 'cash_on_delivery'} />
+                    <div className="w-10 h-10 rounded-xl bg-[#f97316] text-white flex items-center justify-center text-lg font-black shadow-sm shrink-0">
+                      <DollarCircleOutlined />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm sm:text-base font-black text-slate-900">
+                          Cash on Delivery (COD)
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider">
+                          Doorstep Cash
+                        </span>
+                      </div>
+                      <p className="text-xs font-semibold text-slate-500 mt-0.5">
+                        Inspect package upon delivery and pay with cash directly to the courier
+                      </p>
+                    </div>
+                  </div>
+                  <div className="hidden sm:block text-xs font-extrabold text-amber-800 bg-amber-100/80 px-3 py-1.5 rounded-xl border border-amber-200 shrink-0">
+                    No Card Needed
                   </div>
                 </div>
               </div>
@@ -557,33 +602,35 @@ export const CheckoutPage: React.FC = () => {
 
           {/* Right Column: Order Summary (5 Columns, Sticky) */}
           <div className="lg:col-span-5 sticky top-20 space-y-4">
-            <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-              <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-                <h3 className="text-sm font-bold text-slate-900">Order Summary</h3>
-                <span className="text-xs text-slate-400 font-semibold">{cart.length} items</span>
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-7 shadow-md shadow-slate-200/30">
+              <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+                <h3 className="text-lg font-black text-slate-900 tracking-tight">Order Summary</h3>
+                <span className="text-xs font-black px-2.5 py-1 bg-slate-100 text-slate-700 rounded-full">
+                  {cart.length} {cart.length === 1 ? 'item' : 'items'}
+                </span>
               </div>
 
               {/* Items List */}
-              <div className="max-h-60 overflow-y-auto space-y-3 pr-1 mb-5">
+              <div className="max-h-72 overflow-y-auto space-y-3.5 pr-1 mb-6">
                 {cart.map((item) => {
                   const pId = item.product._id || item.product.id;
                   const unitPrice = item.product.salePrice ?? item.product.price;
                   return (
-                    <div key={pId} className="flex items-center gap-3">
+                    <div key={pId} className="flex items-center gap-3.5 p-2 rounded-2xl hover:bg-slate-50 transition-colors">
                       <img
-                        src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}
+                        src={item.product.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120'}
                         alt={item.product.name}
-                        className="w-12 h-12 rounded-lg object-cover bg-slate-50 border border-slate-200 shrink-0"
+                        className="w-14 h-14 rounded-xl object-cover bg-slate-50 border border-slate-200 shrink-0 shadow-xs"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold text-slate-800 truncate">
+                        <div className="text-sm font-bold text-slate-900 truncate">
                           {item.product.name}
                         </div>
-                        <div className="text-[11px] text-slate-400">
-                          Qty: {item.quantity} × ${unitPrice.toFixed(2)}
+                        <div className="text-xs font-semibold text-slate-400 mt-0.5">
+                          Qty: <span className="font-bold text-slate-700">{item.quantity}</span> × ${unitPrice.toFixed(2)}
                         </div>
                       </div>
-                      <div className="font-bold text-xs text-slate-900">
+                      <div className="font-black text-sm text-slate-900 shrink-0">
                         ${(unitPrice * item.quantity).toFixed(2)}
                       </div>
                     </div>
@@ -592,25 +639,25 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               {/* Promo / Discount Code */}
-              <div className="pt-4 border-t border-slate-100">
-                <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <TagOutlined className="text-cyan-600" />
-                  Have a Promo Code?
+              <div className="pt-4 border-t border-slate-100 mb-6">
+                <div className="text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <TagOutlined className="text-sky-600" />
+                  Have a Coupon / Promo Code?
                 </div>
                 {appliedCoupon ? (
-                  <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-sm">
                     <div className="flex items-center gap-2">
-                      <Tag color="success" className="font-mono font-bold tracking-wider">
+                      <Tag color="success" className="font-mono font-bold tracking-wider text-xs">
                         {appliedCoupon.code}
                       </Tag>
-                      <span className="text-emerald-700 font-medium">
-                        -${appliedCoupon.discountAmount.toFixed(2)} off
+                      <span className="text-emerald-700 font-bold text-xs sm:text-sm">
+                        -${appliedCoupon.discountAmount.toFixed(2)} savings applied
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={handleRemoveCoupon}
-                      className="text-slate-400 hover:text-red-500 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                      className="text-slate-400 hover:text-rose-500 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                     >
                       <CloseCircleOutlined /> Remove
                     </button>
@@ -628,51 +675,65 @@ export const CheckoutPage: React.FC = () => {
                           handleApplyCoupon();
                         }
                       }}
-                      className="flex-1 px-3 py-1.5 text-xs uppercase font-mono tracking-wider border border-slate-200 rounded-lg focus:outline-none focus:border-cyan-600"
+                      className="flex-1 px-4 py-2.5 text-xs sm:text-sm uppercase font-mono font-bold tracking-wider border border-slate-200 bg-slate-50/60 focus:bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
                     />
                     <button
                       type="button"
                       disabled={validatingCoupon || !couponCode.trim()}
                       onClick={handleApplyCoupon}
-                      className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs font-semibold rounded-lg cursor-pointer transition-colors"
+                      className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white text-xs sm:text-sm font-extrabold rounded-xl cursor-pointer transition-all shadow-xs"
                     >
-                      {validatingCoupon ? <Spin size="small" /> : 'Apply'}
+                      {validatingCoupon ? <Spin size="small" /> : 'Apply Code'}
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Price Calculations */}
-              <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs">
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Subtotal:</span>
-                  <span className="font-semibold text-slate-800">${cartTotal.toFixed(2)}</span>
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-bold text-slate-600">Subtotal</span>
+                  <span className="font-extrabold text-slate-900">${cartTotal.toFixed(2)}</span>
                 </div>
                 {discountAmount > 0 && (
-                  <div className="flex items-center justify-between text-emerald-600 font-semibold">
+                  <div className="flex items-center justify-between text-sm text-emerald-600 font-bold">
                     <span className="flex items-center gap-1">
-                      <TagOutlined /> Discount ({appliedCoupon?.code}):
+                      <TagOutlined /> Coupon Discount ({appliedCoupon?.code})
                     </span>
-                    <span>-${discountAmount.toFixed(2)}</span>
+                    <span className="font-extrabold">-${discountAmount.toFixed(2)}</span>
                   </div>
                 )}
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Estimated Tax (8%):</span>
-                  <span className="font-semibold text-slate-800">${tax.toFixed(2)}</span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-bold text-slate-600">Estimated Sales Tax (8%)</span>
+                  <span className="font-extrabold text-slate-900">${tax.toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-600">
-                  <span>Express Shipping:</span>
-                  <span className="font-semibold text-slate-800">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-bold text-slate-600">Standard Shipping</span>
+                  <span className="font-extrabold text-slate-900">
                     {shippingAmount === 0 ? (
-                      <span className="text-emerald-600 font-bold">FREE (Over $150)</span>
+                      <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-xs font-black">
+                        FREE (Over $150)
+                      </span>
                     ) : (
                       `$${shippingAmount.toFixed(2)}`
                     )}
                   </span>
                 </div>
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-sm">
-                  <span className="font-bold text-slate-900">Grand Total:</span>
-                  <span className="font-black text-lg text-[#0284c7]">${grandTotal.toFixed(2)}</span>
+
+                <div className="pt-4 border-t border-slate-200/90 flex items-center justify-between">
+                  <div>
+                    <span className="block text-sm font-black text-slate-900 uppercase tracking-wide">
+                      Grand Total
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-400">
+                      Including taxes & shipping
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-black text-2xl sm:text-3xl text-sky-600 tracking-tight">
+                      ${grandTotal.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -681,36 +742,34 @@ export const CheckoutPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  style={{
-                    backgroundColor:
-                      paymentMethod === 'khalti'
-                        ? '#5c2d91'
-                        : paymentMethod === 'esewa'
-                        ? '#60bb46'
-                        : '#0284c7',
-                  }}
-                  className="w-full py-3 px-4 rounded-xl text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md hover:brightness-105 disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2"
+                  className={`w-full py-4 px-6 rounded-2xl text-white font-black text-sm sm:text-base uppercase tracking-wider transition-all shadow-lg hover:shadow-xl hover:brightness-105 active:scale-[0.99] disabled:opacity-60 cursor-pointer flex items-center justify-center gap-2.5 ${
+                    paymentMethod === 'khalti'
+                      ? 'bg-gradient-to-r from-[#5c2d91] to-[#7b3dbd] shadow-purple-900/25 hover:shadow-purple-900/35'
+                      : paymentMethod === 'esewa'
+                      ? 'bg-gradient-to-r from-[#60bb46] to-[#4ea835] shadow-emerald-800/25 hover:shadow-emerald-800/35'
+                      : 'bg-gradient-to-r from-sky-600 to-sky-500 shadow-sky-600/25 hover:shadow-sky-600/35'
+                  }`}
                 >
                   {submitting ? (
                     <>
                       <Spin size="small" />
                       <span>
                         {paymentMethod === 'khalti'
-                          ? 'Connecting Khalti...'
+                          ? 'Connecting Khalti Gateway...'
                           : paymentMethod === 'esewa'
-                          ? 'Connecting eSewa...'
-                          : 'Securing Order...'}
+                          ? 'Connecting eSewa Gateway...'
+                          : 'Confirming Order...'}
                       </span>
                     </>
                   ) : (
                     <>
-                      <LockOutlined />
+                      <LockOutlined className="text-base" />
                       <span>
                         {paymentMethod === 'khalti'
                           ? `Pay with Khalti ($${grandTotal.toFixed(2)})`
                           : paymentMethod === 'esewa'
                           ? `Pay with eSewa ($${grandTotal.toFixed(2)})`
-                          : `Place Order ($${grandTotal.toFixed(2)})`}
+                          : `Place Order • Cash on Delivery ($${grandTotal.toFixed(2)})`}
                       </span>
                     </>
                   )}
@@ -718,14 +777,14 @@ export const CheckoutPage: React.FC = () => {
               </div>
 
               {/* Trust Indicators */}
-              <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2 text-center text-[10px] text-slate-500">
-                <div className="flex items-center justify-center gap-1">
-                  <SafetyCertificateOutlined className="text-emerald-500" />
-                  <span>256-bit Encrypted</span>
+              <div className="mt-5 pt-5 border-t border-slate-100 grid grid-cols-2 gap-3 text-center">
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center gap-2">
+                  <SafetyCertificateOutlined className="text-emerald-600 text-sm" />
+                  <span className="text-xs font-bold text-slate-700">100% Genuine</span>
                 </div>
-                <div className="flex items-center justify-center gap-1">
-                  <CarOutlined className="text-[#0284c7]" />
-                  <span>Tracked Delivery</span>
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center gap-2">
+                  <CarOutlined className="text-sky-600 text-sm" />
+                  <span className="text-xs font-bold text-slate-700">Doorstep Delivery</span>
                 </div>
               </div>
             </div>
