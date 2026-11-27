@@ -19,6 +19,12 @@
   z-index: var(--z-drawer-mask, 9990) !important;
 }
 
+.ant-drawer-content-wrapper,
+.ant-drawer-content {
+  z-index: var(--z-drawer-content, 10001) !important;
+  pointer-events: auto !important;
+}
+
 /* 2. Dropdown & Popover Layer (9000 - Higher than Confirm Modal & Modal) */
 .ant-dropdown,
 .ant-select-dropdown,

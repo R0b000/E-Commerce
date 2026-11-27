@@ -23,6 +23,8 @@ export const CartDrawer: React.FC = () => {
 
   return (
     <Drawer
+      zIndex={10005}
+      contentWrapperStyle={{ zIndex: 10005, pointerEvents: 'auto' }}
       title={
         <div className="flex items-center gap-2">
           <ShoppingOutlined className="text-[#0284c7] text-lg" />
